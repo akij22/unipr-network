@@ -1,0 +1,4 @@
+import {useEffect,useRef} from 'react';
+import type {ProtocolId} from '../../simulation/types';
+import {protocols} from '../../content/protocols.en';
+export function ProtocolDetails({protocol,onClose}:{protocol:ProtocolId;onClose:()=>void}){const ref=useRef<HTMLDialogElement>(null),info=protocols[protocol];useEffect(()=>{ref.current?.showModal();},[]);return <dialog ref={ref} className="protocol-dialog" onClose={onClose} onCancel={onClose}><div className="section-head"><div><span className="eyebrow">{info.layer}</span><h2>{info.name}</h2></div><button onClick={()=>ref.current?.close()}>Close details</button></div><p>{info.purpose}</p><dl>{info.fields.map(([field,meaning])=><div key={field}><dt>{field}</dt><dd>{meaning}</dd></div>)}</dl><a href={info.url} target="_blank" rel="noreferrer">Read the protocol reference ↗</a></dialog>;}

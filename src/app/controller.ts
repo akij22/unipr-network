@@ -8,22 +8,31 @@ export function emptyDocument():NetworkDocument{return{schema:1,id:crypto.random
 export function createAppController(client:SimulationClient):AppController{
  const document=emptyDocument();let revision=0,requestId=0;
  let state:AppState={document,projection:{revision:0,operationId:null,cursor:0,frontier:0,total:null,status:'idle',event:null,state:createInitialState(document.network)},selection:null,tutorial:true,playing:false,busy:false,dirty:false,issue:null,connection:null,notice:null};
- const listeners=new Set<()=>void>();
+ const listeners=new Set<()=>void>();let timer:ReturnType<typeof setTimeout>|null=null;
  const set=(patch:Partial<AppState>)=>{state={...state,...patch};for(const listener of listeners)listener();};
  const send=async(command:SessionCommand,operationId:string|null=null)=>{
   const sentRevision=revision;set({busy:true,issue:null});
   try{const result=await client.request({requestId:++requestId,revision:sentRevision,operationId,command});if(sentRevision!==revision)return;
-   if(result.ok)set({projection:result.value,issue:result.value.status==='resource-error'?result.value.state.problem:null});else set({issue:result.issue});
+   if(result.ok)set({projection:result.value,issue:result.value.status==='resource-error'||result.value.status==='failed'?result.value.state.problem:null});else set({issue:result.issue});
   }catch(cause){console.error('App operation failed',cause);set({issue:issue('WORKER_FAILURE',[],{},'resource')});}finally{if(sentRevision===revision)set({busy:false});}
  };
  const apply=async(network:NetworkConfig)=>{
   const problem=validateConfiguration(network)[0];if(problem){set({issue:problem});return;}
   revision++;set({document:{...state.document,network},dirty:true,playing:false,issue:null,notice:null});await send({type:'load',network});
  };
+ const pause=()=>{if(timer!==null)clearTimeout(timer);timer=null;set({playing:false});};
+ const play=async()=>{if(!state.playing)return;if(state.busy){timer=setTimeout(()=>void play(),40);return;}await send({type:'next'},state.projection.operationId);if(state.playing&&(state.projection.status==='active'||state.projection.cursor<state.projection.frontier))timer=setTimeout(()=>void play(),700);else pause();};
  return{
-  getSnapshot:()=>state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},dispose(){client.dispose();listeners.clear();},
+  getSnapshot:()=>state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},dispose(){if(timer!==null)clearTimeout(timer);client.dispose();listeners.clear();},
   async dispatch(action){
    switch(action.type){
+    case'simulation.start':pause();if(state.busy){set({issue:issue('OPERATION_BUSY',[],{},'input')});return;}await send({type:'start',operation:action.operation},crypto.randomUUID());return;
+    case'simulation.next':pause();await send({type:'next'},state.projection.operationId);return;
+    case'simulation.previous':pause();await send({type:'seek',index:Math.max(0,state.projection.cursor-1)},state.projection.operationId);return;
+    case'simulation.seek':pause();await send({type:'seek',index:action.index},state.projection.operationId);return;
+    case'simulation.play':if(!action.enabled){pause();return;}set({playing:true});void play();return;
+    case'simulation.cancel':pause();await send({type:'cancel'},state.projection.operationId);return;
+    case'simulation.reset':pause();await send({type:'reset'},state.projection.operationId);return;
     case'issue.clear':set({issue:null,notice:null});return;
     case'document.name':set({document:{...state.document,name:action.name},dirty:true});return;
     case'tutorial.set':set({tutorial:action.enabled});return;
