@@ -24,6 +24,7 @@ export function validateConfiguration(config:NetworkConfig):Issue[]{
    }
    if(invalid)errors.push(issue('INVALID_DHCP_POOL',[device.id],{port:scope.portId},'input'));
   }
+  if(device.kind==='router'&&device.nat?.enabled){const nat=device.nat;const outside=device.ports.find(p=>p.id===nat.outsidePortId);if(!outside?.address||!nat.insidePortIds.length||nat.insidePortIds.includes(nat.outsidePortId)||nat.insidePortIds.some(id=>!device.ports.find(p=>p.id===id)?.address)||!nat.sourceNetworks.length||nat.sourceNetworks.some(n=>!analyzePrefix(n.ip,n.prefix).ok))errors.push(issue('INVALID_NAT_CONFIG',[device.id],{},'input'));}
  }
  for(const link of config.links)for(const ref of link.ends){
   if(!config.devices.find(d=>d.id===ref.deviceId)?.ports.some(p=>p.id===ref.portId)||occupied.has(portKey(ref)))errors.push(issue('INVALID_LINK',[ref.deviceId],{},'input',[link.id]));occupied.add(portKey(ref));
