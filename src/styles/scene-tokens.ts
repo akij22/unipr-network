@@ -1,0 +1,1 @@
+export const sceneColors={background:'#101722',grid:'#293548',shell:'#9aa9be',face:'#354257',screen:'#98bfdb',accent:'#7babff',cable:'#57677e',packet:'#ffd685',selected:'#8dbaff',port:'#142131',light:'#c6dcff',router:'#6187b1',switch:'#77899f',bridge:'#7ba5a4',hub:'#b6a783'} as const;
