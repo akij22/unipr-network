@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>UniPRNetwork — 3D network lab</title>
+<style>
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V5
+ * macrostructure: Workbench · theme: studied-DNA (source: user interface reference)
+ * Requested adaptation: dark surfaces, English copy. Space Grotesk / Inter / JetBrains Mono.
+ * nav: application masthead · controls: persistent dock above topology · motion: press / packet position
+ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+ --color-paper:oklch(16% .012 260);--color-panel:oklch(20% .014 260);--color-raised:oklch(24% .016 260);--color-field:oklch(17.5% .012 260);
+ --color-ink:oklch(95% .008 255);--color-body:oklch(83% .016 255);--color-muted:oklch(70% .02 255);--color-rule:oklch(34% .018 260);--color-rule-strong:oklch(53% .025 255);
+ --color-blue:oklch(75% .125 255);--color-blue-bg:oklch(25% .055 255);--color-primary:oklch(49% .19 260);--color-on-primary:oklch(99% .002 255);
+ --color-network-a:oklch(22% .033 255);--color-network-a-line:oklch(46% .07 255);--color-network-b:oklch(23% .025 75);--color-network-b-line:oklch(49% .07 75);
+ --color-amber:oklch(85% .125 80);--color-amber-bg:oklch(32% .045 80);--color-good:oklch(82% .11 160);--color-good-bg:oklch(25% .035 160);
+ --color-error:oklch(83% .095 25);--color-error-bg:oklch(26% .045 25);--color-focus:oklch(82% .115 250);--color-backdrop:oklch(8% .01 260 / .82);
+ --color-device-shell:oklch(52% .025 255);--color-device-face:oklch(37% .025 255);--color-device-edge:oklch(77% .02 255);--color-transparent:transparent;--color-current:currentColor;
+ --font-display:'Space Grotesk',sans-serif;--font-body:'Inter',sans-serif;--font-mono:'JetBrains Mono',monospace;
+ --dock-height:96px;--dock-offset:12px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:32px;--space-2xl:48px;
+ --radius-control:7px;--radius-panel:12px;--text-sm:12px;--text-body:14px;--text-title:24px;
+ --ease-out:cubic-bezier(.16,1,.3,1);--ease-in:cubic-bezier(.7,0,.84,0);--ease-in-out:cubic-bezier(.65,0,.35,1);--dur-short:150ms;--dur-medium:250ms;
+}
+*{box-sizing:border-box}html,body{overflow-x:clip;background:var(--color-transparent)}body{margin:0;font:var(--text-body)/1.55 var(--font-body);color:var(--color-ink)}button,input{font:inherit;color:inherit}button{cursor:pointer;min-height:44px;white-space:nowrap;border:1px solid var(--color-rule);border-radius:var(--radius-control);padding:9px 14px;background:var(--color-raised);transition:transform 100ms var(--ease-out)}button:active{transform:translateY(1px)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--color-primary);border-color:var(--color-primary);color:var(--color-on-primary)}.quiet{background:var(--color-transparent);border-color:var(--color-transparent)}button:focus-visible,input:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--color-focus);outline-offset:3px}input{width:100%;min-width:0;min-height:44px;border:1px solid var(--color-rule-strong);border-radius:var(--radius-control);background:var(--color-field);padding:10px 12px;font-size:13px}input[aria-invalid=true]{border-color:var(--color-error)}h1,h2,h3,p,figure,dl,dd{margin:0}h1,h2,h3{font-family:var(--font-display);font-style:normal;overflow-wrap:anywhere;min-width:0}h1{font-size:24px;line-height:1.25;letter-spacing:-.035em;font-weight:600}h2{font-size:18px;line-height:1.35;letter-spacing:-.02em}h3{font-size:15px}p{color:var(--color-body)}a{color:var(--color-blue)}.mono,code{font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums}.muted{color:var(--color-muted)}.small{font-size:12px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.grow{flex:1;min-width:0}.icon{width:20px;height:20px;fill:none;stroke:var(--color-current);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}.icon-button{padding:10px;display:grid;place-items:center;min-width:44px}[hidden]{display:none!important}
+.prototype-note{color:var(--muted-foreground,var(--color-muted));font-size:12px;margin:0 0 12px}.lab{background:var(--color-paper);padding:16px;border-radius:var(--radius-panel);min-width:0;color-scheme:dark}.masthead{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-bottom:20px;border-bottom:1px solid var(--color-rule)}.brand{display:flex;align-items:center;gap:10px;font:600 20px var(--font-display);letter-spacing:-.04em;white-space:nowrap}.brand-symbol{width:32px;height:20px;color:var(--color-blue)}.scenario{padding-left:16px;border-left:1px solid var(--color-rule);min-width:0}.scenario>span{display:block;color:var(--color-muted);font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.scenario b{font-size:13px;font-weight:500}.masthead-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.masthead-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.masthead-actions button{font-size:12px;padding:8px 12px}.depth-picker{display:flex;padding:4px;background:var(--color-field);border:1px solid var(--color-rule);border-radius:9px;gap:3px;flex-wrap:wrap}.depth-picker button{font-size:11px;background:var(--color-transparent);border-color:var(--color-transparent);padding:7px 10px}.depth-picker button[aria-pressed=true]{background:var(--color-raised);border-color:var(--color-rule-strong);color:var(--color-ink)}.tutorial-toggle{color:var(--color-muted)}.tutorial-toggle[aria-pressed=true]{color:var(--color-blue);border-color:var(--color-rule)}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-top:20px}.main-column{min-width:0;display:grid;gap:16px;align-content:start}.panel{background:var(--color-panel);border:1px solid var(--color-rule);border-radius:var(--radius-panel);min-width:0;padding:20px}.event-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.event-badge{font:500 11px var(--font-mono);background:var(--color-blue-bg);color:var(--color-blue);padding:6px 9px;border:1px solid var(--color-network-a-line);border-radius:5px;white-space:nowrap}.traffic-label{font-size:11px;color:var(--color-muted)}.event-description{max-width:90ch;margin-top:8px;font-size:13px;line-height:1.7}.diagram-toolbar{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:20px 0 12px}.diagram-toolbar button{display:flex;gap:6px;align-items:center;font-size:12px;min-height:36px;padding:6px 10px}.diagram-toolbar .icon{width:14px;height:14px}.diagram-meta{font-size:10px;color:var(--color-muted);letter-spacing:.05em}
+.topology{position:relative;height:330px;min-width:0}.network-zone{position:absolute;top:0;bottom:0;border:1px dashed var(--color-network-a-line);border-radius:12px;padding:16px;background:var(--color-network-a);width:49%;left:0}.network-zone.zone-b{left:51%;border-color:var(--color-network-b-line);background:var(--color-network-b)}.network-zone h3{font-size:12px;color:var(--color-blue)}.network-zone h3 span{display:block;font:11px var(--font-mono);margin-top:5px;color:var(--color-muted)}.zone-b h3{color:var(--color-amber)}.diagram-wires{position:absolute;width:100%;height:100%;inset:0;overflow:visible;pointer-events:none}.wire{stroke:var(--color-rule-strong);stroke-width:2;vector-effect:non-scaling-stroke;fill:none}.wire.active{stroke:var(--color-blue);stroke-width:3.5}.wire.previous{stroke-dasharray:4 5}.device{border:0;background:var(--color-transparent);padding:0;position:absolute;left:calc(var(--x)*1%);top:148px;transform:translateX(-50%);width:88px;min-height:108px;text-align:center;white-space:normal;z-index:2}.device:active{transform:translateX(-50%)}.device-shell{display:grid;place-items:center;width:64px;height:68px;margin:0 auto 10px;border:1px solid var(--color-rule-strong);background:var(--color-raised);border-radius:10px;color:var(--color-body)}.device-shell .icon{width:32px;height:32px}.device-name{display:block;font-size:12px;font-weight:600;background:var(--color-transparent);line-height:1.3}.device-address{display:block;font:11px var(--font-mono);color:var(--color-muted);margin-top:5px}.device[aria-pressed=true] .device-shell{border:2px solid var(--color-blue);color:var(--color-blue);background:var(--color-blue-bg)}.device.current .device-name{color:var(--color-blue)}.device-router{top:138px;width:102px}.device-router .device-shell{width:96px;height:88px;border-radius:15px;position:relative;margin-bottom:0}.device-router .device-name{position:absolute;top:-27px;left:0;right:0}.device-router .device-address{margin-top:10px}.device-router .icon{width:40px;height:40px}.port{position:absolute;top:30px;background:var(--color-primary);color:var(--color-on-primary);padding:3px 7px;border:1px solid var(--color-blue);font:10px var(--font-mono);border-radius:5px}.port.eth0{left:-21px}.port.eth1{right:-21px}.current-packet{position:absolute;left:75%;top:68px;transform:translateX(-50%);padding:0;border:1px solid var(--color-blue);width:138px;text-align:left;z-index:3;background:var(--color-field);white-space:normal}.current-packet:active{transform:translateX(-50%)}.current-packet:after{content:'';position:absolute;bottom:-17px;left:50%;height:16px;border-left:1px solid var(--color-blue)}.packet-caption{display:block;padding:5px 9px;background:var(--color-blue-bg);color:var(--color-blue);font-size:10px;font-weight:600;border-radius:6px 6px 0 0}.packet-data{display:block;padding:7px 9px;font:10px/1.7 var(--font-mono)}.previous-hop{position:absolute;left:37%;top:87px;transform:translateX(-50%);border:1px dashed var(--color-rule-strong);border-radius:5px;background:var(--color-panel);padding:6px 8px;font-size:10px;color:var(--color-muted);z-index:2}.link-hit{position:absolute;top:162px;left:calc(var(--x)*1%);width:44px;height:44px;min-height:44px;transform:translateX(-50%);background:var(--color-transparent);border:0;padding:0;z-index:1}.link-hit:active{transform:translateX(-50%)}.link-hit>span{position:absolute;bottom:38px;left:50%;transform:translateX(-50%);font:10px var(--font-mono);background:var(--color-raised);border:1px solid var(--color-rule-strong);color:var(--color-ink);padding:8px;border-radius:6px;opacity:0;pointer-events:auto}.link-hit:hover>span{opacity:1;transition:opacity var(--dur-short) var(--ease-out);transition-delay:800ms}.link-hit:focus-visible>span{opacity:1;transition-delay:0ms}.link-hit[data-dismissed]>span{opacity:0}.legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:16px;font-size:10px;color:var(--color-muted)}.legend>span{display:flex;gap:6px;align-items:center}.line-swatch{width:16px;height:0;border-top:2px solid var(--color-blue)}.line-swatch.previous{border-top:1px dashed var(--color-rule-strong)}mark{background:var(--color-amber-bg);color:var(--color-amber);border-radius:3px;padding:2px 5px;font-family:var(--font-mono)}.legend mark{font-family:var(--font-body)}
+.packet-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}.packet-heading p{font-size:11px;color:var(--color-muted)}.protocol-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}.protocol{border:1px solid var(--color-rule);border-radius:8px;background:var(--color-field);padding:14px;min-width:0}.protocol-header{width:100%;border:0;min-height:36px;display:flex;align-items:center;justify-content:space-between;padding:0 0 10px;background:var(--color-transparent);font-size:11px;font-weight:600;text-align:left;color:var(--color-body)}.protocol-header span:last-child{color:var(--color-muted);font-weight:400}.field-list{display:grid;gap:9px}.field-list>div{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}.field-list dt{font-size:12px;color:var(--color-muted)}.field-list dd{font:11px/1.6 var(--font-mono);color:var(--color-body);overflow-wrap:anywhere}.field-list del{color:var(--color-muted);margin-right:5px;text-decoration-thickness:1px}.unchanged{color:var(--color-body)}.protocol-empty{font-size:11px;line-height:1.6;color:var(--color-muted)}.learning-note{display:flex;gap:10px;align-items:flex-start;margin-top:16px;background:var(--color-blue-bg);border:1px solid var(--color-network-a-line);border-radius:7px;padding:12px 14px;font-size:11px;color:var(--color-body)}.learning-note .icon{width:16px;height:16px;color:var(--color-blue);margin-top:1px}.learning-note strong{color:var(--color-blue)}
+.transport{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px}.transport>button{font-size:12px;padding:8px 12px}.transport .play{display:flex;gap:8px;align-items:center;min-width:94px}.transport .play .icon{width:14px;height:14px}.seek-area{flex:1;min-width:140px}.seek-area input{width:100%;min-height:24px;height:24px;margin:0;padding:0;border:0;accent-color:var(--color-blue);cursor:pointer;background:var(--color-transparent)}.timeline-ticks{display:flex;justify-content:space-between;font:9px var(--font-mono);color:var(--color-muted);gap:4px}.timeline-ticks .active{color:var(--color-blue)}
+.inspector{padding:0;align-self:start;overflow:clip}.inspector-head{display:flex;gap:12px;align-items:center;padding:18px 20px}.selected-symbol{width:42px;height:42px;display:grid;place-items:center;background:var(--color-blue-bg);color:var(--color-blue);border-radius:8px;flex-shrink:0}.inspector-head h2{font-size:18px}.inspector-head p{font-size:11px;color:var(--color-muted);margin-top:2px}.inspector-head button{background:var(--color-transparent);min-width:40px;min-height:40px;padding:8px}.inspector-tabs{display:flex;border-bottom:1px solid var(--color-rule);padding:0 16px;gap:8px}.inspector-tabs button{background:var(--color-transparent);border:0;border-radius:0;border-bottom:2px solid var(--color-transparent);font-size:12px;color:var(--color-muted);padding:10px 8px}.inspector-tabs button[aria-selected=true]{color:var(--color-blue);border-bottom-color:var(--color-blue)}.inspector-content{padding:18px 20px 20px}.form-field{display:grid;gap:6px;margin-bottom:16px}.form-field label,.section-label{font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--color-muted)}.form-field small{color:var(--color-muted);font-size:11px}.interface-box{border:1px solid var(--color-network-a-line);border-radius:8px;padding:14px;margin:14px 0;background:var(--color-field)}.interface-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}.interface-tag{background:var(--color-blue-bg);color:var(--color-blue);font:11px var(--font-mono);padding:2px 7px;border:1px solid var(--color-network-a-line);border-radius:4px}.interface-head>span:last-child{font-size:11px;color:var(--color-muted)}.interface-fields{display:grid;grid-template-columns:minmax(0,1fr) 62px;gap:10px}.interface-fields .form-field{margin-bottom:10px}.interface-fields input{font-family:var(--font-mono);font-size:12px;padding-inline:10px}.mac-row{display:flex;justify-content:space-between;gap:8px;font-size:10px;flex-wrap:wrap}.mac-row code{font-size:10px;color:var(--color-body)}.mac-row span{color:var(--color-muted)}.routing{margin-top:20px}.routing h3{font-family:var(--font-body);font-size:10px;color:var(--color-muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}table{border-collapse:collapse;width:100%;font-size:10px}th{text-align:left;font-weight:500;color:var(--color-muted);padding:7px 6px;border-bottom:1px solid var(--color-rule)}td{padding:9px 6px;font-size:10px}td:first-child,td:nth-child(2){font-family:var(--font-mono);font-size:10px}tr.route-active{background:var(--color-blue-bg);color:var(--color-blue)}tr.route-active td:last-child{font-weight:600}.configuration-note{border:1px solid var(--color-rule);background:var(--color-good-bg);color:var(--color-good);padding:12px;border-radius:7px;margin-top:16px;font-size:11px}.configuration-note p{color:var(--color-good);margin-top:3px}.config-actions{display:flex;gap:8px;margin-top:16px}.config-actions button{font-size:11px;padding-inline:12px;flex:1}.error-message{min-height:18px;font-size:11px;color:var(--color-error);margin-top:6px}.table-intro,.activity-copy{font-size:12px;line-height:1.8;margin-bottom:16px}.table-empty{font-size:12px;color:var(--color-muted);padding:16px 0}.activity-protocols{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.activity-protocols button{font-size:11px}.activity-item{padding:12px 0;border-bottom:1px solid var(--color-rule);font-size:12px}.activity-item strong{display:block;margin-bottom:5px}.activity-item p{font-size:11px;color:var(--color-muted)}.draft-status{font-size:11px;color:var(--color-good);min-height:18px;margin-top:12px}.study-footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--color-muted)}
+dialog{font:14px/1.65 var(--font-body);color:var(--color-ink);background:var(--color-panel);border:1px solid var(--color-rule-strong);border-radius:12px;padding:24px;width:calc(100% - 32px);max-width:500px;max-height:90%;overflow:auto;position:fixed;inset:0;margin:auto;color-scheme:dark}dialog::backdrop{background:var(--color-backdrop)}dialog h2{margin-bottom:10px;padding-right:36px}dialog p{font-size:13px;margin-top:12px}dialog .dialog-close{position:absolute;right:12px;top:12px}.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}.saved-list{display:grid;gap:8px;margin-top:16px}.saved-list button{display:flex;gap:12px;justify-content:space-between;align-items:center;text-align:left}.saved-list button strong{overflow:clip;text-overflow:ellipsis;white-space:nowrap;min-width:0}.saved-list button span{color:var(--color-muted);font-size:11px}.modal-label{display:block;font-size:12px;margin:16px 0 6px}.device-list{display:grid;gap:8px;margin-top:16px}.device-list button{display:flex;align-items:center;gap:12px;text-align:left}.device-list .device-label{flex:1}.device-list .device-role{font-size:11px;color:var(--color-muted)}.protocol-facts{margin-top:16px;display:grid;gap:10px}.protocol-facts div{border-top:1px solid var(--color-rule);padding-top:10px}.protocol-facts dt{font-size:11px;color:var(--color-muted)}.protocol-facts dd{font-size:12px;margin-top:4px}
+.link-hit.is-active:after{content:"›";position:absolute;inset:0;display:grid;place-items:center;font-size:28px;line-height:1;color:var(--color-blue);pointer-events:none}.link-hit.is-active.is-reverse:after{content:"‹"}
+@media(hover:hover){button:not(:disabled):hover{background:var(--color-raised);border-color:var(--color-rule-strong)}button.primary:hover{background:var(--color-primary);border-color:var(--color-blue)}.device:hover{background:var(--color-transparent);border-color:var(--color-transparent)}.device:hover .device-shell{border-color:var(--color-blue)}.link-hit:hover{background:var(--color-transparent)}.protocol-header:hover{background:var(--color-transparent);color:var(--color-blue)}}
+@media(min-width:600px){.protocol-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.protocol-grid[data-depth="all"] .protocol:last-child{grid-column:1/-1}.protocol-grid[data-depth="ethernet"]{grid-template-columns:minmax(0,1fr)}.protocol-grid[data-depth="network"]{grid-template-columns:repeat(2,minmax(0,1fr))}.lab{padding:20px}.network-zone h3 span{display:inline;margin-left:6px}.masthead{gap:20px}}
+@media(min-width:1100px){.protocol-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.protocol-grid[data-depth="all"] .protocol:last-child{grid-column:auto}.workspace{grid-template-columns:minmax(0,1fr) 310px}.lab{padding:24px}.inspector-head{padding:18px}.inspector-content{padding:18px}.inspector-head h2{font-size:17px}.inspector-tabs{padding-inline:10px}.masthead-left{gap:20px}.scenario{padding-left:20px}.event-head h1{font-size:23px}.topology{height:350px}.network-zone{bottom:20px}.diagram-wires{height:330px}.inspector.is-collapsed .inspector-head{flex-wrap:wrap}.inspector.is-collapsed{grid-column:2}.workspace:has(.inspector.is-collapsed){grid-template-columns:minmax(0,1fr) 230px}.current-packet{width:148px}.packet-data{font-size:11px}}
+@media(min-width:1450px){.workspace{grid-template-columns:minmax(0,1fr) 350px;gap:20px}.panel{padding:22px}.inspector{padding:0}.inspector-head,.inspector-content{padding:22px}.topology{height:380px}.network-zone{bottom:20px}.diagram-wires{height:360px}.device{top:163px}.device-router{top:153px}.link-hit{top:177px}.current-packet{top:82px}.previous-hop{top:101px}.field-list dt{font-size:12px}.field-list dd{font-size:11px}}
+@media(max-width:599px){.lab{padding:16px}.masthead-left{width:100%;justify-content:space-between;gap:12px}.brand{font-size:18px}.scenario{padding-left:12px}.scenario b{font-size:11px}.scenario>span{font-size:9px}.masthead-actions{width:100%;justify-content:space-between;gap:6px}.depth-picker{order:3;width:100%;justify-content:space-between}.depth-picker button{flex:1;padding-inline:6px;font-size:10px}.masthead-actions>button{font-size:11px;padding-inline:10px}.panel{padding:16px}.inspector{padding:0}.event-head{gap:8px}.event-head h1{font-size:21px;width:100%}.event-description{font-size:12px}.traffic-label{font-size:10px}.topology{height:430px}.network-zone{width:100%;height:206px;bottom:auto}.network-zone.zone-b{left:0;top:220px;height:210px}.network-zone h3 span{display:inline;margin-left:4px}.device{left:calc(var(--mx)*1%);top:calc(var(--my)*1px);width:90px}.device-router{width:102px;top:calc(var(--my)*1px)}.device-router .device-name{top:-23px}.device-address{font-size:10px}.diagram-wires{height:430px}.link-hit{left:calc(var(--mx)*1%)!important;top:calc(var(--my)*1px)}.current-packet{display:none}.packet-data{font-size:10px}.previous-hop{display:none}.legend{gap:10px;font-size:9px}.protocol-grid{gap:10px}.field-list dt{font-size:12px}.field-list dd{font-size:11px}.protocol-header{font-size:12px}.transport{padding:12px;gap:8px}.transport>button{font-size:11px;padding-inline:10px}.seek-area{order:4;flex-basis:100%}.transport .play{flex:1;justify-content:center;min-width:70px}.transport #next{margin-left:auto}.timeline-ticks{font-size:9px}.learning-note{font-size:11px}.inspector-head{padding:16px}.inspector-content{padding:16px}.inspector-tabs{padding-inline:12px}.network-zone.zone-b h3{text-align:left}.diagram-meta{font-size:9px}}
+@media(max-width:359px){.brand{font-size:16px}.scenario{border-left:0;padding-left:0}.masthead-left{gap:8px}.scenario b{font-size:10px}.device-shell{width:56px;height:64px}.device-router .device-shell{width:90px;height:82px}.port{font-size:9px;padding-inline:5px}.current-packet{width:113px;left:77%}.device-address{font-size:9px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* Controls belong to the topology workflow. The packet inspector follows it. */
+html{scroll-padding-top:calc(var(--dock-height) + 24px)}
+.main-column>.simulation-dock{position:sticky;top:var(--dock-offset);z-index:10;padding:12px 14px;border-color:var(--color-rule-strong);background:var(--color-panel)}
+.simulation-dock:focus-within{border-color:var(--color-blue)}
+.main-column button,.main-column input,.inspector button,.inspector input{scroll-margin-top:calc(var(--dock-height) + 24px)}
+.network-panel .diagram-toolbar{margin:12px 0}
+.device-art{display:block;width:48px;height:40px;flex-shrink:0;fill:none;stroke:var(--color-current);stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round}
+.device-art .hardware-top{fill:var(--color-raised)}
+.device-art .hardware-front{fill:var(--color-field)}
+.device-art .hardware-screen{fill:var(--color-blue-bg);stroke:var(--color-blue)}
+.device-art .hardware-accent{stroke:var(--color-blue)}
+.device-art .hardware-solid{fill:var(--color-current);stroke:none}
+.device .device-shell{width:96px;height:80px;background:var(--color-transparent);border:1px solid var(--color-transparent);border-radius:12px;margin-bottom:8px}
+.device .device-shell .device-art{width:96px;height:80px}
+.device[aria-pressed=true] .device-shell{border:1px solid var(--color-transparent);outline:2px solid var(--color-blue);outline-offset:3px;background:var(--color-transparent);color:var(--color-body)}
+.device-router .device-shell{width:112px;height:96px;margin-bottom:0}
+.device-router .device-shell .device-art{width:104px;height:86px}
+.device-router .port{top:38px}
+.selected-symbol{width:48px;height:44px;background:var(--color-transparent)}
+.selected-symbol .device-art{width:48px;height:40px}
+.device-list .device-art{width:56px;height:48px}
+@media(min-width:600px){.network-panel .topology,.network-panel .diagram-wires{height:300px}.network-panel .network-zone{bottom:0}.network-panel .device{top:142px}.network-panel .device-router{top:134px}.network-panel .link-hit{top:162px}.network-panel .previous-hop{top:68px}.network-panel .current-packet{top:56px}}
+@media(max-width:599px){.main-column>.simulation-dock{padding:10px}.network-panel .device{top:calc(var(--my)*1px - 6px)}.network-panel .device-router{top:calc(var(--my)*1px - 4px)}.device .device-shell{width:88px;height:76px}.device .device-shell .device-art{width:88px;height:74px}.device-router .device-shell{width:104px;height:90px}.device-router .device-shell .device-art{width:98px;height:80px}.device-router .port{top:35px}}
+
+
+/* Actual WebGL topology; HTML annotations are projected from 3D positions. */
+.legacy-diagram{display:none}
+.network-panel .topology{height:auto}
+.scene-viewport{height:390px;position:relative;overflow:clip;background:var(--color-panel);border:1px solid var(--color-rule);border-radius:10px;isolation:isolate}
+.scene-viewport>canvas{display:block;width:100%;height:100%;touch-action:none}
+.scene-labels{position:absolute;inset:0;pointer-events:none;overflow:clip}
+.scene-node-label{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-height:42px;padding:6px 9px;border:1px solid var(--color-rule-strong);background:var(--color-panel);white-space:nowrap;text-align:left;z-index:2;line-height:1.35}
+.scene-node-label:active{transform:translate(-50%,-50%)}
+.scene-node-label strong{display:block;font-size:11px}.scene-node-label span{display:block;font:9px var(--font-mono);color:var(--color-muted);margin-top:3px}
+.scene-node-label[aria-pressed=true]{border-color:var(--color-blue);background:var(--color-blue-bg);color:var(--color-blue)}
+.scene-subnet-label{position:absolute;transform:translate(-50%,-50%);font-size:10px;color:var(--color-blue);text-align:center;white-space:nowrap}
+.scene-subnet-label strong{display:block}.scene-subnet-label span{display:block;font:9px var(--font-mono);margin-top:3px;color:var(--color-muted)}.scene-subnet-label.subnet-b{color:var(--color-amber)}
+.scene-status{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;font-size:13px;color:var(--color-muted);background:var(--color-panel)}
+.scene-packet-status{position:absolute;top:12px;left:12px;max-width:calc(100% - 24px);padding:7px 10px;border:1px solid var(--color-network-a-line);border-radius:5px;background:var(--color-blue-bg);color:var(--color-blue);font:10px var(--font-mono);pointer-events:none}
+.camera-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}
+.camera-toolbar button{font-size:11px;padding:8px 10px;min-width:40px;min-height:40px}
+.camera-toolbar .camera-help{flex:1;min-width:160px;font-size:10px;color:var(--color-muted);padding-right:8px}
+.scene-device-shortcuts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.scene-device-shortcuts button{min-height:36px;padding:6px 10px;font-size:10px}
+@media(max-width:599px){.scene-viewport{height:360px}.scene-node-label{padding:5px 7px}.scene-node-label strong{font-size:10px}.scene-node-label span{font-size:8px}.scene-subnet-label span{font-size:8px}.camera-toolbar .camera-help{flex-basis:100%;margin-bottom:4px}.scene-viewport>canvas{outline-offset:-4px}}
+
+</style>
+</head>
+<body>
+<p class="prototype-note">C · 3D NETWORK LAB — Interactive interface study. Prepared ping trace; configuration inputs are a design preview.</p>
+<main class="lab">
+ <header class="masthead">
+  <div class="masthead-left"><div class="brand"><svg class="brand-symbol" viewBox="0 0 38 20" aria-hidden="true"><path d="M5 10h28" stroke="currentColor" stroke-width="2"/><path d="M0 5h10v10H0z M28 5h10v10H28z" fill="currentColor"/></svg>unipr.network</div><div class="scenario"><span>Scenario</span><b id="scenario-name">Ping across a router</b></div></div>
+  <div class="masthead-actions"><div class="depth-picker" role="group" aria-label="Packet inspection depth"><button data-depth="ethernet" aria-pressed="false">Ethernet</button><button data-depth="network" aria-pressed="false">Ethernet + IP</button><button data-depth="all" aria-pressed="true">Full packet</button></div><button class="tutorial-toggle quiet" id="tutorial" aria-pressed="true">Tutorial on</button><button id="my-networks">My networks</button><button class="primary" id="save">Save</button></div>
+ </header>
+ <div class="workspace">
+  <div class="main-column">
+   <nav class="panel transport simulation-dock" aria-label="Simulation playback controls"><button id="previous">← Previous</button><button class="play" id="play" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg><span>Play</span></button><div class="seek-area"><label for="timeline" class="small muted" id="timeline-label">Event 11 of 14</label><input type="range" min="0" max="13" value="10" id="timeline" aria-label="Simulation event"><div class="timeline-ticks"><span data-tick="0">1 · Start</span><span data-tick="4">5 · ARP</span><span data-tick="7">8 · Route</span><span data-tick="10" class="active">11 · Forward</span><span data-tick="13">14 · Reply</span></div></div><button id="next" class="primary">Next →</button></nav>
+   <section class="panel network-panel" aria-label="Simulation event and network topology">
+    <div class="event-head"><span class="event-badge" id="event-count">Event 11 / 14</span><h1 id="event-title">The router rewrites the Ethernet header.</h1></div>
+    <span class="traffic-label" id="traffic-label">Host A → Host B · ICMP Echo Request</span>
+    <p class="event-description" id="event-description"></p>
+    <div class="diagram-toolbar"><span class="diagram-meta">3D TOPOLOGY · TWO CONNECTED NETWORKS</span><button id="add-device"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add device</button></div>
+    <figure class="topology" aria-label="Interactive 3D topology of two Ethernet networks connected through a router.">
+     <div class="scene-viewport" id="network-scene"><div class="scene-labels" id="scene-labels"></div><span class="scene-packet-status" id="scene-packet-status">ICMP Echo Request · TTL 63</span><p class="scene-status" id="scene-status">Loading interactive 3D view…</p></div>
+     <div class="camera-toolbar" role="group" aria-label="3D camera controls"><span class="camera-help" id="scene-hover">Drag to orbit · scroll to zoom · right-drag to pan</span><button type="button" id="orbit-left" aria-label="Rotate camera left">↶</button><button type="button" id="orbit-right" aria-label="Rotate camera right">↷</button><button type="button" id="zoom-out" aria-label="Zoom out">−</button><button type="button" id="zoom-in" aria-label="Zoom in">+</button><button type="button" id="reset-camera">Reset view</button></div>
+     <div class="scene-device-shortcuts" role="group" aria-label="Select a network device"><button data-scene-select="hostA">Host A</button><button data-scene-select="switch">Switch 1</button><button data-scene-select="router">Router 1</button><button data-scene-select="hostB">Host B</button></div>
+    </figure>
+    <div class="legacy-diagram" aria-hidden="true" aria-label="Host A and Switch 1 in Network A, connected through Router 1 to Host B in Network B.">
+     <div class="network-zone"><h3>Network A <span>192.168.1.0/24</span></h3></div><div class="network-zone zone-b"><h3>Network B <span>192.168.2.0/24</span></h3></div>
+     <svg class="diagram-wires" viewBox="0 0 100 330" preserveAspectRatio="none" aria-hidden="true"><path class="wire" data-wire="0"/><path class="wire" data-wire="1"/><path class="wire active" data-wire="2"/></svg>
+     <button class="device" data-device="hostA" style="--x:12;--mx:22;--my:88" aria-pressed="false"><span class="device-shell" data-icon="Host"></span><span class="device-name">Host A</span><span class="device-address">192.168.1.10</span></button>
+     <button class="device" data-device="switch" style="--x:31;--mx:75;--my:88" aria-pressed="false"><span class="device-shell" data-icon="Switch"></span><span class="device-name">Switch 1</span><span class="device-address">Layer 2</span></button>
+     <button class="device device-router" data-device="router" style="--x:52;--mx:25;--my:292" aria-pressed="true"><span class="device-name">Router 1</span><span class="device-shell"><span data-icon="Router"></span><span class="port eth0">eth0</span><span class="port eth1">eth1</span></span><span class="device-address">.1.1 &nbsp; / &nbsp; .2.1</span></button>
+     <button class="device" data-device="hostB" style="--x:87;--mx:78;--my:302" aria-pressed="false"><span class="device-shell" data-icon="Host"></span><span class="device-name">Host B</span><span class="device-address">192.168.2.10</span></button>
+     <button class="link-hit" data-link="0" style="--x:21.5;--mx:48;--my:100" aria-label="Inspect Host A to Switch 1 link"><span>Ethernet link</span></button>
+     <button class="link-hit" data-link="1" style="--x:41.5;--mx:50;--my:218" aria-label="Inspect Switch 1 to Router 1 link"><span>Ethernet link</span></button>
+     <button class="link-hit" data-link="2" style="--x:69.5;--mx:52;--my:315" aria-label="Inspect Router 1 to Host B link"><span>Ethernet link</span></button>
+     <span class="previous-hop" id="previous-hop">Previous hop · TTL 64</span>
+     <button class="current-packet" id="packet-preview" aria-label="Inspect the current frame"><span class="packet-caption" id="packet-caption">ICMP · ECHO REQUEST</span><span class="packet-data" id="packet-data">MAC → …:02:10<br>TTL <mark>63</mark></span></button>
+    </div>
+    <div class="legend"><span><i class="line-swatch"></i>Active cable</span><span><i class="line-swatch previous"></i>Other links</span><span><mark>Changed</mark>Field updated at this hop</span></div>
+   </section>
+   <section class="panel packet-panel" aria-label="Packet field comparison">
+    <div class="packet-heading"><h2>Inside the packet</h2><p id="comparison-label">Before and after Router 1</p></div>
+    <div class="protocol-grid" id="protocol-grid" data-depth="all"></div>
+    <aside class="learning-note" id="learning-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/></svg><p id="learning-copy"><strong>Keep in mind:</strong> the destination IP identifies Host B throughout the journey. The destination MAC identifies the next hop on the current link.</p></aside>
+   </section>
+
+  </div>
+  <aside class="panel inspector" id="inspector" aria-label="Selected device inspector">
+   <header class="inspector-head"><span class="selected-symbol" id="selected-symbol"></span><div class="grow"><h2 id="selected-name">Router 1</h2><p id="selected-role">Routes between networks · Layer 3</p></div><button class="icon-button" id="inspector-toggle" aria-label="Close device inspector" aria-expanded="true"></button></header>
+   <div id="inspector-body"><nav class="inspector-tabs" role="tablist" aria-label="Device details"><button role="tab" id="tab-configure" data-tab="configure" aria-controls="inspector-content" aria-selected="true">Configure</button><button role="tab" id="tab-tables" data-tab="tables" aria-controls="inspector-content" aria-selected="false" tabindex="-1">Tables</button><button role="tab" id="tab-activity" data-tab="activity" aria-controls="inspector-content" aria-selected="false" tabindex="-1">Activity</button></nav><div class="inspector-content" id="inspector-content" role="tabpanel" aria-labelledby="tab-configure"></div></div>
+  </aside>
+ </div>
+ <footer class="study-footer"><span id="save-status" role="status" aria-live="polite">Prepared 14-event trace · IPv4 / Ethernet / ARP / ICMP</span><span>Local workspace · no account required</span></footer>
+</main>
+<dialog id="dialog" aria-labelledby="dialog-title"><button class="icon-button dialog-close" id="dialog-close" aria-label="Close dialog"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div id="dialog-content"></div></dialog>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const iconPaths={Host:'M4 4h24v17H4z M10 27h12 M16 21v6',Router:'M4 16a12 12 0 1 0 24 0 12 12 0 1 0-24 0 M9 16h14 M19 12l4 4-4 4 M13 12l-4 4 4 4',Switch:'M3 9h26v15H3z M7 14h3v4H7z M14 14h3v4h-3z M21 14h3v4h-3z',Bridge:'M3 23h26 M6 23V9h5v14 M21 23V9h5v14 M11 13h10 M11 17h10',Hub:'M4 11h24v13H4z M8 16h2 M15 16h2 M22 16h2 M16 11V5 M11 5h10',Close:'M8 8l16 16M24 8 8 24',Open:'m12 8 8 8-8 8'};
+const deviceArtwork={
+Host:'<rect class="hardware-front" x="7" y="10" width="61" height="44" rx="4"/><rect class="hardware-screen" x="12" y="15" width="51" height="31" rx="1.5"/><path d="M31 54v10m13-10v10M23 65h29l5 5H18z"/><rect class="hardware-top" x="74" y="20" width="16" height="47" rx="3"/><path d="M79 27h6m-6 5h6M79 56h6"/><circle cx="82" cy="46" r="2"/><path class="hardware-accent" d="M22 28h15m-15 6h23m1-6h6"/>',
+Router:'<path class="hardware-top" d="M15 28 25 17h47l10 11v24H15z"/><rect class="hardware-front" x="15" y="38" width="67" height="24" rx="4"/><path d="M20 62v4h10v-4m36 0v4h10v-4"/><rect x="25" y="44" width="14" height="11" rx="1"/><rect x="58" y="44" width="14" height="11" rx="1"/><path d="M29 45v4m6-4v4m27-4v4m6-4v4"/><path class="hardware-accent" d="M37 28h22m-4-4 4 4-4 4m-14-8-4 4 4 4"/><circle class="hardware-solid" cx="48" cy="50" r="1.5"/>',
+Switch:'<path class="hardware-top" d="M6 34 15 21h66l9 13v25H6z"/><rect class="hardware-front" x="6" y="34" width="84" height="25" rx="3"/><path d="M12 59v5h9v-5m54 0v5h9v-5M15 28h18m30 0h17"/>'+[15,24,33,42,51,60,69,78].map(x=>'<rect x="'+x+'" y="41" width="5" height="9" rx=".5"/>').join('')+'<path class="hardware-accent" d="M15 54h14m37 0h14"/>',
+Bridge:'<path class="hardware-top" d="M10 36 17 27h62l7 9v23H10z"/><rect class="hardware-front" x="10" y="36" width="76" height="23" rx="3"/><rect x="19" y="42" width="15" height="11" rx="1"/><rect x="62" y="42" width="15" height="11" rx="1"/><path class="hardware-accent" d="M27 26v-9h42v9M42 47h12m-9-3-3 3 3 3m6-6 3 3-3 3"/><path d="M15 59v5h10v-5m46 0v5h10v-5"/>',
+Hub:'<path class="hardware-top" d="M12 35 20 24h56l8 11v25H12z"/><rect class="hardware-front" x="12" y="35" width="72" height="25" rx="3"/>'+[21,36,51,66].map(x=>'<rect x="'+x+'" y="43" width="10" height="10" rx="1"/>').join('')+'<path class="hardware-accent" d="M48 24V11m0 6H30m18 0h18m-36 0v7m36-7v7"/><path d="M18 60v5h9v-5m42 0v5h9v-5"/>'
+};
+const icon=t=>deviceArtwork[t]?'<svg class="device-art" viewBox="0 0 96 80" aria-hidden="true">'+deviceArtwork[t]+'</svg>':'<svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><path d="'+iconPaths[t]+'"/></svg>';
+$$('[data-icon]').forEach(n=>n.innerHTML=icon(n.dataset.icon));
+const e=(title,description,protocol,node,edge,frame,phase)=>({title,description,protocol,node,edge,frame,phase});
+const routed=[
+e('A remote destination needs a next hop.','Host A compares Host B’s IP address with its own subnet. Host B is on another network, so Host A selects its default gateway, 192.168.1.1.',['IPv4'],0,-1,'No frame yet',0),
+e('First, find the gateway’s MAC.','Host A knows the gateway’s IP address, but its ARP cache is empty. It broadcasts an ARP request asking which interface owns 192.168.1.1.',['ARP','Ethernet'],0,0,'ARP request',1),
+e('The switch forwards the broadcast.','Switch 1 learns which port leads to Host A from the frame’s source MAC. It floods the broadcast through its other connected port, so Router 1 receives the ARP request.',['ARP','Ethernet'],1,1,'ARP request',1),
+e('The gateway identifies itself.','Router 1 recognises its own interface address, 192.168.1.1. It sends an ARP reply containing that interface’s MAC address, addressed directly to Host A.',['ARP','Ethernet'],2,1,'ARP reply',1),
+e('Host A learns the gateway’s MAC.','The switch forwards the unicast reply to Host A. Host A records the gateway’s IP-to-MAC mapping and can now build an Ethernet frame for its ping.',['ARP','Ethernet'],0,0,'ARP reply',1),
+e('The ping begins its journey.','Host A encapsulates an ICMP Echo Request inside an IPv4 packet and an Ethernet frame. The IP destination is Host B; the Ethernet destination is the gateway.',['ICMP','IPv4','Ethernet'],0,0,'Echo request',2),
+e('The switch delivers the frame.','Switch 1 uses its learned MAC table to forward the frame to Router 1. It forwards based on the destination MAC; the packet still has Host B’s destination IP.',['Ethernet','IPv4','ICMP'],1,1,'Echo request',2),
+e('The router chooses the outgoing network.','Router 1 removes the incoming Ethernet header and checks its routing table. The destination matches its directly connected 192.168.2.0/24 network. The router decrements the IP time to live.',['IPv4','ICMP'],2,-1,'Route lookup',3),
+e('Resolve Host B on the second network.','Router 1 needs a MAC address on its outgoing Ethernet link. It broadcasts an ARP request for 192.168.2.10. This is a new ARP exchange on a different subnet.',['ARP','Ethernet'],2,2,'ARP request',3),
+e('Host B answers the router.','Host B replies with its MAC address. Router 1 records the mapping on its outgoing interface and can deliver the waiting IPv4 packet.',['ARP','Ethernet'],3,2,'ARP reply',3),
+e('A new frame carries the same IP destination.','Router 1 encapsulates the packet in a new Ethernet frame: source MAC is its outgoing interface, destination MAC is Host B. The IP source and destination remain those of Host A and Host B.',['Ethernet','IPv4','ICMP'],2,2,'Echo request',3),
+e('Host B sends an Echo Reply.','Host B receives the Echo Request and creates an ICMP Echo Reply addressed to Host A. Host A is remote, so Host B sends the reply through its own gateway, 192.168.2.1.',['ICMP','IPv4','Ethernet'],3,2,'Echo reply',4),
+e('The reply returns through the router.','Router 1 routes the reply to its directly connected 192.168.1.0/24 network. It creates an Ethernet frame addressed to Host A; Switch 1 forwards it toward the host.',['IPv4','Ethernet','ICMP'],2,1,'Echo reply',4),
+e('The reply reaches Host A.','Host A receives the ICMP Echo Reply. The request and reply travelled between two IP networks, using different Ethernet frames on each side of the router.',['ICMP','IPv4','Ethernet'],0,0,'Echo reply',5)
+];
+const devices={hostA:{name:'Host A',type:'Host',role:'Sends and receives packets · Host',ip:'192.168.1.10',gateway:'192.168.1.1',mac:'02:00:00:00:01:10'},switch:{name:'Switch 1',type:'Switch',role:'Forwards Ethernet frames · Layer 2'},router:{name:'Router 1',type:'Router',role:'Routes between networks · Layer 3'},hostB:{name:'Host B',type:'Host',role:'Sends and receives packets · Host',ip:'192.168.2.10',gateway:'192.168.2.1',mac:'02:00:00:00:02:10'},bridge:{name:'Bridge 1',type:'Bridge',role:'Joins Ethernet segments · Layer 2'},hub:{name:'Hub 1',type:'Hub',role:'Repeats signals across ports · Layer 1'}};
+const nodeIds=['hostA','switch','router','hostB'];
+const state={step:10,depth:'all',tutorial:true,selected:'router',tab:'configure',inspectorOpen:matchMedia('(min-width:1100px)').matches,playing:false,drafts:{},savedId:null,name:'Ping across a router'};
+let timer=null;const dialog=$('#dialog');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mono=s=>'<span class="mono">'+esc(s)+'</span>';
+const shortMac=mac=>'…:'+mac.split(':').slice(-2).join(':');
+function frame(){
+ const i=state.step,e=routed[i],macA=devices.hostA.mac,macR0='02:00:00:00:01:01',macR1='02:00:00:00:02:01',macB=devices.hostB.mac;
+ const arp=i<=4&&i>=1||i===8||i===9,reply=i>=11;
+ let source=reply?macB:macA,destination=reply?macR1:macR0;
+ if(i===1||i===2){source=macA;destination='ff:ff:ff:ff:ff:ff';}if(i===3||i===4){source=macR0;destination=macA;}if(i===8){source=macR1;destination='ff:ff:ff:ff:ff:ff';}if(i===9){source=macB;destination=macR1;}if(i===10){source=macR1;destination=macB;}if(i>=12){source=macR0;destination=macA;}
+ return{arp,hasFrame:e.edge>=0,hasIp:i>=5&&!arp,reply,source,destination,sourceIp:reply?devices.hostB.ip:devices.hostA.ip,destinationIp:reply?devices.hostA.ip:devices.hostB.ip,ttl:reply?(i>=12?63:64):(i>=7?63:64),changed:i===10||i===12,opcode:i===3||i===4||i===9?'Reply':'Request',targetIp:i<=4?'192.168.1.1':'192.168.2.10'};
+}
+function stop(){if(timer!==null)clearInterval(timer);timer=null;state.playing=false;$('#play').setAttribute('aria-pressed','false');$('#play span').textContent='Play';$('#play svg').innerHTML='<path d="m8 5 11 7-11 7z"/>';}
+function move(i){stop();state.step=Math.max(0,Math.min(13,i));render();}
+function row(label,value){return'<div><dt>'+label+'</dt><dd>'+value+'</dd></div>';}
+function protocolCard(protocol,title,content){return'<section class="protocol"><button class="protocol-header" data-protocol="'+protocol+'"><span>'+title+'</span><span aria-hidden="true">↗</span></button>'+content+'</section>';}
+function renderPacket(){
+ const f=frame(),changed=f.changed,ethernet=f.hasFrame?'<dl class="field-list">'+row('Source MAC',changed?'<del>'+shortMac(f.reply?'02:00:00:00:02:10':devices.hostA.mac)+'</del><mark>'+shortMac(f.source)+'</mark>':shortMac(f.source))+row('Destination MAC',changed?'<del>'+shortMac(f.reply?'02:00:00:00:02:01':'02:00:00:00:01:01')+'</del><mark>'+shortMac(f.destination)+'</mark>':f.destination==='ff:ff:ff:ff:ff:ff'?'Broadcast':shortMac(f.destination))+row('EtherType',f.arp?'0x0806 · ARP':'0x0800 · IPv4')+'</dl>':'<p class="protocol-empty">No Ethernet frame is being sent during this decision.</p>';
+ let cards=protocolCard('Ethernet','L2 · ETHERNET',ethernet);
+ if(state.depth!=='ethernet')cards+=protocolCard('IPv4','L3 · IPv4',f.hasIp?'<dl class="field-list">'+row('Source IP',esc(f.sourceIp))+row('Destination IP',esc(f.destinationIp))+row('TTL',changed?'<del>64</del><mark>63</mark>':String(f.ttl))+'</dl>':'<p class="protocol-empty">'+(f.arp?'ARP is carried directly in Ethernet. There is no IPv4 packet inside this frame.':'The host is choosing how to reach the destination.')+'</p>');
+ if(state.depth==='all')cards+=f.arp?protocolCard('ARP','ARP · ADDRESS RESOLUTION','<dl class="field-list">'+row('Operation',f.opcode)+row('Target IP',f.opcode==='Reply'?(state.step===9?'192.168.2.1':devices.hostA.ip):f.targetIp)+row('Purpose','Find a local MAC')+'</dl>'):protocolCard('ICMP','ICMP · NETWORK LAYER',f.hasIp?'<dl class="field-list">'+row('Type',f.reply?'0 · Echo Reply':'8 · Echo Request')+row('Identifier','0x0001')+row('Sequence','1')+'</dl>':'<p class="protocol-empty">The Echo Request will be sent after the next-hop MAC is known.</p>');
+ $('#protocol-grid').innerHTML=cards;$('#protocol-grid').dataset.depth=state.depth;
+ $('#comparison-label').textContent=changed?'Before and after Router 1':f.arp?'Address resolution on the local network':'Fields at the current event';
+ $('#learning-note').hidden=!state.tutorial;
+ $('#learning-copy').innerHTML=f.arp?'<strong>Keep in mind:</strong> ARP resolves the MAC address of a local next hop. A remote destination’s IP is not a reason to broadcast across every network.':'<strong>Keep in mind:</strong> the destination IP identifies the receiving host throughout this journey. The destination MAC identifies the next hop on the current link.';
+ $$('[data-protocol]').forEach(b=>b.onclick=()=>showProtocol(b.dataset.protocol));
+}
+function render(){
+ const e=routed[state.step],f=frame();
+ $('#scenario-name').textContent=state.name;$('#event-count').textContent='Event '+(state.step+1)+' / 14';$('#event-title').textContent=state.step===10?'The router rewrites the Ethernet header.':e.title;
+ $('#event-description').textContent=e.description;$('#traffic-label').textContent=(f.reply?'Host B → Host A':'Host A → Host B')+' · '+(f.arp?'ARP '+f.opcode.toLowerCase():f.hasIp?'ICMP '+(f.reply?'Echo Reply':'Echo Request'):'Selecting a next hop');
+ $('#previous').disabled=state.step===0;$('#next').disabled=state.step===13;$('#timeline').value=state.step;$('#timeline-label').textContent='Event '+(state.step+1)+' of 14';$('#timeline').setAttribute('aria-valuetext','Event '+(state.step+1)+': '+e.title);
+ $$('button[data-depth]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.depth===state.depth)));$('#tutorial').setAttribute('aria-pressed',String(state.tutorial));$('#tutorial').textContent=state.tutorial?'Tutorial on':'Tutorial off';
+ const mobile=matchMedia('(max-width:599px)').matches;
+ $('.diagram-wires').setAttribute('viewBox',mobile?'0 0 100 430':'0 0 100 300');
+ const wires=mobile?['M22 122 L75 122','M75 122 L75 215 L25 215 L25 336','M25 336 L78 336']:['M12 182 L31 182','M31 182 L52 182','M52 182 L87 182'];
+ $$('[data-wire]').forEach((w,i)=>{w.setAttribute('d',wires[i]);w.classList.toggle('active',i===e.edge);w.classList.toggle('previous',f.changed&&i===(state.step===12?2:1));});
+ $$('[data-device]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.device===state.selected));b.classList.toggle('current',b.dataset.device===nodeIds[e.node]);});
+ $('#previous-hop').hidden=!f.changed;$('#previous-hop').textContent='Previous hop · TTL 64';
+ $('#packet-preview').hidden=!f.hasFrame;$('#packet-caption').textContent=f.arp?'ARP · '+f.opcode.toUpperCase():'ICMP · '+(f.reply?'ECHO REPLY':'ECHO REQUEST');
+ $('#packet-data').innerHTML='MAC → '+(f.destination==='ff:ff:ff:ff:ff:ff'?'broadcast':shortMac(f.destination))+'<br>'+(f.arp?'Local address resolution':'TTL '+(f.changed?'<mark>'+f.ttl+'</mark>':f.ttl));
+ if(!mobile){$('#packet-preview').style.left=(e.edge===0?21.5:e.edge===1?32:75)+'%';}else $('#packet-preview').style.removeProperty('left');
+ $$('.link-hit').forEach((b,i)=>{b.querySelector('span').textContent=i===e.edge?e.frame:'No frame on this link';b.classList.toggle('is-active',i===e.edge);b.classList.toggle('is-reverse',[3,4,9,11,12,13].includes(state.step)!==(mobile&&i===1));});
+ const tick=[0,4,7,10,13].filter(i=>i<=state.step).pop();$$('[data-tick]').forEach(n=>n.classList.toggle('active',Number(n.dataset.tick)===tick));
+ renderPacket();renderInspector();document.dispatchEvent(new CustomEvent('network-lab-state'));
+}
+function routingTable(){const active=state.step>=7?(state.step>=12?0:1):-1;return'<div class="routing"><h3>Routing table</h3><table><thead><tr><th>Destination</th><th>Port</th><th>Route</th></tr></thead><tbody>'+['192.168.1.0/24','192.168.2.0/24'].map((n,i)=>'<tr class="'+(i===active?'route-active':'')+'"><td>'+n+'</td><td>eth'+i+'</td><td>'+(i===active?'Direct · active':'Direct')+'</td></tr>').join('')+'</tbody></table></div>';}
+function field(label,id,value,hint,readOnly=false){return'<div class="form-field"><label for="'+id+'">'+label+'</label><input id="'+id+'" value="'+esc(value)+'"'+(readOnly?' readonly aria-readonly="true"':'')+(hint&&state.tutorial?' aria-describedby="'+id+'-hint"':'')+'>'+(hint&&state.tutorial?'<small id="'+id+'-hint">'+hint+'</small>':'')+'</div>';}
+function configure(){
+ const d=devices[state.selected],draft=state.drafts[state.selected]||{};
+ let html='<form id="device-form">'+field('Device name','device-name',draft.name||d.name,'Use a name you will recognise in the topology.');
+ if(d.type==='Router'){
+  html+=[['eth0','Switch 1 · Network A','192.168.1.1','02:00:00:00:01:01'],['eth1','Host B · Network B','192.168.2.1','02:00:00:00:02:01']].map(([port,link,ip,mac])=>'<section class="interface-box"><div class="interface-head"><span class="interface-tag">'+port+'</span><span>to '+link+'</span></div><div class="interface-fields">'+field('IP address',port+'-ip',draft[port]||ip,'')+field('Prefix',port+'-prefix','/24','',true)+'</div><div class="mac-row"><span>MAC · fixed</span><code>'+mac+'</code></div></section>').join('');
+  html+=routingTable()+'<aside class="configuration-note"><strong>Two directly connected networks.</strong><p>Each interface belongs to a different subnet. The highlighted route is used at this event.</p></aside>';
+ }else if(d.type==='Host'){
+  html+=field('IPv4 address','host-ip',draft.ip||d.ip,'Choose a unique address in this host’s subnet.')+field('Prefix length','host-prefix','/24','The prefix identifies which destinations are local.',true)+field('Default gateway','host-gateway',draft.gateway||d.gateway,'A router interface on the same subnet reaches other networks.')+'<div class="mac-row"><span>MAC · fixed</span><code>'+d.mac+'</code></div>';
+ }else{html+='<aside class="configuration-note"><strong>'+esc(d.type==='Hub'?'No IP configuration needed.':'No management IP needed for this trace.')+'</strong><p>'+esc(d.type==='Hub'?'A hub repeats incoming signals to its other ports.':d.type==='Bridge'?'A bridge learns source MAC addresses and forwards frames between Ethernet segments.':'A switch learns source MAC addresses and forwards frames using its MAC table.')+'</p></aside>';}
+ html+='<div class="error-message" id="draft-error" role="alert"></div><div class="config-actions"><button type="button" id="cancel-draft">Cancel</button><button class="primary" type="submit">Keep draft</button></div><p id="draft-status" class="draft-status" role="status"></p></form>';
+ return html;
+}
+function tables(){
+ const d=devices[state.selected];
+ if(d.type==='Router')return'<p class="table-intro">A route selects the outgoing network. ARP then supplies the MAC address for the local next hop.</p>'+routingTable()+'<div class="routing"><h3>ARP cache at this event</h3><table><thead><tr><th>IPv4 address</th><th>MAC suffix</th><th>Port</th></tr></thead><tbody>'+(state.step>=2?'<tr><td>192.168.1.10</td><td>…:01:10</td><td>eth0</td></tr>':'')+(state.step>=9?'<tr><td>192.168.2.10</td><td>…:02:10</td><td>eth1</td></tr>':'')+'</tbody></table>'+(state.step<2?'<p class="table-empty">No addresses learned yet.</p>':'')+'</div>';
+ if(d.type==='Switch'||d.type==='Bridge')return'<p class="table-intro">A switch learns from source MAC addresses. Host B’s MAC is on another Ethernet network; this switch learns the router’s interface instead.</p><div class="routing"><h3>MAC address table</h3><table><thead><tr><th>Device</th><th>MAC suffix</th><th>Port</th></tr></thead><tbody>'+(state.selected==='switch'&&state.step>=2?'<tr><td>Host A</td><td>…:01:10</td><td>1</td></tr>':'')+(state.selected==='switch'&&state.step>=3?'<tr><td>Router eth0</td><td>…:01:01</td><td>2</td></tr>':'')+'</tbody></table>'+(state.selected!=='switch'||state.step<2?'<p class="table-empty">No entries in this example.</p>':'')+'</div>';
+ if(d.type==='Hub')return'<p class="table-intro">A hub has no MAC address table or routing table. It repeats signals rather than making forwarding decisions.</p>';
+ const learned=state.selected==='hostA'?state.step>=4:state.step>=8;return'<p class="table-intro">The ARP cache maps a local next-hop IP address to its MAC address.</p><div class="routing"><h3>ARP cache</h3>'+(learned?'<table><thead><tr><th>IPv4 address</th><th>MAC suffix</th></tr></thead><tbody><tr><td>'+d.gateway+'</td><td>'+(state.selected==='hostA'?'…:01:01':'…:02:01')+'</td></tr></tbody></table>':'<p class="table-empty">The cache is empty at this event.</p>')+'</div>';
+}
+function activity(){const e=routed[state.step],active=state.selected===nodeIds[e.node];return'<p class="table-intro">'+(active?'This device is taking part in the current event.':'The current event is focused on '+devices[nodeIds[e.node]].name+'.')+'</p><div class="activity-item"><strong>'+esc(e.title)+'</strong><p>'+esc(e.description)+'</p></div><div class="activity-protocols">'+e.protocol.map(p=>'<button data-activity-protocol="'+p+'">'+p+' ↗</button>').join('')+'</div>'+(state.selected==='router'&&state.step>=7?'<div class="activity-item"><strong>Why the MAC addresses change</strong><p>The router receives one Ethernet frame and sends another on a different link. The packet keeps its end-to-end IP addresses; TTL decreases and the IPv4 header checksum is updated.</p></div>':'');}
+function renderInspector(){
+ const d=devices[state.selected];$('#selected-name').textContent=d.name;$('#selected-role').textContent=d.role;$('#selected-symbol').innerHTML=icon(d.type);$('#inspector-toggle').innerHTML=icon(state.inspectorOpen?'Close':'Open');$('#inspector-toggle').setAttribute('aria-label',state.inspectorOpen?'Close device inspector':'Open device inspector');$('#inspector-toggle').setAttribute('aria-expanded',String(state.inspectorOpen));$('#inspector-body').hidden=!state.inspectorOpen;$('#inspector').classList.toggle('is-collapsed',!state.inspectorOpen);
+ $$('[data-tab]').forEach(b=>{b.setAttribute('aria-selected',String(b.dataset.tab===state.tab));b.tabIndex=b.dataset.tab===state.tab?0:-1;});$('#inspector-content').setAttribute('aria-labelledby','tab-'+state.tab);
+ $('#inspector-content').innerHTML=state.tab==='configure'?configure():state.tab==='tables'?tables():activity();
+ if(state.tab==='configure'){
+  $('#cancel-draft').onclick=()=>{delete state.drafts[state.selected];renderInspector();};
+  $('#device-form').onsubmit=ev=>{ev.preventDefault();const name=$('#device-name').value.trim();if(!name){$('#device-name').setAttribute('aria-invalid','true');$('#draft-error').textContent='Give this device a name so you can identify it.';return;}const draft={name};if(d.type==='Router'){draft.eth0=$('#eth0-ip').value;draft.eth1=$('#eth1-ip').value;}if(d.type==='Host'){draft.ip=$('#host-ip').value;draft.gateway=$('#host-gateway').value;}state.drafts[state.selected]=draft;$('#draft-status').textContent='Draft kept for this interface study.';};
+ }
+ $$('[data-activity-protocol]').forEach(b=>b.onclick=()=>showProtocol(b.dataset.activityProtocol));
+}
+function selectDevice(id){stop();state.selected=id;state.inspectorOpen=true;state.tab='configure';render();}
+function showDialog(html){stop();$('#dialog-content').innerHTML=html;dialog.showModal();const focus=$('#dialog-content').querySelector('input,button,a');if(focus)focus.focus();}
+function showProtocol(name){
+ const info={Ethernet:['Local link delivery','An Ethernet frame uses MAC addresses to reach the next interface on the local link. A router removes the incoming link header and constructs a new one for its outgoing link.','Source MAC · destination MAC · EtherType · payload · FCS','0x0800 carries IPv4; 0x0806 carries ARP.','https://www.rfc-editor.org/rfc/rfc894'],IPv4:['Delivery across IP networks','The source and destination IP addresses identify the endpoints. A router chooses a route, decrements TTL and updates the IPv4 header checksum. This example does not use NAT.','Source IP · destination IP · TTL · protocol · header checksum','Protocol 1 identifies ICMP.','https://www.rfc-editor.org/info/rfc791/'],ICMP:['Internet Control Message Protocol','Ping uses ICMP Echo Request and Echo Reply messages, carried inside IPv4 packets. ICMP belongs to the network layer and does not use TCP or UDP ports.','Type · code · checksum · identifier · sequence number','Type 8 is Echo Request; type 0 is Echo Reply.','https://www.rfc-editor.org/info/rfc792/'],ARP:['Finding a local next hop','ARP asks which local interface owns a particular IPv4 address. Requests use an Ethernet broadcast; replies give the requester the owner’s MAC address. ARP is carried directly in Ethernet.','Opcode · sender MAC/IP · target MAC/IP','ARP resolves a local next hop, including a gateway for a remote destination.','https://datatracker.ietf.org/doc/html/rfc826']}[name];
+ showDialog('<h2 id="dialog-title">'+name+'</h2><p class="muted">'+info[0]+'</p><p>'+info[1]+'</p><dl class="protocol-facts"><div><dt>Fields to explore</dt><dd>'+info[2]+'</dd></div><div><dt>A technical detail</dt><dd>'+info[3]+'</dd></div></dl><p><a href="'+info[4]+'" target="_blank" rel="noopener noreferrer">Read the protocol specification ↗</a></p>');
+}
+function inspectLink(i){const f=frame(),active=routed[state.step].edge===i;showDialog('<h2 id="dialog-title">Ethernet link</h2><p>'+['Host A ↔ Switch 1','Switch 1 ↔ Router 1','Router 1 ↔ Host B'][i]+'</p><dl class="protocol-facts"><div><dt>At this event</dt><dd>'+esc(active?routed[state.step].frame:'No frame on this link')+'</dd></div>'+(active?'<div><dt>Source MAC</dt><dd class="mono">'+f.source+'</dd></div><div><dt>Destination MAC</dt><dd class="mono">'+f.destination+'</dd></div>':'')+'</dl>');}
+const storageKey='uniprnetwork.dark-study.v1';
+function readSaved(){const list=JSON.parse(localStorage.getItem(storageKey)||'[]');if(!Array.isArray(list))throw Error('Invalid study list');return list.filter(s=>s&&typeof s.name==='string'&&Number.isInteger(s.step)&&s.step>=0&&s.step<14);}
+function saveStudy(){showDialog('<h2 id="dialog-title">Save this network study</h2><p>Keep a named copy of this example, its current event and configuration drafts in this browser.</p><form id="save-form"><label class="modal-label" for="save-name">Network name</label><input id="save-name" maxlength="80" required value="'+esc(state.name)+'" aria-describedby="save-error"><p class="error-message" role="alert" id="save-error"></p><div class="modal-actions"><button class="primary" type="submit">Save network</button></div></form>');$('#save-form').onsubmit=ev=>{ev.preventDefault();const name=$('#save-name').value.trim();if(!name){$('#save-name').setAttribute('aria-invalid','true');$('#save-error').textContent='Give this study a name so you can find it again.';return;}try{const saved=readSaved(),id=state.savedId||Date.now().toString(36);const item={id,name,step:state.step,depth:state.depth,tutorial:state.tutorial,drafts:state.drafts};localStorage.setItem(storageKey,JSON.stringify([item,...saved.filter(s=>s.id!==id)]));state.savedId=id;state.name=name;render();dialog.close();$('#save-status').textContent='Saved locally · '+name;}catch{$('#save-error').textContent='This browser could not save the study. Check that browser storage is available and try again.';}};}
+function openStudies(){let saved;try{saved=readSaved();}catch{showDialog('<h2 id="dialog-title">My networks</h2><p role="alert">Saved studies could not be read. Check browser storage and try again.</p>');return;}showDialog('<h2 id="dialog-title">My networks</h2><p>Prototype studies saved in this browser.</p><div class="saved-list">'+(saved.length?saved.map((s,i)=>'<button data-saved="'+i+'"><strong>'+esc(s.name)+'</strong><span>Open →</span></button>').join(''):'<p>No saved networks yet. Save this study with a name to find it here.</p>')+'</div>');$$('[data-saved]').forEach(b=>b.onclick=()=>{const item=saved[Number(b.dataset.saved)];state.step=item.step;state.name=item.name;state.savedId=item.id;state.depth=['ethernet','network','all'].includes(item.depth)?item.depth:'all';state.tutorial=item.tutorial!==false;state.drafts=item.drafts||{};render();dialog.close();$('#save-status').textContent='Opened locally · '+item.name;});}
+$('#previous').onclick=()=>move(state.step-1);$('#next').onclick=()=>move(state.step+1);$('#timeline').oninput=ev=>move(Number(ev.target.value));
+$('#play').onclick=()=>{if(state.playing){stop();return;}if(state.step===13)state.step=0;state.playing=true;$('#play').setAttribute('aria-pressed','true');$('#play span').textContent='Pause';$('#play svg').innerHTML='<path d="M8 5v14M16 5v14"/>';render();timer=setInterval(()=>{if(state.step>=13){stop();return;}state.step++;render();if(state.step===13)stop();},1600);};
+$$('button[data-depth]').forEach(b=>b.onclick=()=>{stop();state.depth=b.dataset.depth;renderPacket();$$('button[data-depth]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.depth===state.depth)));});
+$('#tutorial').onclick=()=>{stop();state.tutorial=!state.tutorial;render();};$$('[data-device]').forEach(b=>b.onclick=()=>selectDevice(b.dataset.device));
+$('#inspector-toggle').onclick=()=>{stop();state.inspectorOpen=!state.inspectorOpen;renderInspector();};
+$$('[data-tab]').forEach(b=>{b.onclick=()=>{stop();state.tab=b.dataset.tab;renderInspector();};b.onkeydown=ev=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(ev.key))return;ev.preventDefault();const tabs=$$('[data-tab]');let i=tabs.indexOf(b);i=ev.key==='Home'?0:ev.key==='End'?tabs.length-1:(i+(ev.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[i].click();tabs[i].focus();};});
+$$('[data-link]').forEach(b=>{b.onclick=()=>inspectLink(Number(b.dataset.link));b.onpointerleave=()=>delete b.dataset.dismissed;b.onfocus=()=>delete b.dataset.dismissed;});$('#packet-preview').onclick=()=>showProtocol(frame().arp?'ARP':'ICMP');
+$('#add-device').onclick=()=>showDialog('<h2 id="dialog-title">Explore a device setup</h2><p>Preview the essential settings for each device. The example topology stays fixed in this interface study.</p><div class="device-list">'+Object.entries({hostA:'Host',router:'Router',switch:'Switch',bridge:'Bridge',hub:'Hub'}).map(([id,type])=>'<button data-add="'+id+'">'+icon(type)+'<span class="device-label">'+type+'</span><span class="device-role">Inspect →</span></button>').join('')+'</div>');
+$('#dialog-content').addEventListener('click',ev=>{const button=ev.target.closest('[data-add]');if(button){dialog.close();selectDevice(button.dataset.add);}});
+$('#save').onclick=saveStudy;$('#my-networks').onclick=openStudies;$('#dialog-close').onclick=()=>dialog.close();dialog.addEventListener('click',ev=>{if(ev.target===dialog){const r=dialog.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)dialog.close();}});
+$('#inspector').addEventListener('focusin',stop);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});document.addEventListener('keydown',ev=>{if(ev.key==='Escape')$$('.link-hit').forEach(b=>b.dataset.dismissed='true');});window.addEventListener('pagehide',stop);
+const dockObserver=new ResizeObserver(entries=>{const height=entries[0].borderBoxSize?.[0]?.blockSize||entries[0].target.getBoundingClientRect().height;document.documentElement.style.setProperty('--dock-height',height+'px');});
+dockObserver.observe($('.simulation-dock'));
+window.networkLab={getState:()=>({step:state.step,selected:state.selected,playing:state.playing,edge:routed[state.step].edge,frame:frame(),frameLabel:routed[state.step].frame}),getDevice:id=>devices[id],selectDevice,inspectLink,inspectPacket:()=>showProtocol(frame().arp?'ARP':'ICMP')};
+$$('[data-scene-select]').forEach(button=>button.onclick=()=>selectDevice(button.dataset.sceneSelect));
+
+matchMedia('(max-width:599px)').addEventListener('change',render);
+render();
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.min.js"}}</script>
+<script type="module" onerror="document.querySelector('#scene-status').textContent='The 3D engine could not load. Check your connection and reload.'">
+import * as THREE from 'three';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/controls/OrbitControls.js';
+// Three.js scene for the throwaway UI study. The simulation state is supplied by
+// the existing interface through networkLab; it does not depend on camera state.
+async function mountNetworkScene() {
+ const mount=document.querySelector('#network-scene');
+ const status=document.querySelector('#scene-status');
+ try {
+  const bridge=window.networkLab;
+  const scene=new THREE.Scene();
+  const css=getComputedStyle(document.documentElement);
+  const swatch=document.createElement('canvas');swatch.width=swatch.height=1;
+  const swatchContext=swatch.getContext('2d',{willReadFrequently:true});
+  const colorCache=new Map();
+  function color(token){
+   if(colorCache.has(token))return colorCache.get(token).clone();
+   swatchContext.fillStyle=css.getPropertyValue(token).trim();swatchContext.fillRect(0,0,1,1);
+   const [r,g,b]=swatchContext.getImageData(0,0,1,1).data;
+   const value=new THREE.Color().setRGB(r/255,g/255,b/255,THREE.SRGBColorSpace);
+   colorCache.set(token,value);return value.clone();
+  }
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
+  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(color('--color-panel'));
+  renderer.domElement.tabIndex=0;renderer.domElement.setAttribute('role','img');
+  renderer.domElement.setAttribute('aria-label','Interactive 3D network. Drag to orbit, scroll to zoom. Arrow keys rotate, plus and minus zoom, Home resets the camera.');
+  mount.prepend(renderer.domElement);
+  const camera=new THREE.OrthographicCamera(-10,10,5,-5,.1,100);
+  const homePosition=new THREE.Vector3(9,12,17),homeTarget=new THREE.Vector3(0,.4,0);
+  camera.position.copy(homePosition);
+  const controls=new OrbitControls(camera,renderer.domElement);
+  controls.target.copy(homeTarget);controls.enableDamping=false;
+  controls.minZoom=.6;controls.maxZoom=3;controls.minPolarAngle=.22;controls.maxPolarAngle=Math.PI*.47;
+  controls.screenSpacePanning=true;controls.update();
+  scene.add(new THREE.HemisphereLight(color('--color-ink'),color('--color-paper'),2.2));
+  const key=new THREE.DirectionalLight(color('--color-ink'),3.4);key.position.set(-5,12,8);
+  key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-12;key.shadow.camera.right=12;
+  key.shadow.camera.top=10;key.shadow.camera.bottom=-10;key.shadow.normalBias=.025;scene.add(key);
+  const rim=new THREE.DirectionalLight(color('--color-blue'),1.4);rim.position.set(7,6,-7);scene.add(rim);
+  const material=(token,extra={})=>new THREE.MeshStandardMaterial({color:color(token),roughness:.58,metalness:.22,...extra});
+  const shell=material('--color-device-shell'),face=material('--color-device-face'),metal=material('--color-device-edge');
+  const dark=material('--color-field'),blue=material('--color-blue'),amber=material('--color-amber');
+  const screen=new THREE.MeshStandardMaterial({color:color('--color-blue-bg'),emissive:color('--color-blue'),emissiveIntensity:.22,roughness:.22,metalness:.15});
+  function box(parent,x,y,z,w,h,d,mat){const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
+  function cylinder(parent,x,y,z,r,h,mat){const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,48),mat);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
+  const ground=box(scene,0,-.22,0,26,.12,17,material('--color-panel',{roughness:1,metalness:0}));
+  ground.receiveShadow=true;
+  const grid=new THREE.GridHelper(26,26,color('--color-rule'),color('--color-rule'));grid.position.y=-.145;grid.material.transparent=true;grid.material.opacity=.17;scene.add(grid);
+  const zones=[];
+  function zone(x,z,w,d,token,line){
+   const platform=box(scene,x,-.02,z,w,.18,d,material(token,{roughness:.88,metalness:.08}));
+   const edges=new THREE.LineSegments(new THREE.EdgesGeometry(platform.geometry),new THREE.LineBasicMaterial({color:color(line),transparent:true,opacity:.8}));
+   edges.position.copy(platform.position);scene.add(edges);zones.push(platform);return platform;
+  }
+  zone(-3.7,0,6.2,5.7,'--color-network-a','--color-network-a-line');
+  zone(3.7,0,6.2,5.7,'--color-network-b','--color-network-b-line');
+  function port(parent,x,y,z,w=.16){box(parent,x,y,z,w,.13,.035,dark);box(parent,x,y-.028,z+.024,w*.65,.022,.025,metal);}
+  function hostModel(){
+   const g=new THREE.Group();
+   box(g,-.16,.15,0,1.13,.1,.65,metal);box(g,-.16,.58,-.07,.13,.82,.13,metal);
+   box(g,-.16,1.28,-.07,1.4,.98,.16,shell);box(g,-.16,1.3,.023,1.23,.78,.024,screen);
+   box(g,-.4,1.4,.04,.48,.025,.012,blue);box(g,-.25,1.24,.04,.78,.021,.012,blue);
+   box(g,.8,.57,.03,.35,1.03,.7,face);box(g,.8,.94,.394,.23,.025,.018,metal);
+   box(g,.8,.84,.394,.23,.025,.018,metal);box(g,.8,.45,.397,.06,.06,.02,blue);
+   box(g,-.16,.16,.85,1.2,.07,.39,face);for(let i=0;i<4;i++)box(g,-.16,.202,.72+i*.075,.99,.008,.015,metal);
+   return g;
+  }
+  function appliance(kind){
+   const g=new THREE.Group(),isSwitch=kind==='switch',isHub=kind==='hub';
+   const width=isSwitch?1.95:isHub?1.35:1.6;
+   box(g,0,.37,0,width,.43,1.06,shell);box(g,0,.58,0,width*.97,.04,1,face);
+   box(g,0,.38,.544,width*.94,.29,.034,dark);
+   for(const x of [-width*.36,width*.36])box(g,x,.1,.2,.18,.18,.25,dark);
+   const count=isSwitch?8:isHub?4:2;
+   for(let i=0;i<count;i++)port(g,(i-(count-1)/2)*(isSwitch?.21:isHub?.26:.75),.4,.57,isSwitch?.14:.2);
+   for(let i=0;i<4;i++)box(g,-width*.3+i*.08,.2,.566,.025,.026,.018,blue);
+   if(kind==='router'){
+    box(g,0,.616,0,.64,.015,.045,blue);
+    const arrow=new THREE.Mesh(new THREE.ConeGeometry(.08,.18,3),blue);arrow.rotation.z=-Math.PI/2;arrow.position.set(.4,.632,0);g.add(arrow);
+    const other=arrow.clone();other.rotation.z=Math.PI/2;other.position.x=-.4;g.add(other);
+   }
+   if(kind==='bridge'){box(g,0,.62,0,.66,.05,.36,blue);box(g,0,.654,0,.43,.02,.16,face);}
+   if(kind==='hub')for(const x of [-.35,0,.35])box(g,x,.62,0,.025,.018,.5,blue);
+   return g;
+  }
+  const objects=new Map(),labels=[];
+  const positions={hostA:new THREE.Vector3(-5.1,.12,1.15),switch:new THREE.Vector3(-2.55,.12,-1.05),router:new THREE.Vector3(.15,.12,.65),hostB:new THREE.Vector3(4.75,.12,-.25)};
+  function label(text,subtext,kind='node'){
+   const el=document.createElement(kind==='node'?'button':'div');el.className=kind==='node'?'scene-node-label':'scene-subnet-label';
+   if(kind==='node')el.type='button';
+   const strong=document.createElement('strong');strong.textContent=text;el.append(strong);
+   if(subtext){const small=document.createElement('span');small.textContent=subtext;el.append(small);}
+   document.querySelector('#scene-labels').append(el);return el;
+  }
+  function addDevice(id,kind,position,preview=false){
+   const model=kind==='host'?hostModel():appliance(kind);model.position.copy(position);model.userData.deviceId=id;
+   scene.add(model);objects.set(id,model);
+   const d=bridge.getDevice(id),el=label(d.name,preview?'Unconnected setup preview':d.ip||d.role.split(' · ').pop());
+   el.dataset.sceneDevice=id;el.setAttribute('aria-label','Inspect '+d.name+' in the 3D network');el.onclick=()=>bridge.selectDevice(id);
+   labels.push({element:el,object:model,offset:new THREE.Vector3(0,kind==='host'?2.23:1.19,0),id});
+   return model;
+  }
+  addDevice('hostA','host',positions.hostA);addDevice('switch','switch',positions.switch);
+  addDevice('router','router',positions.router);addDevice('hostB','host',positions.hostB);
+  labels.push({element:label('Network A','192.168.1.0/24','subnet'),point:new THREE.Vector3(-4.25,.19,3.05)});
+  const labelB=label('Network B','192.168.2.0/24','subnet');labelB.classList.add('subnet-b');
+  labels.push({element:labelB,point:new THREE.Vector3(4.35,.19,3.05)});
+  const pairs=[['hostA','switch'],['switch','router'],['router','hostB']];
+  const curves=[],cables=[];
+  for(let i=0;i<pairs.length;i++){
+   const [from,to]=pairs[i].map(id=>positions[id].clone().add(new THREE.Vector3(0,.25,.43)));
+   const middle=from.clone().lerp(to,.5);middle.y=.5;
+   const curve=new THREE.CatmullRomCurve3([from,middle,to]);curves.push(curve);
+   const cable=new THREE.Mesh(new THREE.TubeGeometry(curve,40,.032,8,false),material('--color-rule-strong',{roughness:.7,metalness:.1}));
+   cable.userData.linkIndex=i;scene.add(cable);cables.push(cable);
+  }
+  const packet=new THREE.Mesh(new THREE.BoxGeometry(.25,.25,.25),new THREE.MeshStandardMaterial({color:color('--color-blue'),emissive:color('--color-blue'),emissiveIntensity:.55,roughness:.25,metalness:.15}));
+  packet.castShadow=true;packet.userData.packet=true;scene.add(packet);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(1,.022,8,64),new THREE.MeshBasicMaterial({color:color('--color-blue')}));ring.rotation.x=Math.PI/2;scene.add(ring);
+  let previewDevice=null,lastEvent=-1,eventStarted=performance.now(),queued=false,renderCount=0;
+  const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+  function positionLabels(){
+   const placed=[];
+   for(const item of labels){
+    const p=item.point?item.point.clone():item.object.position.clone().add(item.offset);
+    p.project(camera);item.element.hidden=p.z<-1||p.z>1||Math.abs(p.x)>1.08||Math.abs(p.y)>1.08;
+    let labelX=(p.x+1)/2*mount.clientWidth,labelY=(-p.y+1)/2*mount.clientHeight;
+    if(item.id&&!item.element.hidden){
+     const width=item.element.offsetWidth,height=item.element.offsetHeight;
+     labelX=THREE.MathUtils.clamp(labelX,width/2+6,mount.clientWidth-width/2-6);
+     for(let attempt=0;attempt<5;attempt++){
+      const overlap=placed.find(r=>Math.abs(labelX-r.x)<(width+r.w)/2+5&&Math.abs(labelY-r.y)<(height+r.h)/2+5);
+      if(!overlap)break;
+      labelY=overlap.y-overlap.h/2-height/2-6;
+     }
+     labelY=Math.max(55+height/2,labelY);placed.push({x:labelX,y:labelY,w:width,h:height});
+    }
+    item.element.style.left=labelX+'px';item.element.style.top=labelY+'px';
+    if(item.id)item.element.setAttribute('aria-pressed',String(item.id===bridge.getState().selected));
+   }
+  }
+  function sync(){
+   const snapshot=bridge.getState();
+   if(snapshot.step!==lastEvent){lastEvent=snapshot.step;eventStarted=performance.now();}
+   cables.forEach((c,i)=>{const active=i===snapshot.edge;c.material.color.copy(color(active?'--color-blue':'--color-rule-strong'));c.material.emissive.copy(color(active?'--color-blue':'--color-paper'));c.material.emissiveIntensity=active?.32:0;});
+   if(['bridge','hub'].includes(snapshot.selected)&&previewDevice!==snapshot.selected){
+    removePreview();previewDevice=snapshot.selected;addDevice(previewDevice,previewDevice,new THREE.Vector3(1.8,.12,3.7),true);
+   }else if(!['bridge','hub'].includes(snapshot.selected))removePreview();
+   const selected=objects.get(snapshot.selected);ring.visible=!!selected;
+   if(selected){ring.position.copy(selected.position);ring.position.y=.17;ring.scale.setScalar(snapshot.selected.startsWith('host')?1.12:1);}
+   packet.visible=snapshot.edge>=0;
+   const f=snapshot.frame;
+   document.querySelector('#scene-packet-status').textContent=snapshot.edge<0?'No frame in transit':snapshot.frameLabel+(f.hasIp?' · TTL '+f.ttl:' · Ethernet');
+   mount.dataset.event=String(snapshot.step+1);requestDraw();
+  }
+  function removePreview(){if(!previewDevice)return;const group=objects.get(previewDevice);scene.remove(group);group.traverse(o=>{if(o.isMesh)o.geometry.dispose();});objects.delete(previewDevice);const index=labels.findIndex(l=>l.id===previewDevice);if(index>=0){labels[index].element.remove();labels.splice(index,1);}previewDevice=null;}
+  function draw(){
+   queued=false;const snapshot=bridge.getState();
+   if(packet.visible){let progress=snapshot.playing?(performance.now()-eventStarted)/1600:.56;progress=Math.min(1,Math.max(0,progress));if([3,4,9,11,12,13].includes(snapshot.step))progress=1-progress;packet.position.copy(curves[snapshot.edge].getPoint(progress));packet.position.y+=.17;packet.rotation.set(.3,.5,.25);}
+   positionLabels();renderer.render(scene,camera);renderCount++;
+   if(snapshot.playing&&!document.hidden)requestDraw();
+  }
+  function requestDraw(){if(!queued){queued=true;requestAnimationFrame(draw);}}
+  function resize(){const w=mount.clientWidth,h=mount.clientHeight,aspect=w/h;const height=Math.max(8.2,16.5/aspect);camera.left=-height*aspect/2;camera.right=height*aspect/2;camera.top=height/2;camera.bottom=-height/2;camera.updateProjectionMatrix();renderer.setSize(w,h,false);requestDraw();}
+  new ResizeObserver(resize).observe(mount);
+  controls.addEventListener('change',requestDraw);
+  function orbit(amount){const offset=camera.position.clone().sub(controls.target);const spherical=new THREE.Spherical().setFromVector3(offset);spherical.theta+=amount;camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(spherical));camera.lookAt(controls.target);controls.update();requestDraw();}
+  function zoom(factor){camera.zoom=THREE.MathUtils.clamp(camera.zoom*factor,.6,3);camera.updateProjectionMatrix();controls.update();requestDraw();}
+  function reset(){camera.position.copy(homePosition);camera.zoom=1;controls.target.copy(homeTarget);camera.updateProjectionMatrix();controls.update();requestDraw();}
+  document.querySelector('#orbit-left').onclick=()=>orbit(-Math.PI/8);
+  document.querySelector('#orbit-right').onclick=()=>orbit(Math.PI/8);
+  document.querySelector('#zoom-in').onclick=()=>zoom(1.2);document.querySelector('#zoom-out').onclick=()=>zoom(1/1.2);
+  document.querySelector('#reset-camera').onclick=reset;
+  renderer.domElement.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home'].includes(e.key))return;e.preventDefault();if(e.key==='Home')reset();else if(['+','='].includes(e.key))zoom(1.2);else if(e.key==='-')zoom(1/1.2);else if(e.key==='ArrowLeft'||e.key==='ArrowRight')orbit(e.key==='ArrowLeft'?-.15:.15);else{const offset=camera.position.clone().sub(controls.target),spherical=new THREE.Spherical().setFromVector3(offset);spherical.phi=THREE.MathUtils.clamp(spherical.phi+(e.key==='ArrowUp'?-.1:.1),.22,Math.PI*.47);camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(spherical));controls.update();requestDraw();}});
+  function pick(event){const r=renderer.domElement.getBoundingClientRect();pointer.set((event.clientX-r.left)/r.width*2-1,-(event.clientY-r.top)/r.height*2+1);raycaster.setFromCamera(pointer,camera);const found=raycaster.intersectObjects([...objects.values(),...cables,...(packet.visible?[packet]:[])],true)[0];if(!found)return null;let o=found.object;while(o){if(o.userData.deviceId||o.userData.linkIndex!==undefined||o.userData.packet)return o.userData;o=o.parent;}return null;}
+  let pointerStart=null;
+  renderer.domElement.addEventListener('pointerdown',e=>pointerStart={x:e.clientX,y:e.clientY});
+  renderer.domElement.addEventListener('pointerup',e=>{if(!pointerStart||Math.hypot(e.clientX-pointerStart.x,e.clientY-pointerStart.y)>5)return;const hit=pick(e);if(hit?.deviceId)bridge.selectDevice(hit.deviceId);else if(hit?.linkIndex!==undefined)bridge.inspectLink(hit.linkIndex);else if(hit?.packet)bridge.inspectPacket();pointerStart=null;});
+  renderer.domElement.addEventListener('pointermove',e=>{if(e.buttons)return;const hit=pick(e);const hover=document.querySelector('#scene-hover');hover.textContent=hit?.deviceId?bridge.getDevice(hit.deviceId).name+' · select to inspect':hit?.linkIndex!==undefined?'Ethernet link · select for frame details':hit?.packet?'Packet in transit · select to inspect':'Drag to orbit · scroll to zoom · right-drag to pan';});
+  renderer.domElement.addEventListener('pointerleave',()=>document.querySelector('#scene-hover').textContent='Drag to orbit · scroll to zoom · right-drag to pan');
+  document.addEventListener('network-lab-state',sync);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestDraw();});
+  window.networkScene3D={getInfo:()=>({engine:'Three.js',revision:THREE.REVISION,webgl:true,objects:objects.size,step:bridge.getState().step+1,activeLink:bridge.getState().edge,camera:camera.position.toArray(),zoom:camera.zoom,renders:renderCount})};
+  mount.dataset.ready='true';status.hidden=true;resize();sync();draw();
+  console.log('3D network ready: Three.js '+THREE.REVISION+', WebGL, orbit and picking enabled.');
+ } catch(error) {
+  status.hidden=false;status.setAttribute('role','alert');status.textContent='The 3D view could not load. Check your connection and WebGL support, then reload this page.';
+  mount.dataset.ready='error';console.error('3D view failed:',error);
+ }
+}
+mountNetworkScene();
+
+</script>
+</body>
+</html>

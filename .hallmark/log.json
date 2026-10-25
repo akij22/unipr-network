@@ -1,0 +1,32 @@
+[
+  {
+    "date": "2026-10-24",
+    "macrostructure": "Workbench",
+    "theme": "studied-DNA / dark 3D revision",
+    "enrichment": "real Three.js WebGL scene, physical device meshes and projected labels",
+    "brief": "User revision: persistent simulation dock, new device representations, actual orbitable 3D topology",
+    "theme_axes": "dark / grotesk-sans / cool blue with semantic amber"
+  },
+  {
+    "date": "2026-10-24",
+    "macrostructure": "Workbench",
+    "theme": "studied-DNA (user interface reference; requested dark adaptation)",
+    "enrichment": "interactive network diagram and packet comparison",
+    "brief": "Dark network lab, English UI, device inspector and playback",
+    "theme_axes": "dark / grotesk-sans / cool blue with semantic amber"
+  },
+  {
+    "date": "2026-10-24",
+    "macrostructure": "Narrative Workflow",
+    "theme": "Grid / signal yellow",
+    "enrichment": "inline network diagram",
+    "brief": "Packet story: event-led educational network interface prototype"
+  },
+  {
+    "date": "2026-10-24",
+    "macrostructure": "Map / Diagram",
+    "theme": "Cobalt",
+    "enrichment": "inline network diagram",
+    "brief": "Network canvas: topology-led educational network interface prototype"
+  }
+]

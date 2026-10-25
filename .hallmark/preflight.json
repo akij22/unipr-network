@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-24",
+  "existingCode": false,
+  "existingDesignSystem": false,
+  "existingFiles": ["AGENTS.md (empty)"],
+  "requestedStack": ["React", "TypeScript", "React Flow"],
+  "scope": "throwaway self-contained HTML interface comparison",
+  "notes": "No pre-flight design signals. No production dependencies installed."
+}
