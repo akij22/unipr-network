@@ -30,7 +30,12 @@ export function createSession(config:NetworkConfig,revision:number,journal:Journ
     if(projection.status==='active')return fail(issue('OPERATION_ACTIVE',[],{},'input'));
     if(!operationId)return fail(issue('MISSING_OPERATION_ID',[],{},'input'));
     const started=engine.start(command.operation,operationId);if(!started.ok)return started;
-    if(history)await history.clear();history=createHistory(journal,operationId);await history.initialize(engine.snapshot());
+    const initialState=engine.snapshot(),previousHistory=history;
+    if(previousHistory)await previousHistory.clear();
+    if(token!==generation)return fail(issue('STALE_REVISION',[],{},'resource'));
+    const nextHistory=createHistory(journal,operationId);await nextHistory.initialize(initialState);
+    if(token!==generation){await nextHistory.clear();return fail(issue('STALE_REVISION',[],{},'resource'));}
+    history=nextHistory;
     projection={...empty(),operationId,status:'active'};
    }else if(command.type==='seek'){
     if(!Number.isInteger(command.index)||command.index<0||command.index>projection.frontier)return fail(issue('HISTORY_OUT_OF_RANGE',[],{},'input'));

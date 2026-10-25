@@ -4,11 +4,13 @@ import {connectPorts} from '../domain/topology';
 import {validateConfiguration} from '../domain/configuration';
 import {createInitialState,copy} from '../simulation/state';
 import type {AppController,AppState,NetworkDocument} from './types';
+import {openDatabase} from '../storage/database';
+import {createDocumentRepository,type DocumentRepository} from '../storage/documents';
 export function emptyDocument():NetworkDocument{return{schema:1,id:crypto.randomUUID(),name:'Untitled network',network:{devices:[],links:[]},layout:{},view:{cameraPosition:[12,14,18],target:[0,0,0],depth:'ip'}};}
-export function createAppController(client:SimulationClient):AppController{
+export function createAppController(client:SimulationClient,getRepository:()=>Promise<DocumentRepository>=()=>openDatabase().then(createDocumentRepository)):AppController{
  const document=emptyDocument();let revision=0,requestId=0;
- let state:AppState={document,projection:{revision:0,operationId:null,cursor:0,frontier:0,total:null,status:'idle',event:null,state:createInitialState(document.network)},selection:null,tutorial:true,playing:false,busy:false,dirty:false,issue:null,connection:null,notice:null};
- const listeners=new Set<()=>void>();let timer:ReturnType<typeof setTimeout>|null=null;
+ let state:AppState={document,projection:{revision:0,operationId:null,cursor:0,frontier:0,total:null,status:'idle',event:null,state:createInitialState(document.network)},selection:null,tutorial:true,playing:false,busy:false,dirty:false,issue:null,connection:null,notice:null,savedNetworks:[],savesLoading:false};
+ const listeners=new Set<()=>void>();let timer:ReturnType<typeof setTimeout>|null=null,savedId:string|null=null;
  const set=(patch:Partial<AppState>)=>{state={...state,...patch};for(const listener of listeners)listener();};
  const send=async(command:SessionCommand,operationId:string|null=null)=>{
   const sentRevision=revision;set({busy:true,issue:null});
@@ -26,6 +28,18 @@ export function createAppController(client:SimulationClient):AppController{
   getSnapshot:()=>state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},dispose(){if(timer!==null)clearTimeout(timer);client.dispose();listeners.clear();},
   async dispatch(action){
    switch(action.type){
+    case'document.list':{set({savesLoading:true,issue:null});try{const savedNetworks=await(await getRepository()).list();set({savedNetworks});}catch(cause){console.error('List saved networks failed',cause);set({issue:issue('SAVE_STORAGE_FAILED',[],{action:'list'},'resource')});}finally{set({savesLoading:false});}return;}
+    case'document.save':{
+     if(state.busy)return;const original=state.document;set({busy:true,issue:null,notice:null});
+     try{const result=await(await getRepository()).save({...original,name:action.name},action.overwriteId??savedId??undefined);if(!result.ok){set({issue:result.issue});return;}if(state.document.id===original.id){savedId=result.value;set({document:{...state.document,id:result.value,name:action.name.trim()},dirty:state.document.network!==original.network||state.document.layout!==original.layout,notice:'Network configuration saved in this browser.'});}}
+     catch(cause){console.error('Save action failed',cause);set({issue:issue('SAVE_STORAGE_FAILED',[],{action:'save'},'resource')});}finally{set({busy:false});}return;
+    }
+    case'document.open':{
+     if(state.dirty&&!action.discardChanges){set({issue:issue('UNSAVED_CHANGES',[],{id:action.id},'input')});return;}
+     pause();set({busy:true,issue:null});
+     try{const loaded=await(await getRepository()).load(action.id);if(!loaded.ok){set({issue:loaded.issue});return;}revision++;await send({type:'load',network:loaded.value.network});if(!state.issue){savedId=loaded.value.id;set({document:loaded.value,selection:null,connection:null,dirty:false,notice:'Network opened with clean simulation state.'});}}
+     catch(cause){console.error('Open saved network failed',cause);set({issue:issue('SAVE_STORAGE_FAILED',[],{action:'open'},'resource')});}finally{set({busy:false});}return;
+    }
     case'simulation.start':pause();if(state.busy){set({issue:issue('OPERATION_BUSY',[],{},'input')});return;}await send({type:'start',operation:action.operation},crypto.randomUUID());return;
     case'simulation.next':pause();await send({type:'next'},state.projection.operationId);return;
     case'simulation.previous':pause();await send({type:'seek',index:Math.max(0,state.projection.cursor-1)},state.projection.operationId);return;

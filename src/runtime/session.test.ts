@@ -35,3 +35,11 @@ it('restores an explicitly unassigned DHCP client while replaying a second acqui
  }
  const restored=await send({type:'seek',index:1});expect(restored.ok&&restored.value.state.dhcpClients.a).toBeNull();
 });
+it('does not let a delayed start replace a newer loaded network',async()=>{
+ const journal=memoryJournal(),original=journal.initialize;let release!:()=>void;const gate=new Promise<void>(r=>release=r);
+ journal.initialize=async(id,state)=>{if(id==='old')await gate;await original(id,state);};const session=createSession(fixture('lan'),1,journal);
+ const old=session.handle({requestId:1,revision:1,operationId:'old',command:{type:'start',operation:{kind:'ping',sourceId:'a',destination:'192.168.1.20'}}});
+ await Promise.resolve();await session.handle({requestId:2,revision:2,operationId:null,command:{type:'load',network:fixture('routed')}});release();
+ expect(await old).toMatchObject({ok:false,issue:{code:'STALE_REVISION'}});
+ const fresh=await session.handle({requestId:3,revision:2,operationId:'new',command:{type:'start',operation:{kind:'ping',sourceId:'a',destination:'192.168.2.10'}}});expect(fresh).toMatchObject({ok:true,value:{operationId:'new',status:'active'}});
+});
