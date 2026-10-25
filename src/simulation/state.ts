@@ -20,5 +20,5 @@ export function diffState(before:NetworkState,after:NetworkState):StateChange[]{
    for(const key of new Set([...Object.keys(a),...Object.keys(b)]))if(JSON.stringify(a[key])!==JSON.stringify(b[key]))changes.push({table,key,before:a[key]??null,after:b[key]??null} as StateChange);
   }else if(JSON.stringify(before[table])!==JSON.stringify(after[table]))changes.push({table,before:before[table],after:after[table]} as StateChange);
  }
- return changes;
+ return copy(changes);
 }
