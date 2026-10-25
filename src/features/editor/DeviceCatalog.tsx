@@ -1,0 +1,4 @@
+import type {AppController} from '../../app/types';
+import type {DeviceKind} from '../../domain/types';
+const choices:[DeviceKind,string,string][]=[['host','Host','Send and receive packets'],['router','Router','Connect IP networks'],['switch','Switch','Learn and forward frames'],['bridge','Bridge','Connect two Ethernet segments'],['hub','Hub','Repeat on every other port']];
+export function DeviceCatalog({controller,onClose}:{controller:AppController;onClose:()=>void}){return <section className="catalog" aria-label="Device catalog"><div className="section-head"><h2>Add to your network</h2><button onClick={onClose}>Close</button></div><div className="catalog-grid">{choices.map(([kind,label,description])=><button key={kind} className="catalog-choice" aria-label={`Add ${kind}`} onClick={()=>{void controller.dispatch({type:'device.add',kind});onClose();}}><strong>{label}</strong><span>{description}</span></button>)}</div></section>;}

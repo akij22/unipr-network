@@ -1,0 +1,3 @@
+import type {AppController} from '../../app/types';
+import {useApp} from '../../app/use-app';
+export function ConnectionBuilder({controller}:{controller:AppController}){const state=useApp(controller);if(!state.connection)return null;return <section className="connection-guide" aria-live="polite"><strong>{state.connection.from?'Choose the destination port':'Choose the first port'}</strong><p>Select a device and an available port. {state.connection.from&&`Starting at ${state.document.layout[state.connection.from.deviceId]?.name} · ${state.connection.from.portId}.`}</p><button onClick={()=>void controller.dispatch({type:'connection.cancel'})}>Cancel connection</button></section>;}

@@ -1,0 +1,66 @@
+import type {SimulationClient,SessionCommand} from '../runtime/messages';
+import {issue,type Device,type NetworkConfig} from '../domain/types';
+import {connectPorts} from '../domain/topology';
+import {validateConfiguration} from '../domain/configuration';
+import {createInitialState,copy} from '../simulation/state';
+import type {AppController,AppState,NetworkDocument} from './types';
+export function emptyDocument():NetworkDocument{return{schema:1,id:crypto.randomUUID(),name:'Untitled network',network:{devices:[],links:[]},layout:{},view:{cameraPosition:[12,14,18],target:[0,0,0],depth:'ip'}};}
+export function createAppController(client:SimulationClient):AppController{
+ const document=emptyDocument();let revision=0,requestId=0;
+ let state:AppState={document,projection:{revision:0,operationId:null,cursor:0,frontier:0,total:null,status:'idle',event:null,state:createInitialState(document.network)},selection:null,tutorial:true,playing:false,busy:false,dirty:false,issue:null,connection:null,notice:null};
+ const listeners=new Set<()=>void>();
+ const set=(patch:Partial<AppState>)=>{state={...state,...patch};for(const listener of listeners)listener();};
+ const send=async(command:SessionCommand,operationId:string|null=null)=>{
+  const sentRevision=revision;set({busy:true,issue:null});
+  try{const result=await client.request({requestId:++requestId,revision:sentRevision,operationId,command});if(sentRevision!==revision)return;
+   if(result.ok)set({projection:result.value,issue:result.value.status==='resource-error'?result.value.state.problem:null});else set({issue:result.issue});
+  }catch(cause){console.error('App operation failed',cause);set({issue:issue('WORKER_FAILURE',[],{},'resource')});}finally{if(sentRevision===revision)set({busy:false});}
+ };
+ const apply=async(network:NetworkConfig)=>{
+  const problem=validateConfiguration(network)[0];if(problem){set({issue:problem});return;}
+  revision++;set({document:{...state.document,network},dirty:true,playing:false,issue:null,notice:null});await send({type:'load',network});
+ };
+ return{
+  getSnapshot:()=>state,subscribe(listener){listeners.add(listener);return()=>listeners.delete(listener);},dispose(){client.dispose();listeners.clear();},
+  async dispatch(action){
+   switch(action.type){
+    case'issue.clear':set({issue:null,notice:null});return;
+    case'document.name':set({document:{...state.document,name:action.name},dirty:true});return;
+    case'tutorial.set':set({tutorial:action.enabled});return;
+    case'selection.set':set({selection:action.selection});return;
+    case'view.set':set({document:{...state.document,view:action.view}});return;
+    case'device.move':{const old=state.document.layout[action.id];if(!old)return;set({document:{...state.document,layout:{...state.document.layout,[action.id]:{...old,x:action.x,z:action.z}}},dirty:true});return;}
+    case'device.rename':{const old=state.document.layout[action.id];if(!old||!action.name.trim())return;set({document:{...state.document,layout:{...state.document.layout,[action.id]:{...old,name:action.name.trim()}}},dirty:true});return;}
+    case'device.add':{
+     let n=1;while(state.document.network.devices.some(d=>d.id===`${action.kind}-${n}`))n++;const id=`${action.kind}-${n}`;
+     let serial=1;const used=new Set(state.document.network.devices.flatMap(d=>d.ports.map(p=>p.mac)));
+     const nextMac=()=>{let value:string;do{value=`02:00:${Math.floor(serial/16777216)%256}:${Math.floor(serial/65536)%256}:${Math.floor(serial/256)%256}:${serial%256}`.split(':').map((p,i)=>i<2?p:Number(p).toString(16).padStart(2,'0')).join(':');serial++;}while(used.has(value));used.add(value);return value;};
+     const count=action.kind==='host'?1:action.kind==='router'||action.kind==='bridge'?2:4;
+     const ports=Array.from({length:count},(_,i)=>({id:action.kind==='host'||action.kind==='router'?`eth${i}`:`p${i+1}`,mac:action.kind==='host'||action.kind==='router'?nextMac():null,address:null}));
+     const device:Device=action.kind==='host'?{id,kind:'host',ports,addressing:{mode:'manual',gateway:null}}:action.kind==='router'?{id,kind:'router',ports,routes:[],dhcpScopes:[],nat:null}:{id,kind:action.kind,ports};
+     const index=state.document.network.devices.length;const label=action.kind[0].toUpperCase()+action.kind.slice(1)+` ${n}`;
+     set({document:{...state.document,layout:{...state.document.layout,[id]:{name:label,x:(index%4-1.5)*4,z:Math.floor(index/4)*4}}},selection:{kind:'device',id}});
+     await apply({...state.document.network,devices:[...state.document.network.devices,device]});return;
+    }
+    case'config.apply':await apply(action.network);return;
+    case'device.remove':{const layout={...state.document.layout};delete layout[action.id];set({document:{...state.document,layout},selection:null});await apply({devices:state.document.network.devices.filter(d=>d.id!==action.id),links:state.document.network.links.filter(l=>!l.ends.some(e=>e.deviceId===action.id))});return;}
+    case'port.add':{
+     const config=copy(state.document.network),device=config.devices.find(d=>d.id===action.deviceId);if(!device||device.kind==='host'||device.kind==='bridge')return;
+     let n=device.kind==='router'?0:1;const prefix=device.kind==='router'?'eth':'p';while(device.ports.some(p=>p.id===prefix+n))n++;
+     const mac=device.kind==='router'?`02:${crypto.getRandomValues(new Uint8Array(5)).reduce((s,v)=>s+v.toString(16).padStart(2,'0')+':','').slice(0,-1)}`:null;
+     device.ports.push({id:prefix+n,mac,address:null});await apply(config);return;
+    }
+    case'port.remove':{const config=copy(state.document.network),device=config.devices.find(d=>d.id===action.deviceId);if(!device||device.kind==='host'||device.kind==='bridge')return;device.ports=device.ports.filter(p=>p.id!==action.portId);config.links=config.links.filter(l=>!l.ends.some(e=>e.deviceId===action.deviceId&&e.portId===action.portId));if(device.kind==='router'){device.routes=device.routes.filter(r=>r.outPortId!==action.portId);device.dhcpScopes=device.dhcpScopes.filter(s=>s.portId!==action.portId);if(device.nat?.insidePortIds.includes(action.portId)||device.nat?.outsidePortId===action.portId)device.nat=null;}await apply(config);return;}
+    case'connection.start':set({connection:{from:null},playing:false});return;
+    case'connection.cancel':set({connection:null});return;
+    case'connection.choosePort':{
+     if(!state.connection)return;
+     if(!state.connection.from){set({connection:{from:action.port}});return;}
+     const result=connectPorts(state.document.network,state.connection.from,action.port,crypto.randomUUID());if(!result.ok){set({issue:result.issue});return;}
+     set({connection:null});await apply(result.value);return;
+    }
+    case'link.remove':set({selection:null});await apply({...state.document.network,links:state.document.network.links.filter(l=>l.id!==action.id)});return;
+   }
+  }
+ };
+}

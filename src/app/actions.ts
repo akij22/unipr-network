@@ -1,0 +1,3 @@
+import type {DeviceKind,NetworkConfig,PortRef} from '../domain/types';
+import type {AppState,NetworkDocument} from './types';
+export type AppAction={type:'device.add';kind:DeviceKind}|{type:'device.move';id:string;x:number;z:number}|{type:'device.rename';id:string;name:string}|{type:'device.remove';id:string}|{type:'port.add';deviceId:string}|{type:'port.remove';deviceId:string;portId:string}|{type:'config.apply';network:NetworkConfig}|{type:'selection.set';selection:AppState['selection']}|{type:'connection.start'}|{type:'connection.choosePort';port:PortRef}|{type:'connection.cancel'}|{type:'link.remove';id:string}|{type:'tutorial.set';enabled:boolean}|{type:'view.set';view:NetworkDocument['view']}|{type:'issue.clear'}|{type:'document.name';name:string};
