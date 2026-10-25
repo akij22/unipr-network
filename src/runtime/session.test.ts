@@ -25,3 +25,13 @@ it('stops safely when the journal cannot be written',async()=>{
  const result=await session.handle({requestId:2,revision:1,operationId:'x',command:{type:'next'}});
  expect(result).toMatchObject({ok:true,value:{status:'resource-error',frontier:0}});
 });
+it('restores an explicitly unassigned DHCP client while replaying a second acquisition',async()=>{
+ const session=createSession(fixture('dhcp'),1,memoryJournal());let id=0,op='first';
+ const send=(command:SessionCommand)=>session.handle({requestId:++id,revision:1,operationId:op,command});
+ for(let run=0;run<2;run++){
+  await send({type:'start',operation:{kind:'dhcp',hostId:'a'}});
+  for(let i=0;i<100;i++){const r=await send({type:'next'});if(r.ok&&r.value.status!=='active')break;}
+  if(run===0)op='second';
+ }
+ const restored=await send({type:'seek',index:1});expect(restored.ok&&restored.value.state.dhcpClients.a).toBeNull();
+});

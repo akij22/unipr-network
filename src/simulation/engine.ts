@@ -8,6 +8,7 @@ import {forwardEthernet} from './ethernet';
 import {addressOf,selectRoute} from './ipv4';
 import {arpKey,l2Endpoints} from './arp';
 import {makeIcmp} from './icmp';
+import {createDhcpProtocol} from './dhcp';
 import {sealPacket} from './checksums';
 import {BROADCAST,type EthernetFrame,type IPv4Packet} from './packets';
 import type {Simulator,NetworkState,ScheduledAction,SimEvent,EventKind,EventDetail,ProtocolId,Operation,AdvanceResult} from './types';
@@ -19,7 +20,7 @@ export function createSimulator(config:NetworkConfig):Simulator{
  const emit=(kind:EventKind,deviceIds:string[],protocols:ProtocolId[],detail:EventDetail={kind:'explanation',subject:kind},before:EthernetFrame[]=[],after:EthernetFrame[]=[],linkIds:string[]=[])=>{
   state.eventSequence++;produced={id:`${operationId}:${state.eventSequence}`,index:state.eventSequence,time:state.clock,causeId:current?.causeId??null,kind,deviceIds,protocols,detail,before:copy(before),after:copy(after),linkIds,changes:[]};
  };
- const stop=(problem:Issue)=>{state.problem=problem;state.result='failed';state.queue=[];};
+ const stop=(problem:Issue)=>{state.problem=problem;state.result='failed';state.queue=[];if(state.operation?.kind==='dhcp')state.offers={};};
  const frame=(from:PortRef,dstMac:string,payload:EthernetFrame['payload'],rootId?:string):EthernetFrame=>{const id=`f${++state.packetSequence}`;return{id,rootId:rootId??id,srcMac:devices.get(from.deviceId)!.ports.find(p=>p.id===from.portId)!.mac!,dstMac,payload:copy(payload)};};
  const endpoint=(ref:PortRef)=>{const d=devices.get(ref.deviceId),p=d?.ports.find(p=>p.id===ref.portId);return d&&p?{device:d,port:p,address:addressOf(d,p,state)}:null;};
  const duplicate=(ref:PortRef,ip:string)=>l2Endpoints(config,ref).filter(r=>endpoint(r)?.address?.ip===ip).length>1;
@@ -38,12 +39,13 @@ export function createSimulator(config:NetworkConfig):Simulator{
   enqueue({type:'resolve',from:{deviceId,portId:route.value.outPortId},nextHop:route.value.nextHop,packet:routed,attempt:0});
   emit('route.selected',[deviceId],['ipv4'],{kind:'route',...route.value},originalFrame?[originalFrame]:[],originalFrame?[{...originalFrame,payload:routed}]:[]);
  };
+ const dhcp=createDhcpProtocol(config,{state:()=>state,frame,emit,stop,transmit:(from,frame)=>enqueue({type:'transmit',from,frame}),retry:(hostId,attempt,delay)=>enqueue({type:'dhcpRetry',hostId,attempt},delay),choose:hostId=>enqueue({type:'dhcpChoose',hostId})});
  const process=(action:ScheduledAction)=>{
   switch(action.type){
    case'tick':return;
    case'start':{
     const op=action.operation;
-    if(op.kind!=='ping'){stop(issue('DHCP_UNAVAILABLE',[],{},'model'));return;}
+    if(op.kind==='dhcp'){dhcp.start(op.hostId);return;}
     const d=devices.get(op.sourceId),p=d?.ports[0],a=d&&p?addressOf(d,p,state):null;
     if(!d||!p||!a){stop(issue('NO_ADDRESS',[op.sourceId]));return;}
     if(duplicate({deviceId:d.id,portId:p.id},a.ip)){stop(issue('DUPLICATE_IPV4',[d.id],{ip:a.ip}));return;}
@@ -83,6 +85,7 @@ export function createSimulator(config:NetworkConfig):Simulator{
      else if(arp.opcode==='reply'&&arp.targetIp===address?.ip){for(const pending of state.queue)if(pending.type==='resolve'&&portKey(pending.from)===portKey(action.ingress)&&pending.nextHop===arp.senderIp)pending.at=state.clock+1;state.queue.sort((a,b)=>a.at-b.at||a.sequence-b.sequence);emit('arp.cached',[device.id],['ethernet','arp'],{kind:'explanation',subject:'cached',value:arp.senderIp},[f],[f]);}return;
     }
     const packet=f.payload;
+    if(packet.payload.kind==='udp'){dhcp.receive(action.ingress,f);return;}
     if(device.ports.some(p=>addressOf(device,p,state)?.ip===packet.dst)){
      if(packet.payload.kind!=='icmp')return;
      if(packet.payload.type===8){const reply=makeIcmp(packet.dst,packet.src,0,packet.payload.identifier);enqueue({type:'route',deviceId:device.id,packet:reply,received:false});emit('icmp.echoReply',[device.id],['ipv4','icmp'],{kind:'explanation',subject:'reply'},[f],[{...f,payload:reply}]);}
@@ -91,7 +94,8 @@ export function createSimulator(config:NetworkConfig):Simulator{
     }
     if(device.kind==='router')enqueue({type:'route',deviceId:device.id,packet,received:true,originalFrame:f});return;
    }
-   case'dhcpRetry':case'dhcpChoose':return;
+   case'dhcpRetry':dhcp.start(action.hostId,action.attempt);return;
+   case'dhcpChoose':dhcp.choose(action.hostId);return;
   }
  };
  return{
