@@ -1,5 +1,6 @@
 # UniPRNetwork MVP Implementation Plan
 
+Implementation record: the production MVP is tracked in Git; acceptance evidence and unavailable physical-phone/Firefox checks are documented in docs/verification/. Original steps below preserve the approved plan.
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Realizzare una web app didattica in inglese, utilizzabile da computer e smartphone, per costruire reti 3D e osservare progressivamente ping, DHCP e NAT/PAT.

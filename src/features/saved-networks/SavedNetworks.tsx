@@ -1,9 +1,120 @@
-import {useEffect,useRef,useState} from 'react';
-import type {AppController} from '../../app/types';
-import {useApp} from '../../app/use-app';
-import {presentIssue} from '../../content/issues.en';
-export function SavedNetworks({controller,onClose}:{controller:AppController;onClose:()=>void}){
- const s=useApp(controller),ref=useRef<HTMLDialogElement>(null),[pending,setPending]=useState<string|null>(null),[name,setName]=useState(s.document.name);useEffect(()=>{ref.current?.showModal();void controller.dispatch({type:'document.list'});},[]);
- const open=async(id:string)=>{await controller.dispatch({type:'document.open',id,discardChanges:true});if(!controller.getSnapshot().issue)ref.current?.close();};
- return <dialog ref={ref} className="protocol-dialog saved-dialog" aria-label="Saved networks" onClose={onClose} onCancel={onClose}><div className="section-head"><h2>My networks</h2><button onClick={()=>ref.current?.close()}>Close networks</button></div><p className="muted">Configurations saved in this browser. Reopening starts with clean simulation state.</p>{s.issue&&<p role="alert" className="inline-error">{presentIssue(s.issue,s.document)}</p>}{pending?<section><h3>Keep your current changes?</h3><p>Your current network has unsaved changes. Save it first, or explicitly discard those changes before opening another network.</p><label>Current network name<input value={name} onChange={e=>setName(e.target.value)}/></label><div className="row"><button className="primary" disabled={s.busy} onClick={async()=>{await controller.dispatch({type:'document.save',name});if(!controller.getSnapshot().issue)await open(pending);}}>Save current and open</button><button disabled={s.busy} onClick={()=>void open(pending)}>Discard changes and open</button><button onClick={()=>setPending(null)}>Cancel opening</button></div></section>:<>{s.savesLoading?<p role="status">Loading saved networks…</p>:s.savedNetworks.length?<div className="saved-list">{s.savedNetworks.map(net=><button key={net.id} aria-label={`Open ${net.name}`} disabled={s.busy} onClick={()=>{if(s.dirty)setPending(net.id);else void open(net.id);}}><strong>{net.name}</strong><span>{new Date(net.updatedAt).toLocaleString('en')}</span><span aria-hidden="true">↗</span></button>)}</div>:!s.issue&&<p>No saved networks yet. Build a network and use Save to keep its configuration.</p>}{s.issue&&<button onClick={()=>void controller.dispatch({type:'document.list'})}>Retry saved networks</button>}</>}</dialog>;
+import { useEffect, useRef, useState } from "react";
+import type { AppController } from "../../app/types";
+import { useApp } from "../../app/use-app";
+import { presentIssue } from "../../content/issues.en";
+export function SavedNetworks({
+  controller,
+  onClose,
+}: {
+  controller: AppController;
+  onClose: () => void;
+}) {
+  const s = useApp(controller),
+    ref = useRef<HTMLDialogElement>(null),
+    [pending, setPending] = useState<string | null>(null),
+    [name, setName] = useState(s.document.name);
+  useEffect(() => {
+    ref.current?.showModal();
+    void controller.dispatch({ type: "document.list" });
+  }, []);
+  const open = async (id: string) => {
+    await controller.dispatch({
+      type: "document.open",
+      id,
+      discardChanges: true,
+    });
+    if (!controller.getSnapshot().issue) ref.current?.close();
+  };
+  return (
+    <dialog
+      ref={ref}
+      className="protocol-dialog saved-dialog"
+      aria-label="Saved networks"
+      onClose={onClose}
+      onCancel={onClose}
+    >
+      <div className="section-head">
+        <h2>My networks</h2>
+        <button onClick={() => ref.current?.close()}>Close networks</button>
+      </div>
+      <p className="muted">
+        Configurations saved in this browser. Reopening starts with clean
+        simulation state.
+      </p>
+      {s.issue && (
+        <p role="alert" className="inline-error">
+          {presentIssue(s.issue, s.document)}
+        </p>
+      )}
+      {pending ? (
+        <section>
+          <h3>Keep your current changes?</h3>
+          <p>
+            Your current network has unsaved changes. Save it first, or
+            explicitly discard those changes before opening another network.
+          </p>
+          <label>
+            Current network name
+            <input value={name} onChange={(e) => setName(e.target.value)} />
+          </label>
+          <div className="row">
+            <button
+              className="primary"
+              disabled={s.busy}
+              onClick={async () => {
+                await controller.dispatch({ type: "document.save", name });
+                if (!controller.getSnapshot().issue) await open(pending);
+              }}
+            >
+              Save current and open
+            </button>
+            <button disabled={s.busy} onClick={() => void open(pending)}>
+              Discard changes and open
+            </button>
+            <button onClick={() => setPending(null)}>Cancel opening</button>
+          </div>
+        </section>
+      ) : (
+        <>
+          {s.savesLoading ? (
+            <p role="status">Loading saved networks…</p>
+          ) : s.savedNetworks.length ? (
+            <div className="saved-list">
+              {s.savedNetworks.map((net) => (
+                <button
+                  key={net.id}
+                  aria-label={`Open ${net.name}`}
+                  disabled={s.busy}
+                  onClick={() => {
+                    if (s.dirty) setPending(net.id);
+                    else void open(net.id);
+                  }}
+                >
+                  <strong>{net.name}</strong>
+                  <span>{new Date(net.updatedAt).toLocaleString("en")}</span>
+                  <span aria-hidden="true">↗</span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            !s.issue && (
+              <p>
+                No saved networks yet. Build a network and use Save to keep its
+                configuration.
+              </p>
+            )
+          )}
+          {s.issue && (
+            <button
+              onClick={() =>
+                void controller.dispatch({ type: "document.list" })
+              }
+            >
+              Retry saved networks
+            </button>
+          )}
+        </>
+      )}
+    </dialog>
+  );
 }

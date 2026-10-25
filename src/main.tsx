@@ -1,12 +1,20 @@
-import {createRoot} from 'react-dom/client';
-import {App} from './app/App';
-import {createAppController} from './app/controller';
-import {createSimulationClient} from './runtime/client';
-import './styles/tokens.css';
-import './styles/layout.css';
-import './styles/simulation.css';
-import './styles/saves.css';
-const worker=new Worker(new URL('./runtime/simulation.worker.ts',import.meta.url),{type:'module'});
-const controller=createAppController(createSimulationClient(worker));
-document.addEventListener('visibilitychange',()=>{if(document.hidden)void controller.dispatch({type:'simulation.play',enabled:false});});
-createRoot(document.getElementById('root')!).render(<App controller={controller}/>);
+import { createRoot } from "react-dom/client";
+import { App } from "./app/App";
+import { createAppController } from "./app/controller";
+import { createSimulationClient } from "./runtime/client";
+import "./styles/tokens.css";
+import "./styles/layout.css";
+import "./styles/simulation.css";
+import "./styles/saves.css";
+const worker = new Worker(
+  new URL("./runtime/simulation.worker.ts", import.meta.url),
+  { type: "module" },
+);
+const controller = createAppController(createSimulationClient(worker));
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden)
+    void controller.dispatch({ type: "simulation.play", enabled: false });
+});
+createRoot(document.getElementById("root")!).render(
+  <App controller={controller} />,
+);

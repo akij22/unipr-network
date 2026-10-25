@@ -1,12 +1,98 @@
-import {expect,type Page} from '@playwright/test';
-export async function addDevice(page:Page,kind:string){await page.getByRole('button',{name:'Add device',exact:true}).click();await page.getByRole('button',{name:`Add ${kind}`,exact:true}).click();}
-export async function selectDevice(page:Page,name:string){await page.getByRole('button',{name:`Select ${name}`,exact:true}).click();}
-export async function configureHost(page:Page,name:string,ip:string,gateway=''){await selectDevice(page,name);await page.getByLabel('IPv4 address',{exact:true}).fill(ip);await page.getByLabel('Default gateway',{exact:true}).fill(gateway);await page.getByRole('button',{name:'Apply settings',exact:true}).click();}
-export async function connect(page:Page,from:string,fromPort:string,to:string,toPort:string){await page.getByRole('button',{name:'Connect ports',exact:true}).click();await selectDevice(page,from);await page.getByRole('button',{name:`Choose ${fromPort}`,exact:true}).click();await selectDevice(page,to);await page.getByRole('button',{name:`Choose ${toPort}`,exact:true}).click();}
-export async function buildRouted(page:Page){
- await addDevice(page,'host');await addDevice(page,'switch');await addDevice(page,'router');await addDevice(page,'host');
- await configureHost(page,'Host 1','192.168.1.10','192.168.1.1');await configureHost(page,'Host 2','192.168.2.10','192.168.2.1');
- await selectDevice(page,'Router 1');await page.getByLabel('IPv4 address eth0',{exact:true}).fill('192.168.1.1');await page.getByLabel('IPv4 address eth1',{exact:true}).fill('192.168.2.1');await page.getByRole('button',{name:'Apply settings',exact:true}).click();
- await connect(page,'Host 1','eth0','Switch 1','p1');await connect(page,'Switch 1','p2','Router 1','eth0');await connect(page,'Router 1','eth1','Host 2','eth0');
+import { expect, type Page } from "@playwright/test";
+export async function addDevice(page: Page, kind: string) {
+  await page.getByRole("button", { name: "Add device", exact: true }).click();
+  await page.getByRole("button", { name: `Add ${kind}`, exact: true }).click();
 }
-export async function finishOperation(page:Page){for(let i=0;i<250;i++){const region=page.locator('[data-sim-status]');await expect(region).toHaveAttribute('aria-busy','false');const status=await region.getAttribute('data-sim-status');if(status==='completed'||status==='failed'||status==='resource-error')return status;const before=Number(await page.getByRole('slider',{name:'Known events'}).inputValue());await page.getByRole('button',{name:'Next step',exact:true}).click();await expect.poll(async()=>await region.getAttribute('data-sim-status')!=='active'||Number(await page.getByRole('slider',{name:'Known events'}).inputValue())>before).toBe(true);}throw new Error('Operation did not finish within the test guard');}
+export async function selectDevice(page: Page, name: string) {
+  await page
+    .getByRole("button", { name: `Select ${name}`, exact: true })
+    .click();
+}
+export async function configureHost(
+  page: Page,
+  name: string,
+  ip: string,
+  gateway = "",
+) {
+  await selectDevice(page, name);
+  await page.getByLabel("IPv4 address", { exact: true }).fill(ip);
+  await page.getByLabel("Default gateway", { exact: true }).fill(gateway);
+  await page
+    .getByRole("button", { name: "Apply settings", exact: true })
+    .click();
+}
+export async function connect(
+  page: Page,
+  from: string,
+  fromPort: string,
+  to: string,
+  toPort: string,
+) {
+  await page
+    .getByRole("button", { name: "Connect ports", exact: true })
+    .click();
+  await selectDevice(page, from);
+  await page
+    .getByRole("button", { name: `Choose ${fromPort}`, exact: true })
+    .click();
+  await selectDevice(page, to);
+  await page
+    .getByRole("button", { name: `Choose ${toPort}`, exact: true })
+    .click();
+}
+export async function buildRouted(page: Page) {
+  await addDevice(page, "host");
+  await addDevice(page, "switch");
+  await addDevice(page, "router");
+  await addDevice(page, "host");
+  await configureHost(page, "Host 1", "192.168.1.10", "192.168.1.1");
+  await configureHost(page, "Host 2", "192.168.2.10", "192.168.2.1");
+  await selectDevice(page, "Router 1");
+  await page
+    .getByLabel("IPv4 address eth0", { exact: true })
+    .fill("192.168.1.1");
+  await page
+    .getByLabel("IPv4 address eth1", { exact: true })
+    .fill("192.168.2.1");
+  await page
+    .getByRole("button", { name: "Apply settings", exact: true })
+    .click();
+  await connect(page, "Host 1", "eth0", "Switch 1", "p1");
+  await connect(page, "Switch 1", "p2", "Router 1", "eth0");
+  await connect(page, "Router 1", "eth1", "Host 2", "eth0");
+}
+export async function finishOperation(page: Page) {
+  for (let i = 0; i < 250; i++) {
+    const region = page.locator("[data-sim-status]");
+    await expect(region).toHaveAttribute("aria-busy", "false");
+    const status = await region.getAttribute("data-sim-status");
+    if (
+      status === "completed" ||
+      status === "failed" ||
+      status === "resource-error"
+    )
+      return status;
+    const before = Number(
+      await page.getByRole("slider", { name: "Known events" }).inputValue(),
+    );
+    await page.getByRole("button", { name: "Next step", exact: true }).click();
+    await expect
+      .poll(
+        async () =>
+          (await region.getAttribute("data-sim-status")) !== "active" ||
+          Number(
+            await page
+              .getByRole("slider", { name: "Known events" })
+              .inputValue(),
+          ) > before,
+      )
+      .toBe(true);
+  }
+  throw new Error("Operation did not finish within the test guard");
+}
+
+export async function openComposer(page: Page) {
+  const composer = page.locator(".ping-composer");
+  if (!(await composer.getAttribute("open").then((v) => v !== null)))
+    await composer.locator("summary").click();
+}

@@ -1,9 +1,14 @@
 {
-  "date": "2026-10-24",
-  "existingCode": false,
-  "existingDesignSystem": false,
-  "existingFiles": ["AGENTS.md (empty)"],
-  "requestedStack": ["React", "TypeScript", "React Flow"],
-  "scope": "throwaway self-contained HTML interface comparison",
-  "notes": "No pre-flight design signals. No production dependencies installed."
+  "date": "2026-10-25",
+  "existingCode": true,
+  "existingDesignSystem": true,
+  "requestedStack": [
+    "React",
+    "TypeScript",
+    "Three.js",
+    "React Three Fiber"
+  ],
+  "scope": "Approved dark 3D educational workbench, adaptive production implementation",
+  "tokens": "src/styles/tokens.css",
+  "notes": "Extends approved workbench; viewport and context recovery verified against production code, physical phones unavailable."
 }

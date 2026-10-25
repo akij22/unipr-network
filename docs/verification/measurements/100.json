@@ -1,0 +1,24 @@
+{
+  "count": 100,
+  "browser": "156.0.8078.4",
+  "fps": 41.666666666666664,
+  "drawCallsPerFrame": 106,
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+  "heap": 97400000,
+  "animationFps": 55.572094866875176,
+  "startMs": 64,
+  "nextMs": 66,
+  "seekMs": 107,
+  "cancelMs": 81,
+  "engineMs": 100.1387909999994,
+  "events": 120,
+  "journalBytes": 236837,
+  "storage": {
+    "quota": 10737496064,
+    "usage": 77824,
+    "usageDetails": {
+      "indexedDB": 77824
+    }
+  }
+}

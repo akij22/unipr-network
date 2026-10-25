@@ -12,8 +12,6 @@ Keep the simulation independent of its presentation so future protocols, learnin
 - Keep changes focused on the requested outcome. Internal types and extension points do not imply new product requirements; add UI, dependencies, abstractions, or architectural changes only when the task requires them.
 - When changing modeled network behavior, keep simulation results, educational explanations, and tests consistent. Make intentional changes to existing behavior explicit.
 
-## Architecture and correctness
-
 ## Architecture and Correctness
 
 - Preserve the separation between the React presentation layer, the network simulation engine, and local persistence.
@@ -50,7 +48,7 @@ Keep the simulation independent of its presentation so future protocols, learnin
 - Report failed or unavailable checks explicitly.
 - Do not consider prototype validation sufficient evidence of production correctness.
 
-The implementation plan proposes Vite, Vitest, and Playwright workflows; these are not available commands yet. After scaffolding, document only scripts that actually exist and have been run. Run checks appropriate to changed behavior and report any unavailable checks explicitly; prototype QA does not establish production correctness.
+The repository now uses npm, Vite, Vitest and Playwright. Read package.json for current scripts. Verification evidence and outstanding hardware/browser coverage live in docs/verification/device-matrix.md and docs/verification/performance.md. Run Playwright invocations sequentially: concurrent runs clean the same test-results directory. Prototype QA does not establish production correctness.
 
 ## Keep guidance current
 
