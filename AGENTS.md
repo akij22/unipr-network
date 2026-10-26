@@ -48,7 +48,7 @@ Keep the simulation independent of its presentation so future protocols, learnin
 - Report failed or unavailable checks explicitly.
 - Do not consider prototype validation sufficient evidence of production correctness.
 
-The repository now uses npm, Vite, Vitest and Playwright. Read package.json for current scripts. Verification evidence and outstanding hardware/browser coverage live in docs/verification/device-matrix.md and docs/verification/performance.md. Run Playwright invocations sequentially: concurrent runs clean the same test-results directory. Prototype QA does not establish production correctness.
+Use the Bun version pinned by `packageManager` in `package.json` for dependencies and scripts, with `bun.lock` as the sole lockfile. Use `bun install --frozen-lockfile` for reproducible installs and `bun run <script>` for the configured scripts. Run the existing Vitest suite with `bun run test`. Keep Node available for Vite, Vitest and Playwright; their runtime remains Node. Read package.json for current scripts. Verification evidence and outstanding hardware/browser coverage live in docs/verification/device-matrix.md and docs/verification/performance.md. Run Playwright invocations sequentially: concurrent runs clean the same test-results directory. Prototype QA does not establish production correctness.
 
 ## Keep guidance current
 

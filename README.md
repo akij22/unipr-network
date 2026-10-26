@@ -4,11 +4,11 @@ A browser-based learning lab for Ethernet and IPv4. Build a real 3D topology, co
 
 ## Run locally
 
-Node 26 and npm 11 were used for development. Install the locked dependencies and start Vite:
+Use Bun 1.3.8 (pinned in `package.json`) for dependency installation and scripts. Keep Node 26 available for the existing Vite, Vitest and Playwright CLIs; this migration retains their Node runtime. Install the locked dependencies and start Vite:
 
 ```sh
-npm ci
-npm run dev
+bun install --frozen-lockfile
+bun run dev
 ```
 
 Open the URL printed by Vite. For physical-phone testing, serve the app through a trusted HTTPS development proxy or HTTPS hosting; plain LAN HTTP does not provide all required browser APIs. Production hosting should use HTTPS. No simulation backend, account or real Internet traffic is required.
@@ -27,19 +27,21 @@ Configuration changes discard the trace and learned state while keeping the came
 ## Verification
 
 ```sh
-npm run test
-npm run typecheck
-npm run build
-npm run test:e2e
-npm run test:performance
+bun run test
+bun run typecheck
+bun run build
+bun run test:e2e
+bun run test:performance
 ```
 
-Install the Playwright browsers with `npx playwright install chromium firefox webkit` if absent. Run Playwright invocations sequentially: they share an output directory. The performance suite is separate from functional E2E.
+Use `bun run test` to run the existing Vitest suite; `bun test` invokes a different test runner. Commit dependency changes with `bun.lock`, the project’s only lockfile.
+
+Install the Playwright browsers with `bun run playwright install chromium firefox webkit` if absent. Run Playwright invocations sequentially: they share an output directory. The performance suite is separate from functional E2E.
 
 See [device coverage](docs/verification/device-matrix.md), [performance measurements](docs/verification/performance.md) and [acceptance evidence](docs/verification/acceptance.md). The local Firefox executable currently fails before loading the app; the all-project E2E command reports that failure. Chromium, mobile Chromium emulation and WebKit can also be run explicitly:
 
 ```sh
-npm run test:e2e -- --project=chromium --project=mobile-chromium --project=webkit
+bun run test:e2e --project=chromium --project=mobile-chromium --project=webkit
 ```
 
 Physical iOS and Android checks are pending availability. WebKit and Pixel emulation do not establish physical-phone performance.

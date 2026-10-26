@@ -7,7 +7,7 @@ export default defineConfig({
   timeout: 30000,
   use: { baseURL: "http://127.0.0.1:5173", trace: "retain-on-failure" },
   webServer: {
-    command: "npm run dev -- --port 5173",
+    command: "bun run dev --port 5173",
     url: "http://127.0.0.1:5173",
     reuseExistingServer: true,
   },

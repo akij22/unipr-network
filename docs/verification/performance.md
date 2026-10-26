@@ -1,6 +1,6 @@
 # Performance — measured 2026-10-26
 
-Reproduce with `npm run test:performance`. Four serial fixtures contain 10, 50, 100 and 250 total devices: one switch, remaining manual IPv4 hosts, a star of Ethernet links, ping between two hosts. These are measurement sizes, not product limits.
+Reproduce with `bun run test:performance`. Four serial fixtures contain 10, 50, 100 and 250 total devices: one switch, remaining manual IPv4 hosts, a star of Ethernet links, ping between two hosts. These are measurement sizes, not product limits.
 
 Host: Mac17,3, macOS 27.0.1. Playwright Chromium 156.0.8078.4 uses **SwiftShader software rendering**, as recorded in each [raw JSON](measurements/50.json). The collaborative T3 browser separately reports Chromium 152.0.7977.167 / Electron 44.9.3 and ANGLE Metal Apple M5; native desktop samples now cover 10/50/100/250 devices, documented separately below. Neither environment measures a physical phone.
 
