@@ -30,3 +30,19 @@ it("projects selection and frame copies without inventing a single broadcast pat
   expect(view.devices.find((d) => d.id === "a")?.selected).toBe(true);
   expect(view.links).toHaveLength(2);
 });
+it("highlights exactly the connections identified by an L2-loop failure", () => {
+  const doc = emptyDocument();
+  doc.network = fixture("lan");
+  doc.layout = Object.fromEntries(
+    doc.network.devices.map((d, i) => [d.id, { name: d.id, x: i * 3, z: 0 }]),
+  );
+  const problem = {
+    code: "L2_LOOP",
+    category: "model" as const,
+    deviceIds: [],
+    linkIds: ["l2"],
+    params: {},
+  };
+  const view = buildSceneView(doc, null, null, problem);
+  expect(view.links.filter((l) => l.active).map((l) => l.id)).toEqual(["l2"]);
+});

@@ -7,7 +7,11 @@ export function PingComposer({ controller }: { controller: AppController }) {
     [source, setSource] = useState(""),
     [destination, setDestination] = useState("");
   const hosts = s.document.network.devices.filter((d) => d.kind === "host");
-  const blocked = s.busy || p.status === "active" || p.cursor !== p.frontier;
+  const activeSource =
+    hosts.find((h) => h.id === source)?.id ?? hosts[0]?.id ?? "";
+  const blocked =
+    s.busy ||
+    (s.runtimeReady && (p.status === "active" || p.cursor !== p.frontier));
   return (
     <details className="ping-composer">
       <summary>Send a packet</summary>
@@ -19,7 +23,7 @@ export function PingComposer({ controller }: { controller: AppController }) {
             type: "simulation.start",
             operation: {
               kind: "ping",
-              sourceId: source || hosts[0]?.id || "",
+              sourceId: activeSource,
               destination,
             },
           });
@@ -29,7 +33,7 @@ export function PingComposer({ controller }: { controller: AppController }) {
           Source host
           <select
             aria-label="Source host"
-            value={source || hosts[0]?.id || ""}
+            value={activeSource}
             onChange={(e) => setSource(e.target.value)}
             disabled={!hosts.length}
           >
@@ -88,7 +92,9 @@ export function SimulationControls({
         <button
           aria-label={s.playing ? "Pause simulation" : "Play simulation"}
           disabled={
-            s.busy || (p.status !== "active" && p.cursor === p.frontier)
+            !s.runtimeReady ||
+            (s.busy && !s.playing) ||
+            (p.status !== "active" && p.cursor === p.frontier)
           }
           onClick={() =>
             void controller.dispatch({
@@ -103,7 +109,9 @@ export function SimulationControls({
           className="primary"
           aria-label="Next step"
           disabled={
-            s.busy || (p.status !== "active" && p.cursor === p.frontier)
+            !s.runtimeReady ||
+            s.busy ||
+            (p.status !== "active" && p.cursor === p.frontier)
           }
           onClick={() => void controller.dispatch({ type: "simulation.next" })}
         >
@@ -112,19 +120,21 @@ export function SimulationControls({
       </div>
       <div className="timeline">
         <label className="timeline-label" htmlFor="known-events">
-          {p.total !== null
-            ? `Step ${p.cursor} of ${p.total}`
-            : p.status === "active"
-              ? `Step ${p.cursor} · simulation in progress`
-              : "Ready to simulate"}
+          {!s.runtimeReady
+            ? "Simulation unavailable"
+            : p.total !== null
+              ? `Step ${p.cursor} of ${p.total}`
+              : p.status === "active"
+                ? `Step ${p.cursor} · simulation in progress`
+                : "Ready to simulate"}
         </label>
         <input
           id="known-events"
           aria-label="Known events"
           type="range"
           min="0"
-          max={Math.max(1, p.frontier)}
-          value={p.cursor}
+          max={s.runtimeReady ? Math.max(1, p.frontier) : 1}
+          value={s.runtimeReady ? p.cursor : 0}
           disabled={!s.runtimeReady || !p.frontier || s.busy}
           onChange={(e) =>
             void controller.dispatch({
@@ -137,7 +147,7 @@ export function SimulationControls({
       <div className="reset-buttons">
         <button
           aria-label="Cancel operation"
-          disabled={!s.runtimeReady || s.busy || p.status === "idle"}
+          disabled={!s.runtimeReady || (!s.busy && p.status === "idle")}
           onClick={() =>
             void controller.dispatch({ type: "simulation.cancel" })
           }
@@ -146,7 +156,7 @@ export function SimulationControls({
         </button>
         <button
           aria-label="Reset network state"
-          disabled={s.busy}
+          disabled={!s.runtimeReady}
           onClick={() => void controller.dispatch({ type: "simulation.reset" })}
         >
           Reset network

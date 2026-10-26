@@ -89,3 +89,23 @@ it("rejects duplicate cable identities and cables between ports of the same devi
     validateConfiguration(loop).some((e) => e.code === "SELF_CONNECTION"),
   ).toBe(true);
 });
+it("rejects reserved manual endpoint addresses and switched /31 hosts, preserving direct router /31 links", () => {
+  for (const ip of ["192.168.1.0", "192.168.1.255"]) {
+    const n = fixture("lan");
+    n.devices[1].ports[0].address = { ip, prefix: 24 };
+    expect(
+      validateConfiguration(n).some(
+        (e) => e.code === "INVALID_ENDPOINT_ADDRESS",
+      ),
+    ).toBe(true);
+  }
+  const switched = fixture("lan");
+  switched.devices[0].ports[0].address = { ip: "10.0.0.0", prefix: 31 };
+  switched.devices[1].ports[0].address = { ip: "10.0.0.1", prefix: 31 };
+  expect(
+    validateConfiguration(switched).some(
+      (e) => e.code === "UNSUPPORTED_31_LINK",
+    ),
+  ).toBe(true);
+  expect(validateConfiguration(fixture("router31"))).toEqual([]);
+});

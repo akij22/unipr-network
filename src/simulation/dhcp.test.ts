@@ -114,3 +114,51 @@ it("uses the acquired configuration for ping and does not relay broadcasts", () 
     detail: { issue: { code: "DHCP_NO_SERVER" } },
   });
 });
+it("allows overlapping pools on isolated Ethernet domains", () => {
+  const n = fixture("dhcpExhausted"),
+    second = fixture("dhcpExhausted");
+  // Give the disconnected copy new device identities and endpoint MAC addresses.
+  for (const d of second.devices) {
+    d.id += "-other";
+    for (const p of d.ports)
+      if (p.mac) p.mac = p.mac.replace("02:00:", "02:01:");
+  }
+  for (const l of second.links) {
+    l.id += "-other";
+    for (const end of l.ends) end.deviceId += "-other";
+  }
+  n.devices.push(...second.devices);
+  n.links.push(...second.links);
+  const engine = createSimulator(n);
+  expect(
+    collectOperation(engine, { kind: "dhcp", hostId: "a" }).at(-1)?.kind,
+  ).toBe("operation.completed");
+  expect(
+    collectOperation(engine, { kind: "dhcp", hostId: "a-other" }).at(-1)?.kind,
+  ).toBe("operation.completed");
+  expect(engine.snapshot().dhcpClients["a-other"]?.ip).toBe("192.168.1.100");
+});
+it("reports duplicate participating DHCP server addresses instead of completing acquisition", () => {
+  const n = fixture("dhcp"),
+    other = router("r2", ["192.168.1.1"], 30);
+  other.dhcpScopes = [
+    {
+      id: "scope",
+      portId: "eth0",
+      enabled: true,
+      first: "192.168.1.120",
+      last: "192.168.1.130",
+      gateway: "192.168.1.1",
+    },
+  ];
+  n.devices.push(other);
+  n.links.push(link("other-server", "r2", "eth0", "s1", "p4"));
+  const events = collectOperation(createSimulator(n), {
+    kind: "dhcp",
+    hostId: "a",
+  });
+  expect(events.at(-1)).toMatchObject({
+    kind: "operation.failed",
+    detail: { issue: { code: "DUPLICATE_IPV4" } },
+  });
+});

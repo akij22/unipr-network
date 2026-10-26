@@ -7,6 +7,7 @@ import type { AppController, AppState, NetworkDocument } from "./types";
 import { openDatabase } from "../storage/database";
 import {
   createDocumentRepository,
+  SavedNetworkMetadataError,
   type DocumentRepository,
 } from "../storage/documents";
 export function emptyDocument(): NetworkDocument {
@@ -45,6 +46,7 @@ export function createAppController(
     busy: false,
     dirty: false,
     runtimeReady: true,
+    viewEpoch: 0,
     issue: null,
     connection: null,
     notice: null,
@@ -53,7 +55,8 @@ export function createAppController(
   };
   const listeners = new Set<() => void>();
   let timer: ReturnType<typeof setTimeout> | null = null,
-    savedId: string | null = null;
+    savedId: string | null = null,
+    playEpoch = 0;
   const set = (patch: Partial<AppState>) => {
     state = { ...state, ...patch };
     for (const listener of listeners) listener();
@@ -62,16 +65,17 @@ export function createAppController(
     command: SessionCommand,
     operationId: string | null = null,
   ) => {
-    const sentRevision = revision;
+    const sentRevision = revision,
+      sentRequest = ++requestId;
     set({ busy: true, issue: null });
     try {
       const result = await client.request({
-        requestId: ++requestId,
+        requestId: sentRequest,
         revision: sentRevision,
         operationId,
         command,
       });
-      if (sentRevision !== revision) return;
+      if (sentRevision !== revision || sentRequest !== requestId) return;
       if (result.ok)
         set({
           projection: result.value,
@@ -85,16 +89,21 @@ export function createAppController(
       else set({ issue: result.issue });
     } catch (cause) {
       console.error("App operation failed", cause);
-      if (sentRevision === revision)
+      if (sentRevision === revision && sentRequest === requestId)
         set({ issue: issue("WORKER_FAILURE", [], {}, "resource") });
     } finally {
-      if (sentRevision === revision) set({ busy: false });
+      if (sentRevision === revision && sentRequest === requestId)
+        set({ busy: false });
     }
   };
   const apply = async (network: NetworkConfig) => {
     const problem = validateConfiguration(network)[0];
     if (problem) {
       set({ issue: problem });
+      return;
+    }
+    if (JSON.stringify(network) === JSON.stringify(state.document.network)) {
+      if (state.runtimeReady) set({ issue: null });
       return;
     }
     revision++;
@@ -109,23 +118,25 @@ export function createAppController(
     await send({ type: "load", network });
   };
   const pause = () => {
+    playEpoch++;
     if (timer !== null) clearTimeout(timer);
     timer = null;
     set({ playing: false });
   };
-  const play = async () => {
-    if (!state.playing) return;
+  const play = async (token: number) => {
+    if (!state.playing || token !== playEpoch) return;
     if (state.busy) {
-      timer = setTimeout(() => void play(), 40);
+      timer = setTimeout(() => void play(token), 40);
       return;
     }
     await send({ type: "next" }, state.projection.operationId);
+    if (token !== playEpoch) return;
     if (
       state.playing &&
       (state.projection.status === "active" ||
         state.projection.cursor < state.projection.frontier)
     )
-      timer = setTimeout(() => void play(), 700);
+      timer = setTimeout(() => void play(token), 700);
     else pause();
   };
   return {
@@ -150,7 +161,9 @@ export function createAppController(
             console.error("List saved networks failed", cause);
             set({
               issue: issue(
-                "SAVE_STORAGE_FAILED",
+                cause instanceof SavedNetworkMetadataError
+                  ? "SAVE_LIST_DATA_INVALID"
+                  : "SAVE_STORAGE_FAILED",
                 [],
                 { action: "list" },
                 "resource",
@@ -221,11 +234,13 @@ export function createAppController(
               return;
             }
             revision++;
+            set({ runtimeReady: false });
             await send({ type: "load", network: loaded.value.network });
             if (!state.issue) {
               savedId = loaded.value.id;
               set({
                 document: loaded.value,
+                viewEpoch: state.viewEpoch + 1,
                 selection: null,
                 connection: null,
                 dirty: false,
@@ -285,8 +300,9 @@ export function createAppController(
             pause();
             return;
           }
+          if (state.playing) return;
           set({ playing: true });
-          void play();
+          void play(++playEpoch);
           return;
         case "simulation.cancel":
           pause();

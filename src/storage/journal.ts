@@ -82,15 +82,18 @@ export function createJournal(db: AppDatabase): Journal {
         .getAll(range(operationId, from));
       const checkpoint = checkpoints.at(-1);
       if (!checkpoint) throw new Error("HISTORY_CHECKPOINT_MISSING");
-      const rows = await tx
-        .objectStore("journalEvents")
-        .getAll(
-          IDBKeyRange.bound(
-            [operationId, checkpoint.index],
-            [operationId, to],
-            true,
-          ),
-        );
+      const rows =
+        checkpoint.index === to
+          ? []
+          : await tx
+              .objectStore("journalEvents")
+              .getAll(
+                IDBKeyRange.bound(
+                  [operationId, checkpoint.index],
+                  [operationId, to],
+                  true,
+                ),
+              );
       return {
         checkpoint: { index: checkpoint.index, state: checkpoint.state },
         events: rows.map((r) => r.event),

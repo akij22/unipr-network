@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite. For phone testing on the same LAN, use the computer's LAN address. Production hosting should use HTTPS for workers, local storage and Web Locks. No simulation backend, account or real Internet traffic is required.
+Open the URL printed by Vite. For physical-phone testing, serve the app through a trusted HTTPS development proxy or HTTPS hosting; plain LAN HTTP does not provide all required browser APIs. Production hosting should use HTTPS. No simulation backend, account or real Internet traffic is required.
 
 ## Explore
 
@@ -22,7 +22,7 @@ Open the URL printed by Vite. For phone testing on the same LAN, use the compute
 5. Use Next, Previous, Play and the generated-event slider. Click a protocol or packet heading to inspect theory. Tables, fields and the 3D view follow the same historical step.
 6. Save a named configuration. My networks reopens it with clean simulation state. Data belongs to this browser and is not synchronized.
 
-Configuration changes discard the trace and learned state while keeping the camera. Position/name/view changes preserve simulation state. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
+Configuration changes discard the trace and learned state while keeping the camera. Position/name/view changes preserve simulation state. Reopening restores the saved camera position and target; zoom is fitted to the current viewport. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
 
 ## Verification
 

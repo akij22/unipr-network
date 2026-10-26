@@ -15,10 +15,28 @@ export interface DocumentRepository {
     overwriteId?: string,
   ): Promise<Result<string>>;
 }
+export class SavedNetworkMetadataError extends Error {
+  constructor() {
+    super("Saved network metadata is invalid");
+    this.name = "SavedNetworkMetadataError";
+  }
+}
 export function createDocumentRepository(db: AppDatabase): DocumentRepository {
   return {
     async list() {
-      return (await db.getAll("documents"))
+      const rows = await db.getAll("documents");
+      for (const row of rows)
+        if (
+          typeof row.id !== "string" ||
+          !row.id.trim() ||
+          typeof row.name !== "string" ||
+          !row.name.trim() ||
+          typeof row.updatedAt !== "number" ||
+          !Number.isFinite(row.updatedAt) ||
+          !Number.isFinite(new Date(row.updatedAt).getTime())
+        )
+          throw new SavedNetworkMetadataError();
+      return rows
         .map(({ id, name, updatedAt }) => ({ id, name, updatedAt }))
         .sort((a, b) => b.updatedAt - a.updatedAt);
     },

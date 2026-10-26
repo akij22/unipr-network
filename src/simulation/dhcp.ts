@@ -1,3 +1,5 @@
+import { connectedEndpoints } from "../domain/topology";
+import { addressOf } from "./ipv4";
 import {
   issue,
   type Issue,
@@ -156,6 +158,21 @@ export function createDhcpProtocol(config: NetworkConfig, ctx: DhcpContext) {
             (s) => s.enabled && s.portId === ingress.portId,
           );
         if (!port?.address || !scope) return;
+        const peers = connectedEndpoints(config, ingress).map((ref) => {
+          const d = config.devices.find((d) => d.id === ref.deviceId),
+            p = d?.ports.find((p) => p.id === ref.portId);
+          return {
+            mac: p?.mac,
+            ip: d && p ? addressOf(d, p, state)?.ip : null,
+          };
+        });
+        if (peers.filter((p) => p.ip === port.address!.ip).length > 1) {
+          ctx.stop(
+            issue("DUPLICATE_IPV4", [device.id], { ip: port.address.ip }),
+          );
+          return;
+        }
+        const peerMacs = new Set(peers.map((p) => p.mac));
         const scopeId = `${device.id}/${scope.id}`,
           key = `${scopeId}/${message.clientMac}`;
         if (message.message === "discover") {
@@ -164,7 +181,11 @@ export function createDhcpProtocol(config: NetworkConfig, ctx: DhcpContext) {
           if (!first.ok || !last.ok) return;
           const used = new Set(
             [...Object.values(state.dhcpLeases), ...Object.values(state.offers)]
-              .filter((l) => l.clientMac !== message.clientMac)
+              .filter(
+                (l) =>
+                  peerMacs.has(l.clientMac) &&
+                  l.clientMac !== message.clientMac,
+              )
               .map((l) => l.ip),
           );
           const existing = state.dhcpLeases[key];

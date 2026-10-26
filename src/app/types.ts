@@ -23,6 +23,7 @@ export type AppState = {
   busy: boolean;
   dirty: boolean;
   runtimeReady: boolean;
+  viewEpoch: number;
   issue: Issue | null;
   connection: { from: PortRef | null } | null;
   notice: string | null;

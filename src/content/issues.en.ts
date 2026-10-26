@@ -7,6 +7,13 @@ export function presentIssue(
   const name = document.layout[problem.deviceIds[0]]?.name ?? "This device",
     ip = problem.params.ip ?? "the next hop";
   const messages: Record<string, string> = {
+    SAVE_LIST_DATA_INVALID:
+      "A saved network has unreadable details, so the saved network list could not be shown. Your current network is kept. Close this menu to continue editing or save it under a new name, then retry the list.",
+    INVALID_ENDPOINT_ADDRESS:
+      "This interface uses its subnet network or broadcast address. Choose a usable host address inside the subnet, or correct its prefix.",
+    UNSUPPORTED_31_LINK:
+      "A /31 is supported only on a direct link between two router interfaces. For hosts or switched LANs, choose a prefix of /30 or shorter.",
+
     SAVE_NAME_REQUIRED:
       "Enter a name so you can recognize this configuration in My networks.",
     SAVE_NAME_EXISTS: `A saved network already uses the name ${problem.params.name ?? "you entered"}. Choose another name or explicitly overwrite that configuration.`,

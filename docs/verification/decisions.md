@@ -13,5 +13,10 @@ These decisions extend the approved plan's interfaces where required by the spec
 | Queue changes contain added/removed actions. | Whole pending-queue snapshots inflated event storage quadratically. | A changed scheduler action must be represented on both sides; exact replay tests include queue time changes and checkpoint 50. |
 | SceneRecovery receives the controller. | Context loss must pause playback while preserving the worker/document and recreate a real Canvas. | This adds a presentation prop; it does not couple the engine to graphics. |
 | AppState exposes runtimeReady. | Failed configuration loads must not present learned state from the previous revision. Start retries the load. | New observation panels must honor readiness; tests cover failed load and retry. |
+| Document-open viewEpoch is presentation-only and advances on successful reopen. | Restore a saved camera even when reopening the same ID, without resetting it on ordinary configuration edits. | A new view consumer must distinguish document reopen from visual updates. |
+
+The final reviewer’s two lower-severity findings were raised to Important: missing loop highlights prevent the error’s advertised recovery, and a stale camera can leave a reopened topology out of view. Both were fixed with regressions; deferring them would preserve misleading recovery/navigation.
 
 Physical-phone qualification and the Firefox launch failure are verification limitations, not silent exemptions or fabricated passes. See device-matrix.md. No branch merge, push or publication is performed by this implementation.
+
+Final review rulings retain unverified physical-phone/OS-keyboard/GPU-eviction behavior and Firefox application behavior; hardware/browser-specific problems may remain. Performance beyond measured sizes is unqualified; larger networks may slow down, and no arbitrary device cap is imposed. Approved DHCP renewal/relay, cache/lease/NAT aging, nested NAT and general TCP/UDP NAT exclusions stand; users must follow the documented model boundaries.

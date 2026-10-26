@@ -29,6 +29,7 @@ export function buildSceneView(
   document: NetworkDocument,
   projection: Projection | null,
   selection: AppState["selection"],
+  problem: AppState["issue"] = null,
 ): SceneView {
   const devices = document.network.devices.map((d) => ({
     id: d.id,
@@ -52,7 +53,9 @@ export function buildSceneView(
             id: l.id,
             from: [a.x, 0.18, a.z] as [number, number, number],
             to: [b.x, 0.18, b.z] as [number, number, number],
-            active: projection?.event?.linkIds.includes(l.id) ?? false,
+            active:
+              (projection?.event?.linkIds.includes(l.id) ?? false) ||
+              !!problem?.linkIds.includes(l.id),
             selected: selection?.kind === "link" && selection.id === l.id,
             reverse: projection?.event?.deviceIds[0] === b.id,
           },

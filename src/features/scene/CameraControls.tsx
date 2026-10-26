@@ -11,10 +11,12 @@ export function CameraControls({
   controller,
   command,
   span,
+  restoreKey,
 }: {
   controller: AppController;
   command: CameraCommand | null;
   span: number;
+  restoreKey: number;
 }) {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null),
     { camera, size, invalidate } = useThree();
@@ -39,7 +41,7 @@ export function CameraControls({
     camera.updateProjectionMatrix();
     controls.current?.update();
     invalidate();
-  }, [size.width, size.height]);
+  }, [size.width, size.height, restoreKey]);
   useEffect(() => {
     if (!command || !controls.current) return;
     const ctl = controls.current;

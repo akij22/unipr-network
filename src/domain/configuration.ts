@@ -34,6 +34,47 @@ export function validateConfiguration(config: NetworkConfig): Issue[] {
         !analyzePrefix(port.address.ip, port.address.prefix).ok
       )
         errors.push(issue("INVALID_IPV4", [device.id], {}, "input"));
+      if (
+        port.address &&
+        (device.kind === "host" || device.kind === "router")
+      ) {
+        const info = analyzePrefix(port.address.ip, port.address.prefix);
+        if (
+          info.ok &&
+          port.address.prefix <= 30 &&
+          (port.address.ip === info.value.network ||
+            port.address.ip === info.value.broadcast)
+        )
+          errors.push(
+            issue(
+              "INVALID_ENDPOINT_ADDRESS",
+              [device.id],
+              { ip: port.address.ip },
+              "input",
+            ),
+          );
+        if (info.ok && port.address.prefix === 31) {
+          const cable = config.links.find((l) =>
+              l.ends.some(
+                (e) => e.deviceId === device.id && e.portId === port.id,
+              ),
+            ),
+            other = cable?.ends.find((e) => e.deviceId !== device.id),
+            peer = other
+              ? config.devices.find((d) => d.id === other.deviceId)
+              : null,
+            peerAddress = peer?.ports.find(
+              (p) => p.id === other?.portId,
+            )?.address;
+          if (
+            device.kind !== "router" ||
+            (other &&
+              (peer?.kind !== "router" ||
+                (peerAddress && peerAddress.prefix !== 31)))
+          )
+            errors.push(issue("UNSUPPORTED_31_LINK", [device.id], {}, "input"));
+        }
+      }
     }
     if (
       device.kind === "host" &&

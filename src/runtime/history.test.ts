@@ -55,3 +55,30 @@ it("restores a cold checkpoint beyond step fifty including a pending broadcast",
   await history.clear();
   db.close();
 });
+it("restores step zero and exact cold checkpoint boundaries without invalid IndexedDB ranges", async () => {
+  const { fanoutNetwork } = await import("../../tests/fixtures/networks");
+  const db = await openDatabase("exact-checkpoints"),
+    history = createHistory(createJournal(db), "exact", 2),
+    engine = createSimulator(fanoutNetwork(100));
+  engine.start(
+    { kind: "ping", sourceId: "h0", destination: "10.0.0.2" },
+    "exact",
+  );
+  const expected = new Map([[0, engine.snapshot()]]);
+  await history.initialize(engine.snapshot());
+  for (let i = 0; i < 1000; i++) {
+    const result = engine.advance(128);
+    if (result.kind === "done") break;
+    if (result.kind === "event") {
+      expected.set(result.event.index, result.state);
+      await history.append(result.event, result.state);
+    }
+  }
+  for (const index of [0, 50, 100, 49, 51]) {
+    const restored = await history.at(index);
+    expect(restored.state).toEqual(expected.get(index));
+    expect(restored.event?.index ?? 0).toBe(index);
+  }
+  await history.clear();
+  db.close();
+});

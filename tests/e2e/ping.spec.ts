@@ -18,6 +18,21 @@ test("runs a routed ping through the real worker and replays history", async ({
   await expect(
     page.getByText("Communication complete", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("slider", { name: "Known events" }).fill("0");
+  await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue(
+    "0",
+  );
+  await page.getByRole("button", { name: "Next step", exact: true }).click();
+  await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue(
+    "1",
+  );
+  await page
+    .getByRole("slider", { name: "Known events" })
+    .fill(
+      (await page
+        .getByRole("slider", { name: "Known events" })
+        .getAttribute("max")) ?? "0",
+    );
   await page
     .getByRole("button", { name: "Previous step", exact: true })
     .click();

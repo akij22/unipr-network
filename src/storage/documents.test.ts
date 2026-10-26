@@ -157,3 +157,26 @@ it("releases a managed connection when another tab upgrades the database", async
   });
   upgraded.close();
 });
+it("rejects corrupt saved-network summary metadata before presentation", async () => {
+  const { unwrap } = await import("idb"),
+    db = await openDatabase("invalid-summary"),
+    repo = createDocumentRepository(db),
+    d = document();
+  const tx = unwrap(db).transaction("documents", "readwrite");
+  tx.objectStore("documents").put({
+    id: d.id,
+    name: { oops: "broken" },
+    normalName: "broken",
+    updatedAt: 0,
+    schema: 1,
+    document: d,
+  });
+  await new Promise<void>((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+  await expect(repo.list()).rejects.toMatchObject({
+    name: "SavedNetworkMetadataError",
+  });
+  db.close();
+});

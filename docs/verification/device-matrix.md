@@ -1,4 +1,4 @@
-# Device and browser verification — 2026-10-25
+# Device and browser verification — 2026-10-26
 
 Host: Apple hardware identifier Mac17,3, macOS 27.0.1. Node 26.11.1, npm 11.20.0. Production code is tested separately from historical mockups.
 
@@ -12,7 +12,7 @@ Host: Apple hardware identifier Mac17,3, macOS 27.0.1. Node 26.11.1, npm 11.20.0
 | Physical iPhone 13 / Safari | Proposed qualification reference | Not available; not verified |
 | Physical Pixel 7 / Chrome | Proposed qualification reference | Not available; not verified |
 
-Functional suite after Task 12: 63 passing E2E cases across Chromium, mobile Chromium and WebKit. Unit/integration suite: 64 passing tests; typecheck and production build passed. A fresh final branch review is recorded separately.
+Final functional suite after review fixes: 75 passing E2E cases across Chromium, mobile Chromium and WebKit. Unit/integration suite: 76 passing tests; typecheck and production build passed. A fresh final branch review and its regression fixes are recorded in final-review.md.
 
 Viewport matrix: 320×568, 360×640, 375×667, 390×844, 414×896, 768×1024, 844×390 and 1280×800. Active-event controls and at least 160 CSS px of 3D scene remain visible together. No horizontal page overflow. The network and controls form one compact group; input/theory exploration can intentionally scroll it away. Starting or advancing an operation restores the network context.
 
@@ -21,3 +21,5 @@ Additional checks cover keyboard camera controls, reduced-motion preference, ins
 ## Physical-phone reproduction
 
 Use HTTPS hosting accessible from each phone, record actual model/OS/browser/version and WebGL renderer. Build Host→Switch→Router→Host using touch and the port picker. Configure the router, enable a LAN DHCP scope and ICMP PAT, explicitly acquire a lease, ping the remote host, inspect NAT, step backward, save and reopen. Repeat portrait/landscape while editing with the OS keyboard. Verify Apply/Cancel reachability, focus after closing dialogs, accessible protocol details and the visible playback/network group. Background and foreground the app during Play; playback should remain paused after return. Trigger actual WebGL eviction if the browser supports a development mechanism, then retry the view and compare configuration/history. Run the topology sizes in performance.md and record thermal/power conditions. Leave unavailable measurements blank.
+
+Native desktop measurements collected on 2026-10-26 report approximately 59–60 orbit fps for 10/50/100/250 devices on Metal Apple M5. See measurements/native-50.json and measurements/native-growing.json. These short desktop samples do not qualify physical phones.

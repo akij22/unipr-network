@@ -8,11 +8,17 @@ export function DhcpClient({
   deviceId: string;
 }) {
   const s = useApp(controller),
-    lease = s.projection.state.dhcpClients[deviceId];
+    lease = s.runtimeReady ? s.projection.state.dhcpClients[deviceId] : null;
   return (
     <section className="tutorial">
       <span className="eyebrow">DHCP CLIENT</span>
-      <p>{lease ? `Assigned IPv4: ${lease.ip}` : "No address assigned"}</p>
+      <p>
+        {lease
+          ? `Assigned IPv4: ${lease.ip}`
+          : s.runtimeReady
+            ? "No address assigned"
+            : "Simulation state unavailable. Request a configuration to reconnect."}
+      </p>
       {lease && (
         <p className="small">
           /{lease.prefix} · Gateway {lease.gateway} · No expiration
@@ -21,8 +27,9 @@ export function DhcpClient({
       <button
         disabled={
           s.busy ||
-          s.projection.status === "active" ||
-          s.projection.cursor !== s.projection.frontier
+          (s.runtimeReady &&
+            (s.projection.status === "active" ||
+              s.projection.cursor !== s.projection.frontier))
         }
         onClick={() =>
           void controller.dispatch({

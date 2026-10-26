@@ -27,12 +27,14 @@ export function NetworkScene({
         state.document,
         state.runtimeReady ? state.projection : null,
         state.selection,
+        state.issue,
       ),
     [
       state.document.network,
       state.document.layout,
       state.runtimeReady ? state.projection : null,
       state.selection,
+      state.issue,
     ],
   );
   const span = Math.max(
@@ -85,6 +87,7 @@ export function NetworkScene({
             controller={controller}
             command={command}
             span={span}
+            restoreKey={state.viewEpoch}
           />
           {view.links.map((link) => (
             <LinkModel
@@ -143,7 +146,7 @@ export function NetworkScene({
       <div className="scene-hud">
         <span className="eyebrow">3D WORKSPACE</span>
         <span>
-          {state.projection.event
+          {state.runtimeReady && state.projection.event
             ? `Event ${state.projection.cursor}`
             : "Orbit, connect, explore"}
         </span>

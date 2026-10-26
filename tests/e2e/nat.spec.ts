@@ -57,6 +57,20 @@ test("shows PAT transformations and a reversible translation table", async ({
     .fill("203.0.113.10");
   await page.getByRole("button", { name: "Start ping", exact: true }).click();
   expect(await finishOperation(page)).toBe("completed");
+  const frontier = await page
+    .getByRole("slider", { name: "Known events" })
+    .inputValue();
+  await selectDevice(page, "Host 1");
+  await page.getByLabel("Device name", { exact: true }).fill("Renamed client");
+  await page
+    .getByRole("button", { name: "Apply settings", exact: true })
+    .click();
+  await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue(
+    frontier,
+  );
+  await expect(
+    page.getByText("Assigned IPv4: 192.168.1.100", { exact: true }),
+  ).toBeVisible();
   await selectDevice(page, "Router 1");
   await page.getByRole("button", { name: "Tables", exact: true }).click();
   await expect(

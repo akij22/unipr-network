@@ -12,7 +12,7 @@ Specification: ../superpowers/specs/2026-10-25-uniprnetwork-mvp-design.md. Tests
 | 6 · Explicit DORA, distinct leases, no server, exhausted pool, competing offers | simulation/dhcp.test.ts; dhcp.spec.ts and combined nat.spec.ts |
 | 7 · ICMP PAT, equal inside identifiers, correct replies and error quotes/checksums | simulation/nat.test.ts; nat.spec.ts |
 | 8 · Complete historical restoration, no replay mutation or start in history | runtime/session.test.ts, runtime/history.test.ts includes cold checkpoint 50 plus pending broadcast queue; ping.spec.ts, nat.spec.ts |
-| 9 · Config changes, stale replies, visual-only edits, Reset versus Cancel | runtime/session.test.ts, app/controller.test.ts including failed worker load recovery |
+| 9 · Config changes, stale replies, visual-only edits, Reset versus Cancel | runtime/session.test.ts, app/controller.test.ts including failed worker load recovery and stale same-revision responses after cancellation |
 | 10 · Progressive generation and unknown total | engine.start queues only; session/engine tests and controls that expose generated-event range without a total percentage |
 | 11 · Named configs, clean reopen, validation and storage recovery | storage/documents.test.ts; saves.spec.ts, history-storage.spec.ts |
 | 12 · English teaching and distinct application/network failures | content/present.test.ts, English content catalog, quota/storage and ping failure checks; no raw exception UI |
@@ -20,3 +20,5 @@ Specification: ../superpowers/specs/2026-10-25-uniprnetwork-mvp-design.md. Tests
 | 14 · Mouse/touch/keyboard, visible network/controls, recovery and performance | adaptive.spec.ts, recovery.spec.ts, scene.spec.ts and performance.spec.ts; physical phone and Firefox limitations in device-matrix.md |
 
 Paths in the evidence column are relative to src/ or tests/e2e/. Automated browser coverage does not prove assistive-technology compatibility or physical-phone performance. No fixed device count limit is implemented. Production build succeeds with a large lazy-loaded Three.js scene chunk warning; dependency R3F currently emits a Three.Clock deprecation notice in development.
+
+Final review and regression evidence: [final-review.md](final-review.md). Exact checkpoint boundaries, failed-load DHCP presentation, overlapping isolated pools, duplicate server addresses, invalid manual endpoints, cancellation during pending work, stale source selection, name-only Apply, corrupt summary metadata, cycle highlights and saved-camera restoration are covered.
