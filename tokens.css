@@ -1,0 +1,2 @@
+/* Hallmark portable entry: production tokens remain the single source of truth. */
+@import "./src/styles/tokens.css";

@@ -36,6 +36,7 @@ test("runs a routed ping through the real worker and replays history", async ({
   await page
     .getByRole("button", { name: "Previous step", exact: true })
     .click();
+  await openComposer(page);
   await expect(
     page.getByRole("button", { name: "Start ping", exact: true }),
   ).toBeDisabled();

@@ -1,4 +1,4 @@
-/* Hallmark · educational workbench · dark cobalt · topology and contextual inspector.
+/* Hallmark · educational workbench · black + vivid blue · topology and contextual inspector.
  * Pre-emit critique: philosophy 5, hierarchy 4, execution 4, specificity 5, restraint 5, variety 4. */
 * {
   box-sizing: border-box;
@@ -156,47 +156,6 @@ a {
 .muted {
   color: var(--color-muted);
 }
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--color-rule);
-  background: var(--color-panel);
-  flex-wrap: wrap;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-ink);
-  text-decoration: none;
-  font-size: 20px;
-  letter-spacing: -0.5px;
-}
-.brand span {
-  font-weight: 400;
-  color: var(--color-muted);
-}
-.brand svg {
-  width: 30px;
-  height: 28px;
-  fill: var(--color-blue);
-  stroke: var(--color-blue);
-  stroke-width: 2;
-}
-.document-name {
-  display: none;
-}
-.tutorial-toggle {
-  margin-inline-start: auto;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.tutorial-toggle span {
-  color: var(--color-blue);
-}
 .workspace {
   padding: 12px;
   display: grid;
@@ -206,16 +165,11 @@ a {
 .lab {
   min-width: 0;
 }
-.lab-toolbar,
-.section-head {
+.section-head  {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-}
-.lab-toolbar {
-  padding: 8px 0 16px;
-  flex-wrap: wrap;
 }
 .section-head > div {
   min-width: 0;
@@ -227,16 +181,6 @@ a {
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-panel);
   overflow: clip;
-}
-.empty-scene {
-  padding: 60px 24px;
-  text-align: center;
-}
-.empty-scene h2 {
-  font-size: 28px;
-}
-.empty-scene p {
-  color: var(--color-muted);
 }
 .inspector {
   padding: 20px;
@@ -412,13 +356,6 @@ select {
   scroll-margin: 90px;
 }
 @media (min-width: 48rem) {
-  .document-name {
-    display: grid;
-    border-inline-start: 1px solid var(--color-rule);
-    padding-inline-start: 20px;
-    font-size: 13px;
-    gap: 3px;
-  }
   .workspace {
     padding: 20px;
     gap: 20px;
@@ -464,33 +401,6 @@ select {
   width: 100%;
   touch-action: none;
 }
-.scene-hud {
-  position: absolute;
-  top: 14px;
-  left: 16px;
-  right: 16px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 11px;
-  pointer-events: none;
-}
-.scene-hud span:last-child {
-  color: var(--color-muted);
-}
-.scene-empty {
-  position: absolute;
-  inset: 90px 16px auto;
-  text-align: center;
-  pointer-events: none;
-}
-.scene-empty h2 {
-  font-size: 26px;
-}
-.scene-empty p {
-  color: var(--color-muted);
-  font-size: 13px;
-}
 .scene-label {
   display: flex;
   flex-direction: column;
@@ -511,44 +421,13 @@ select {
 .scene-label.selected {
   border-color: var(--color-blue);
 }
-.camera-toolbar {
-  position: absolute;
-  bottom: 30px;
-  right: 10px;
-  display: flex;
-  gap: 5px;
-}
-.camera-toolbar button {
-  padding: 7px 11px;
-  font-size: 13px;
-  background: var(--color-panel);
-}
-.scene-help {
-  position: absolute;
-  bottom: 10px;
-  left: 12px;
-  font-size: 10px;
-  color: var(--color-muted);
-  pointer-events: none;
-}
-.scene-hud,
-.camera-toolbar {
-  z-index: 2;
-}
 @media (min-width: 70rem) {
   .scene-canvas {
     height: 440px;
   }
 }
-/* Keep the network and its controls together; forms may reclaim the viewport while editing. */
-.network-focus {
-  min-width: 0;
-}
 .scene-recovery {
   padding: 24px;
-}
-.camera-toolbar button {
-  min-width: 44px;
 }
 .scene-label {
   min-height: 44px;
@@ -566,68 +445,6 @@ select {
 @media (max-width: 69.99rem) {
   html {
     scroll-padding-top: calc(70dvh + 16px);
-  }
-  .network-focus {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: var(--color-paper);
-    height: clamp(380px, 70dvh, 620px);
-    display: flex;
-    flex-direction: column;
-  }
-  .network-focus .simulation-dock {
-    position: static;
-    flex: none;
-    padding: 6px;
-    gap: 6px;
-    border-radius: 8px;
-  }
-  .network-focus .event-summary {
-    flex: none;
-    min-height: 0;
-    padding: 8px 0;
-  }
-  .network-focus .event-heading {
-    gap: 6px;
-  }
-  .network-focus .event-heading h2 {
-    font-size: 16px;
-  }
-  .network-focus .event-summary > p {
-    font-size: 12px;
-    margin: 4px 0;
-  }
-  .network-focus .protocol-row {
-    gap: 4px;
-  }
-  .network-focus .protocol-row > .eyebrow,
-  .network-focus .protocol-row > .muted {
-    display: none;
-  }
-  .network-focus .network-stage {
-    flex: 1;
-    min-height: 160px;
-  }
-  .network-focus .scene-canvas {
-    height: 100%;
-  }
-  .network-focus .scene-empty {
-    inset: 45px 12px auto;
-  }
-  .network-focus .scene-empty h2 {
-    font-size: 20px;
-  }
-  .network-focus .scene-hud {
-    top: 6px;
-    left: 10px;
-    right: 10px;
-  }
-  .network-focus .scene-help {
-    display: none;
-  }
-  .network-focus .camera-toolbar {
-    bottom: 8px;
   }
   .timeline {
     order: 3;
@@ -655,9 +472,6 @@ select {
   select {
     scroll-margin-top: calc(70dvh + 16px);
   }
-  .app:has(input:focus, select:focus) .network-focus {
-    position: static;
-  }
   .app:has(input:focus, select:focus) {
     scroll-padding-top: 16px;
   }
@@ -667,47 +481,6 @@ select {
   }
 }
 @media (max-width: 30rem) {
-  .topbar {
-    gap: 8px;
-    padding: 8px 12px;
-    flex-wrap: nowrap;
-  }
-  .brand {
-    font-size: 17px;
-    gap: 5px;
-  }
-  .brand svg {
-    width: 22px;
-  }
-  .brand span {
-    display: none;
-  }
-  .tutorial-toggle {
-    font-size: 12px;
-    padding-inline: 7px;
-    gap: 5px;
-  }
-  .header-actions {
-    gap: 5px;
-    flex-wrap: nowrap;
-  }
-  .header-actions button {
-    font-size: 12px;
-    padding-inline: 8px;
-  }
-  .topbar .document-name {
-    display: none;
-  }
-  .lab-toolbar {
-    gap: 8px;
-  }
-  .lab-toolbar h1 {
-    font-size: 20px;
-  }
-  .lab-toolbar button {
-    font-size: 12px;
-    padding-inline: 10px;
-  }
   .reset-buttons {
     gap: 4px;
   }
@@ -722,30 +495,9 @@ select {
     padding-inline: 7px;
   }
 }
-.compact-word {
-  display: none;
-}
 @media (max-width: 30rem) {
-  .desktop-word,
-  .tutorial-state,
-  .playback-buttons button > span {
+  .playback-buttons button > span  {
     display: none;
-  }
-  .compact-word {
-    display: inline;
-  }
-  .tutorial-toggle {
-    gap: 0;
-  }
-  .brand {
-    flex-shrink: 0;
-  }
-  .topbar .header-actions {
-    margin-inline-start: auto;
-  }
-  .network-focus .event-summary > p {
-    max-height: 3em;
-    overflow: auto;
   }
   .protocol-chip {
     min-width: 44px;
@@ -754,9 +506,6 @@ select {
 @media (max-width: 69.99rem) {
   html {
     scroll-padding-top: 16px;
-  }
-  .network-focus {
-    position: relative;
   }
   button,
   summary,

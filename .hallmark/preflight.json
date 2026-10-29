@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-25",
+  "date": "2026-10-26",
   "existingCode": true,
   "existingDesignSystem": true,
   "requestedStack": [
@@ -8,7 +8,7 @@
     "Three.js",
     "React Three Fiber"
   ],
-  "scope": "Approved dark 3D educational workbench, adaptive production implementation",
+  "scope": "Canvas-first production UI redesign",
   "tokens": "src/styles/tokens.css",
-  "notes": "Extends approved workbench; viewport and context recovery verified against production code, physical phones unavailable."
+  "notes": "Preserve approved tokens, Space Grotesk / Inter / JetBrains Mono, 4px spacing and React/Three.js boundaries. No motion dependency added. UI/UX Pro Max reference resolved from the implementation plan."
 }

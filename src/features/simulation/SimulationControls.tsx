@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { AppController } from "../../app/types";
 import { useApp } from "../../app/use-app";
-export function PingComposer({ controller }: { controller: AppController }) {
+export function PingComposer({ controller, initiallyOpen = false, onClose }: {
+  controller: AppController;
+  initiallyOpen?: boolean;
+  onClose?: () => void;
+}) {
   const s = useApp(controller),
     p = s.projection,
     [source, setSource] = useState(""),
     [destination, setDestination] = useState("");
+  const composer = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (initiallyOpen) composer.current?.querySelector<HTMLSelectElement>("select")?.focus({ preventScroll: true });
+  }, [initiallyOpen]);
   const hosts = s.document.network.devices.filter((d) => d.kind === "host");
   const activeSource =
     hosts.find((h) => h.id === source)?.id ?? hosts[0]?.id ?? "";
@@ -13,13 +21,18 @@ export function PingComposer({ controller }: { controller: AppController }) {
     s.busy ||
     (s.runtimeReady && (p.status === "active" || p.cursor !== p.frontier));
   return (
-    <details className="ping-composer">
+    <details ref={composer} className="ping-composer" open={initiallyOpen || undefined}
+      onToggle={(event) => { if (!event.currentTarget.open) onClose?.(); }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && onClose) { event.stopPropagation(); onClose(); }
+      }}>
       <summary>Send a packet</summary>
       <form
         className="ping-form"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
-          void controller.dispatch({
+          const previous = controller.getSnapshot().projection.operationId;
+          await controller.dispatch({
             type: "simulation.start",
             operation: {
               kind: "ping",
@@ -27,6 +40,12 @@ export function PingComposer({ controller }: { controller: AppController }) {
               destination,
             },
           });
+          const current = controller.getSnapshot();
+          if (current.runtimeReady && current.projection.operationId !== previous && composer.current) {
+            composer.current.open = false;
+            onClose?.();
+            document.querySelector<HTMLButtonElement>('[aria-label="Next step"]')?.focus({ preventScroll: true });
+          }
         }}
       >
         <label>
@@ -66,6 +85,7 @@ export function PingComposer({ controller }: { controller: AppController }) {
         >
           Start ping
         </button>
+        {onClose && <button type="button" onClick={onClose}>Close packet composer</button>}
       </form>
     </details>
   );

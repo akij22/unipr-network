@@ -32,6 +32,14 @@ Inoltre: niente React Flow, autenticazione, sincronizzazione, dipendenze runtime
 
 Per le attività frontend l’utente ha richiesto **Hallmark e UI/UX Pro Max**. Applicarle durante Task 6–12: Hallmark è in `/Users/achillerossi/.agents/skills/hallmark/SKILL.md`; UI/UX Pro Max è stata consultata dal progetto upstream `https://github.com/nextlevelbuilder/ui-ux-pro-max-skill`, con copia di riferimento in `/tmp/uniprnetwork-uiux-reference-20261024/.claude/skills/ui-ux-pro-max/SKILL.md`. Verificare la disponibilità della copia e risolvere un percorso cambiato prima dell’uso. Le linee guida non possono sostituire la direzione visiva già approvata o introdurre layout da landing page.
 
+## UI revision — 2026-10-26
+
+User-approved audience: networking students; main task: add and connect devices; tone: dark technical lab. Hallmark's Map / Diagram composition replaces the stacked workbench while retaining the approved production tokens and component ownership. UI/UX Pro Max was read at the reference path above; its dragging-movements and React focus guidance informed the interaction.
+
+The 3D canvas fills the available width and most of the viewport. Playback sits on its lower edge; current-event explanations overlay the scene only when relevant. The device inspector appears only for a selection (side panel on desktop, in document flow with a Configure device shortcut on mobile). The device strip retains keyboard access to every device; connections expand on demand. Packet fields appear once an operation exists. Opening the catalog focuses its first choice; Escape closes it and restores Add device focus.
+
+Adding retains immediate automatic placement. Position device then enables click/tap on an empty grid point, snapped to integer world coordinates. Direction buttons are the keyboard/single-pointer alternative; Escape/Done leaves positioning. Dragging remains camera orbit. Positioning dispatches the existing visual-only device.move action and preserves worker state/history. Successful ping submission closes the composer and focuses Next; failed submission keeps its inputs. No protocol or persistence contract changed.
+
 ## Review Focus
 
 1. Risposte worker in ritardo dopo modifica/reapertura: non devono applicare pacchetti o assegnazioni della vecchia rete — Task 5.

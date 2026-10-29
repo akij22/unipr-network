@@ -155,7 +155,9 @@ test("restores the saved camera pose when reopening without resizing", async ({
   await expect(label).toBeVisible();
   const initial = await label.boundingBox(),
     stage = await page.locator(".scene-canvas").boundingBox();
-  const saved = { x: initial!.x - stage!.x, y: initial!.y - stage!.y };
+  // The contextual inspector closes on reopen, expanding the canvas. Compare
+  // offsets from its center so this checks the saved pose, not panel width.
+  const saved = { x: initial!.x - stage!.x - stage!.width / 2, y: initial!.y - stage!.y - stage!.height / 2 };
   await page.getByRole("button", { name: "Save network", exact: true }).click();
   await page.getByLabel("Network name", { exact: true }).fill("Camera pose");
   await page
@@ -177,8 +179,8 @@ test("restores the saved camera pose when reopening without resizing", async ({
       const now = await label.boundingBox(),
         canvas = await page.locator(".scene-canvas").boundingBox();
       return (
-        Math.abs(now!.x - canvas!.x - saved.x) +
-        Math.abs(now!.y - canvas!.y - saved.y)
+        Math.abs(now!.x - canvas!.x - canvas!.width / 2 - saved.x) +
+        Math.abs(now!.y - canvas!.y - canvas!.height / 2 - saved.y)
       );
     })
     .toBeLessThan(3);

@@ -1,38 +1,48 @@
-/* 3D network lab · dark tokens. Shared production CSS tokens; scene colors are named in scene-tokens.ts. */
+/* 3D network lab · dark tokens.
+ * Theme: tweakcn preset (black surfaces + vivid blue primary, Geist type, 8px radius).
+ * Shared production CSS tokens; scene colors are named in scene-tokens.ts. */
 :root {
-  --color-paper: oklch(16% 0.012 260);
-  --color-panel: oklch(20% 0.014 260);
-  --color-raised: oklch(24% 0.016 260);
-  --color-field: oklch(17.5% 0.012 260);
-  --color-ink: oklch(95% 0.008 255);
-  --color-body: oklch(83% 0.016 255);
-  --color-muted: oklch(70% 0.02 255);
-  --color-rule: oklch(34% 0.018 260);
-  --color-rule-strong: oklch(53% 0.025 255);
-  --color-blue: oklch(75% 0.125 255);
-  --color-blue-bg: oklch(25% 0.055 255);
-  --color-primary: oklch(49% 0.19 260);
-  --color-on-primary: oklch(99% 0.002 255);
-  --color-network-a: oklch(22% 0.033 255);
-  --color-network-a-line: oklch(46% 0.07 255);
-  --color-network-b: oklch(23% 0.025 75);
-  --color-network-b-line: oklch(49% 0.07 75);
-  --color-amber: oklch(85% 0.125 80);
-  --color-amber-bg: oklch(32% 0.045 80);
-  --color-good: oklch(82% 0.11 160);
-  --color-good-bg: oklch(25% 0.035 160);
-  --color-error: oklch(83% 0.095 25);
-  --color-error-bg: oklch(26% 0.045 25);
-  --color-focus: oklch(82% 0.115 250);
-  --color-backdrop: oklch(8% 0.01 260 / 0.82);
-  --color-device-shell: oklch(52% 0.025 255);
-  --color-device-face: oklch(37% 0.025 255);
-  --color-device-edge: oklch(77% 0.02 255);
+  /* Surfaces: background / card / secondary / muted from the theme. */
+  --color-paper: oklch(0 0 0);
+  --color-panel: oklch(0.145 0 0);
+  --color-raised: oklch(0.25 0 0);
+  --color-field: oklch(0.1 0 0);
+  /* Text: theme foreground, with a body step between it and muted-foreground. */
+  --color-ink: oklch(0.946 0 0);
+  --color-body: oklch(0.88 0 0);
+  --color-muted: oklch(0.72 0 0);
+  /* Lines: theme border and input. */
+  --color-rule: oklch(0.26 0 0);
+  --color-rule-strong: oklch(0.32 0 0);
+  --color-glass: oklch(0.145 0 0 / 0.9);
+  /* Interactive accent: theme chart-4 (light blue) over chart-1 (blue wash). */
+  --color-blue: oklch(0.75 0.13 269);
+  --color-blue-bg: oklch(0.21 0.06 268);
+  --color-primary: oklch(0.46 0.22 266);
+  --color-on-primary: oklch(0.985 0 0);
+  /* Network segments: blue-tinted A, neutral B (the theme is monochrome + blue). */
+  --color-network-a: oklch(0.21 0.06 268);
+  --color-network-a-line: oklch(0.42 0.15 266);
+  --color-network-b: oklch(0.25 0 0);
+  --color-network-b-line: oklch(0.58 0 0);
+  /* Semantic colors are outside the theme; warning/success keep their meaning. */
+  --color-amber: oklch(0.85 0.125 80);
+  --color-amber-bg: oklch(0.3 0.045 80);
+  --color-good: oklch(0.82 0.11 160);
+  --color-good-bg: oklch(0.24 0.05 160);
+  --color-error: oklch(0.69 0.2 23.91);
+  --color-error-bg: oklch(0.26 0.06 24);
+  --color-focus: oklch(0.75 0.13 269);
+  --color-backdrop: oklch(0 0 0 / 0.82);
+  --color-device-shell: oklch(0.62 0 0);
+  --color-device-face: oklch(0.38 0 0);
+  --color-device-edge: oklch(0.78 0 0);
   --color-transparent: transparent;
   --color-current: currentColor;
-  --font-display: "Space Grotesk", sans-serif;
-  --font-body: "Inter", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
+  /* Typography: Geist / Geist Mono from the theme; display shares the sans face. */
+  --font-display: "Geist", "Inter", sans-serif;
+  --font-body: "Geist", "Inter", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", monospace;
   --dock-height: 96px;
   --dock-offset: 12px;
   --space-xs: 4px;
@@ -41,7 +51,8 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
-  --radius-control: 7px;
+  /* Theme radius: 0.5rem, with the panel at the next step up. */
+  --radius-control: 8px;
   --radius-panel: 12px;
   --text-sm: 12px;
   --text-body: 14px;

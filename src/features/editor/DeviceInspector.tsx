@@ -18,7 +18,8 @@ export function DeviceInspector({ controller }: { controller: AppController }) {
     const link = state.document.network.links.find((l) => l.id === selected.id);
     return (
       <aside className="inspector">
-        <h2>Ethernet connection</h2>
+        <div className="section-head"><h2>Ethernet connection</h2>
+        <button aria-label="Close inspector" onClick={() => void controller.dispatch({ type: "selection.set", selection: null })}>Close</button></div>
         {link?.ends.map((end) => (
           <p key={end.deviceId}>
             {state.document.layout[end.deviceId]?.name} ·{" "}
