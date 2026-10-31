@@ -40,6 +40,12 @@ The 3D canvas fills the available width and most of the viewport. Playback sits 
 
 Adding retains immediate automatic placement. Position device then enables click/tap on an empty grid point, snapped to integer world coordinates. Direction buttons are the keyboard/single-pointer alternative; Escape/Done leaves positioning. Dragging remains camera orbit. Positioning dispatches the existing visual-only device.move action and preserves worker state/history. Successful ping submission closes the composer and focuses Next; failed submission keeps its inputs. No protocol or persistence contract changed.
 
+## Inspector clarity revision — 2026-10-29
+
+The right-hand inspection column was reorganised for hierarchy and progressive disclosure without changing any controller action, protocol rule or persistence contract. Configure now groups Identity, Addressing, Ports, Static routes, Services and the existing Position-and-removal disclosure under consistent labelled sections; each port is a summary row (port id, `ip/prefix` or "No address set", connected/available dot) that expands to its fields. A port starts expanded only while it still needs configuration, and collapses once it has an address; active connection building keeps ports expanded. `Add port` and `Add route` moved into their group headers, leaving `Apply settings` as the single bottom action. Tabs use a filled active state with title hints; when a simulation operation and a device selection both exist, one `Packet`/`Device` focus switch replaces the two stacked, competing panels. The Tables tab now leads with counts (routes, leases, ARP/MAC entries, observed step). Per-port input labels keep the port id so screen readers and existing tests stay unambiguous.
+
+Verified: typecheck, production build and 76 Vitest tests passed; Chromium E2E for the explicit DHCP/PAT routing path (`dhcp.spec.ts`) and the host editor (`editor.spec.ts`) passed, and the full-screen overlay spec passed. Firefox remains unavailable in this environment as recorded above. In this workspace, `adaptive.spec.ts`, `nat.spec.ts` and `ping.spec.ts` fail at the first `Add device` click; the same failures reproduce on the unmodified baseline, so they are environmental rather than caused by this revision.
+
 ## Review Focus
 
 1. Risposte worker in ritardo dopo modifica/reapertura: non devono applicare pacchetti o assegnazioni della vecchia rete — Task 5.

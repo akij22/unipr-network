@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useWorkspaceActions, type WorkspaceActions } from "./use-workspace-actions";
 import { WorkspaceMenu } from "./WorkspaceMenu";
 import type { AppController } from "./types";
@@ -35,6 +35,9 @@ export function App({ controller, renderActions }: {
   const state = useApp(controller);
   const actions = useWorkspaceActions(controller);
   const { catalog, save, networks, ping, setCatalog, setSave, setNetworks } = actions;
+  const [inspecting, setInspecting] = useState<"packet" | "device">("device");
+  const packetActive = state.projection.operationId !== null,
+    deviceActive = state.selection !== null;
   return (
     <div className="app canvas-app">
       {renderActions ? renderActions(actions) : <WorkspaceMenu controller={controller} actions={actions} />}
@@ -140,10 +143,37 @@ export function App({ controller, renderActions }: {
             </details>
           </div>
           <div className="inspection-overlay">
-            {state.projection.operationId && (
+            {packetActive && deviceActive ? (
+              <>
+                <div
+                  className="panel-switch segmented"
+                  role="group"
+                  aria-label="Inspection focus"
+                >
+                  <button
+                    aria-pressed={inspecting === "packet"}
+                    onClick={() => setInspecting("packet")}
+                  >
+                    Packet
+                  </button>
+                  <button
+                    aria-pressed={inspecting === "device"}
+                    onClick={() => setInspecting("device")}
+                  >
+                    Device
+                  </button>
+                </div>
+                {inspecting === "packet" ? (
+                  <PacketInspector controller={controller} />
+                ) : (
+                  <DeviceInspector controller={controller} />
+                )}
+              </>
+            ) : packetActive ? (
               <PacketInspector controller={controller} />
-            )}
-            {state.selection && <DeviceInspector controller={controller} />}
+            ) : deviceActive ? (
+              <DeviceInspector controller={controller} />
+            ) : null}
           </div>
         </div>
       </main>

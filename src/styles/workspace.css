@@ -92,6 +92,9 @@ html, body, #root {
   overscroll-behavior: contain;
 }
 .canvas-app .packet-inspector { margin: 0; flex: 0 1 auto; }
+.panel-switch { flex: none; }
+.panel-switch button { flex: 1; background: var(--color-panel); }
+.panel-switch button[aria-pressed="true"] { color: var(--color-blue); }
 .canvas-app .inspector-stack,
 .canvas-app .inspector { position: static; max-height: none; margin: 0; }
 .canvas-app .inspector-stack { flex: 0 1 auto; }
