@@ -66,13 +66,20 @@ export function DeviceInspector({ controller }: { controller: AppController }) {
   return (
     <div className="inspector-stack">
       <nav className="inspector-tabs" aria-label="Device inspection">
-        {["configure", "tables", "activity"].map((value) => (
+        {(
+          [
+            ["configure", "Configure", "Ports, addressing and routing"],
+            ["tables", "Tables", "Live device state at this step"],
+            ["activity", "Activity", "What this device is doing now"],
+          ] as const
+        ).map(([value, label, hint]) => (
           <button
             key={value}
             aria-pressed={tab === value}
+            title={hint}
             onClick={() => setTab(value)}
           >
-            {value[0].toUpperCase() + value.slice(1)}
+            {label}
           </button>
         ))}
       </nav>
@@ -110,7 +117,10 @@ function DeviceForm({
   const state = useApp(controller),
     meta = state.document.layout[device.id],
     [draft, setDraft] = useState(copy(device)),
-    [name, setName] = useState(meta.name);
+    [name, setName] = useState(meta.name),
+    [openPorts, setOpenPorts] = useState<Record<string, boolean>>(() =>
+      Object.fromEntries(device.ports.map((p) => [p.id, !p.address?.ip])),
+    );
   const update = (next: Device) => setDraft(next);
   const apply = async () => {
     await controller.dispatch({ type: "device.rename", id: device.id, name });
@@ -124,9 +134,9 @@ function DeviceForm({
   };
   return (
     <aside className="inspector" aria-label="Device inspector">
-      <div className="section-head">
+      <div className="section-head device-head">
         <div>
-          <span className="eyebrow">
+          <span className="port-label">
             {device.kind.toUpperCase()} ·{" "}
             {device.kind === "router"
               ? "LAYER 3"
@@ -158,13 +168,16 @@ function DeviceForm({
         </button>
       </div>
       {state.tutorial && <Tutorial kind={device.kind} />}
-      <label>
-        Device name
-        <input value={name} onChange={(e) => setName(e.target.value)} />
-      </label>
+      <section className="inspector-group" aria-label="Identity">
+        <h3 className="group-label">Identity</h3>
+        <label>
+          Device name
+          <input value={name} onChange={(e) => setName(e.target.value)} />
+        </label>
+      </section>
       {draft.kind === "host" && (
-        <fieldset>
-          <legend>Address configuration</legend>
+        <section className="inspector-group" aria-label="Addressing">
+          <h3 className="group-label">Addressing</h3>
           <div className="segmented">
             <button
               aria-pressed={draft.addressing.mode === "manual"}
@@ -190,20 +203,76 @@ function DeviceForm({
               Automatic (DHCP)
             </button>
           </div>
-        </fieldset>
+          {draft.addressing.mode === "manual" && (
+            <label>
+              Default gateway
+              <input
+                placeholder="192.168.1.1"
+                value={draft.addressing.gateway ?? ""}
+                onChange={(e) =>
+                  update({
+                    ...draft,
+                    addressing: {
+                      mode: "manual",
+                      gateway: e.target.value || null,
+                    },
+                  })
+                }
+              />
+            </label>
+          )}
+        </section>
       )}
-      {draft.ports.map((port, i) => {
-        const connected = state.document.network.links.some((l) =>
-          l.ends.some((e) => e.deviceId === device.id && e.portId === port.id),
-        );
-        return (
-          <section className="interface" key={port.id}>
-            <div className="section-head">
-              <code className="port-label">{port.id}</code>
-              <span className="muted small">
-                {connected ? "Connected" : "Available"}
-              </span>
-            </div>
+      <section className="inspector-group" aria-label="Ports">
+        <div className="group-head">
+          <h3 className="group-label">Ports</h3>
+          {device.kind !== "host" && device.kind !== "bridge" && (
+            <button
+              onClick={() =>
+                void controller.dispatch({
+                  type: "port.add",
+                  deviceId: device.id,
+                })
+              }
+            >
+              Add port
+            </button>
+          )}
+        </div>
+        {draft.ports.map((port, i) => {
+          const connected = state.document.network.links.some((l) =>
+            l.ends.some((e) => e.deviceId === device.id && e.portId === port.id),
+          );
+          const addressSummary =
+            draft.kind === "host" && draft.addressing.mode === "dhcp"
+              ? "Address from DHCP"
+              : draft.kind === "router" || draft.kind === "host"
+                ? port.address?.ip
+                  ? `${port.address.ip}/${port.address.prefix}`
+                  : "No address set"
+                : "Layer 2 only";
+          return (
+            <details
+              className="interface port-card"
+              key={port.id}
+              open={
+                state.connection ? true : (openPorts[port.id] ?? true)
+              }
+              onToggle={(e) => {
+                const open = e.currentTarget.open;
+                setOpenPorts((prev) => ({ ...prev, [port.id]: open }));
+              }}
+            >
+              <summary>
+                <code className="port-label">{port.id}</code>
+                <span className="port-address">{addressSummary}</span>
+                <span
+                  className="port-status"
+                  data-connected={connected ? "true" : "false"}
+                >
+                  {connected ? "Connected" : "Available"}
+                </span>
+              </summary>
             {(draft.kind === "router" ||
               (draft.kind === "host" &&
                 draft.addressing.mode === "manual")) && (
@@ -298,36 +367,33 @@ function DeviceForm({
                 Remove {port.id}
               </button>
             )}
-          </section>
+          </details>
         );
-      })}
-      {draft.kind === "host" && draft.addressing.mode === "manual" && (
-        <label>
-          Default gateway
-          <input
-            placeholder="192.168.1.1"
-            value={draft.addressing.gateway ?? ""}
-            onChange={(e) =>
-              update({
-                ...draft,
-                addressing: { mode: "manual", gateway: e.target.value || null },
-              })
-            }
-          />
-        </label>
-      )}
-      {(draft.kind === "host" || draft.kind === "router") && (
-        <details>
-          <summary>Explore IPv4 prefix</summary>
-          <PrefixExplorer
-            initialIp={draft.ports[0]?.address?.ip}
-            initialPrefix={draft.ports[0]?.address?.prefix}
-          />
-        </details>
-      )}
+        })}
+      </section>
       {draft.kind === "router" && (
-        <section>
-          <h3>Static routes</h3>
+        <section className="inspector-group" aria-label="Routing">
+          <div className="group-head">
+            <h3 className="group-label">Static routes</h3>
+            <button
+              onClick={() =>
+                update({
+                  ...draft,
+                  routes: [
+                    ...draft.routes,
+                    {
+                      id: crypto.randomUUID(),
+                      destination: { ip: "0.0.0.0", prefix: 0 },
+                      nextHop: null,
+                      outPortId: draft.ports[0]?.id ?? "",
+                    },
+                  ],
+                })
+              }
+            >
+              Add route
+            </button>
+          </div>
           {draft.routes.map((route, i) => (
             <div className="interface" key={route.id}>
               <label>
@@ -421,24 +487,29 @@ function DeviceForm({
               </button>
             </div>
           ))}
-          <button
-            onClick={() =>
-              update({
-                ...draft,
-                routes: [
-                  ...draft.routes,
-                  {
-                    id: crypto.randomUUID(),
-                    destination: { ip: "0.0.0.0", prefix: 0 },
-                    nextHop: null,
-                    outPortId: draft.ports[0]?.id ?? "",
-                  },
-                ],
-              })
-            }
-          >
-            Add static route
-          </button>
+        </section>
+      )}
+      {(draft.kind === "host" || draft.kind === "router") && (
+        <details>
+          <summary>Explore IPv4 prefix</summary>
+          <PrefixExplorer
+            initialIp={draft.ports[0]?.address?.ip}
+            initialPrefix={draft.ports[0]?.address?.prefix}
+          />
+        </details>
+      )}
+      {(device.kind === "host" || device.kind === "router") && (
+        <section className="inspector-group" aria-label="Services">
+          <h3 className="group-label">Services</h3>
+          {device.kind === "host" && device.addressing.mode === "dhcp" && (
+            <DhcpClient controller={controller} deviceId={device.id} />
+          )}
+          {device.kind === "router" && (
+            <>
+              <DhcpSettings controller={controller} deviceId={device.id} />
+              <NatSettings controller={controller} deviceId={device.id} />
+            </>
+          )}
         </section>
       )}
       <div className="inspector-actions">
@@ -449,28 +520,7 @@ function DeviceForm({
         >
           Apply settings
         </button>
-        {device.kind !== "host" && device.kind !== "bridge" && (
-          <button
-            onClick={() =>
-              void controller.dispatch({
-                type: "port.add",
-                deviceId: device.id,
-              })
-            }
-          >
-            Add port
-          </button>
-        )}
       </div>
-      {device.kind === "host" && device.addressing.mode === "dhcp" && (
-        <DhcpClient controller={controller} deviceId={device.id} />
-      )}
-      {device.kind === "router" && (
-        <>
-          <DhcpSettings controller={controller} deviceId={device.id} />
-          <NatSettings controller={controller} deviceId={device.id} />
-        </>
-      )}
       <details>
         <summary>Position and removal</summary>
         <div className="row">

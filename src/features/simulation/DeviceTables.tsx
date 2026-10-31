@@ -24,11 +24,33 @@ export function DeviceTables({ controller }: { controller: AppController }) {
       </aside>
     );
   const detail = s.projection.event?.detail;
+  const isSwitch = device.kind === "switch" || device.kind === "bridge";
+  const learnedCount = Object.entries(isSwitch ? runtime.mac : runtime.arp).filter(
+    ([key]) => key.startsWith(device.id + "/"),
+  ).length;
+  const leaseCount = Object.values(runtime.dhcpLeases).filter((l) =>
+    l.scopeId.startsWith(device.id + "/"),
+  ).length;
+  const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
+  const summaryParts: string[] = [];
+  if (device.kind === "router")
+    summaryParts.push(
+      plural(
+        device.ports.filter((p) => addressOf(device, p, runtime)).length +
+          device.routes.length,
+        "route",
+      ),
+      plural(leaseCount, "DHCP lease"),
+    );
+  if (device.kind !== "hub")
+    summaryParts.push(plural(learnedCount, isSwitch ? "MAC entry" : "ARP entry"));
+  summaryParts.push(`observed at step ${s.projection.cursor}`);
+
   return (
     <aside className="inspector">
       <h2>{s.document.layout[device.id]?.name} · Tables</h2>
-      <p className="muted small">
-        State observed at step {s.projection.cursor}
+      <p className="muted small table-summary">
+        {summaryParts.join(" · ")}
       </p>
       {device.kind === "router" && (
         <>

@@ -187,6 +187,22 @@ del {
 .inspector-tabs button {
   flex: 1;
   font-size: 12px;
+  background: var(--color-transparent);
+  border-color: transparent;
+  color: var(--color-muted);
+}
+.inspector-tabs button:hover {
+  background: var(--color-raised);
+  border-color: var(--color-rule-strong);
+  color: var(--color-ink);
+}
+.inspector-tabs button[aria-pressed="true"] {
+  background: var(--color-blue-bg);
+  border-color: var(--color-blue);
+  color: var(--color-blue);
+}
+.table-summary {
+  margin: 4px 0 14px;
 }
 .inspector-stack {
   min-width: 0;
