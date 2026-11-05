@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addDevice } from "../helpers/ui";
+import { addDevice, menuAction } from "../helpers/ui";
 test("saves a named configuration and reopens it with clean state", async ({
   page,
 }) => {
@@ -9,7 +9,7 @@ test("saves a named configuration and reopens it with clean state", async ({
   await page
     .getByRole("button", { name: "Apply settings", exact: true })
     .click();
-  await page.getByRole("button", { name: "Save network", exact: true }).click();
+  await menuAction(page, "Save network");
   await page.getByLabel("Network name", { exact: true }).fill("My first lab");
   await page
     .getByRole("button", { name: "Save configuration", exact: true })
@@ -18,7 +18,7 @@ test("saves a named configuration and reopens it with clean state", async ({
     page.getByRole("dialog", { name: "Save network", exact: true }),
   ).not.toBeVisible();
   await page.reload();
-  await page.getByRole("button", { name: "My networks", exact: true }).click();
+  await menuAction(page, "My networks");
   await page
     .getByRole("button", { name: "Open My first lab", exact: true })
     .click();
@@ -51,7 +51,7 @@ test("explains a failed save while retaining the editable network", async ({
   });
   await page.goto("/");
   await addDevice(page, "host");
-  await page.getByRole("button", { name: "Save network", exact: true }).click();
+  await menuAction(page, "Save network");
   await page
     .getByLabel("Network name", { exact: true })
     .fill("Keep this network");

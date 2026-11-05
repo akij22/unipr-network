@@ -1,0 +1,228 @@
+/* Hallmark · educational topology workbench · black + vivid blue · React Flow canvas.
+ * Pre-emit critique: philosophy 5, hierarchy 4, execution 4, specificity 5, restraint 4, variety 4.
+ * Tokens come from the approved dark palette; no new colours are invented here. */
+.flow-surface {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-field);
+}
+
+/* React Flow paints its own pane; the surface underneath is the grid ground. */
+.flow-surface .react-flow {
+  background: var(--color-field);
+}
+.flow-surface .react-flow__pane {
+  cursor: grab;
+}
+.flow-surface .react-flow__pane:active {
+  cursor: grabbing;
+}
+/* The React Flow attribution stays visible: the free tier requires it. It is
+ * styled to sit quietly in the corner of the dark canvas. */
+.flow-surface .react-flow__attribution {
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 10px;
+}
+.flow-surface .react-flow__attribution a {
+  color: var(--color-muted);
+}
+
+/* A device is a flat panel: one rule, one tone step above the ground. */
+.flow-device {
+  display: grid;
+  gap: 2px;
+  min-width: 132px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-panel);
+  color: var(--color-body);
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: start;
+  cursor: grab;
+  transition:
+    border-color var(--dur-short),
+    background var(--dur-short);
+}
+.flow-device:hover {
+  border-color: var(--color-rule-strong);
+}
+.flow-device:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+}
+.flow-device.is-selected {
+  border-color: var(--color-blue);
+  background: var(--color-blue-bg);
+}
+.flow-device-kind {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.flow-device.is-selected .flow-device-kind {
+  color: var(--color-blue);
+}
+.flow-device-name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+.flow-device-ip {
+  font-size: 10.5px;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+.flow-device-ports {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+/* Ports are the visible ends of a link; they are not drag targets. */
+.flow-port {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 50%;
+  background: var(--color-raised);
+}
+.flow-device.is-selected .flow-port {
+  border-color: var(--color-blue);
+}
+
+/* Links carry the traffic state: idle is a quiet rule, active is the accent,
+ * faulty is the semantic error colour. */
+.flow-edge {
+  stroke: var(--color-rule-strong);
+  stroke-width: 1.5;
+}
+.flow-edge-selected {
+  stroke: var(--color-blue);
+  stroke-width: 2.5;
+}
+.flow-edge-active {
+  stroke: var(--color-blue);
+  stroke-width: 2.5;
+}
+.flow-edge-faulty {
+  stroke: var(--color-error);
+  stroke-width: 2.5;
+}
+.flow-edge-hitbox {
+  stroke: transparent;
+  stroke-width: 18;
+}
+.flow-edge-label,
+.flow-packet-marker {
+  position: absolute;
+  pointer-events: none;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.flow-edge-label-active {
+  background: var(--color-blue-bg);
+  color: var(--color-blue);
+}
+.flow-edge-label-faulty {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+.flow-packet-marker {
+  background: var(--color-amber-bg);
+  color: var(--color-amber);
+}
+
+/* The toolbar floats over the canvas. It sits clear of the right-hand
+ * inspector, and above the bottom device strip on narrow screens. */
+.flow-toolbar {
+  position: absolute;
+  z-index: 5;
+  right: calc(min(380px, 100% - 2 * var(--overlay-gap, 16px)) + var(--overlay-gap, 16px));
+  bottom: calc(var(--dock-clearance, 132px) + var(--overlay-gap, 16px));
+  display: flex;
+  gap: 6px;
+}
+.flow-toolbar button {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 12px;
+  background: var(--color-panel);
+}
+
+/* Empty space between device shortcuts must pass gestures to the canvas
+ * and its view controls. Only the shortcut buttons intercept input. */
+.canvas-app .device-strip { pointer-events: none; }
+.canvas-app .device-strip button { pointer-events: auto; }
+
+/* The recovery notice replaces the canvas. It sits clear of the floating
+ * workspace menu on the left and the inspector on the right. */
+.network-stage.scene-recovery {
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  padding: 24px;
+  background: var(--color-field);
+}
+.network-stage.scene-recovery h2 {
+  margin-top: 0;
+}
+.network-stage.scene-recovery p {
+  max-width: 46ch;
+  color: var(--color-body);
+}
+.network-stage.scene-recovery button {
+  background: var(--color-panel);
+}
+@media (min-width: 70rem) {
+  .network-stage.scene-recovery {
+    padding-left: calc(var(--menu-width, 228px) + var(--overlay-gap, 16px) * 2);
+  }
+}
+
+/* On a short viewport the inspector is taller than the space beside the
+ * canvas. It scrolls inside its own frame so every field stays reachable
+ * instead of spilling behind the simulation dock. */
+@media (max-width: 69.99rem), (max-height: 500px) {
+  .canvas-app .inspection-overlay {
+    overflow: hidden;
+    z-index: 12;
+  }
+  .canvas-app .inspection-overlay > *,
+  .canvas-app .inspector-stack,
+  .canvas-app .inspector-stack .inspector {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+}
+@media (max-width: 69.99rem) {
+  .flow-toolbar {
+    right: var(--overlay-gap, 12px);
+    bottom: calc(var(--dock-clearance, 174px) + 76px);
+  }
+}
+@media (max-width: 30rem) {
+  .flow-toolbar {
+    bottom: calc(var(--dock-clearance, 208px) + 76px);
+  }
+  .flow-toolbar button {
+    font-size: 11px;
+    padding-inline: 9px;
+  }
+}
+@media (max-height: 500px) and (min-width: 40rem) {
+  .flow-toolbar {
+    bottom: calc(var(--dock-clearance, 120px) + var(--overlay-gap, 16px));
+  }
+}

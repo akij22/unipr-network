@@ -12,6 +12,8 @@ export type NetworkDocument = {
     cameraPosition: [number, number, number];
     target: [number, number, number];
     depth: "ethernet" | "ip" | "full";
+    /** Optional for compatibility with configurations saved by the 3D lab. */
+    viewport?: { x: number; y: number; zoom: number };
   };
 };
 export type AppState = {

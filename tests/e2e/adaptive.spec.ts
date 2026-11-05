@@ -40,7 +40,7 @@ for (const [width, height] of [
       .getByRole("navigation", { name: "Simulation controls" })
       .boundingBox();
     const scene = await page
-      .getByRole("region", { name: "3D network workspace" })
+      .getByRole("region", { name: "Network topology workspace" })
       .boundingBox();
     expect(controls).not.toBeNull();
     expect(scene).not.toBeNull();
@@ -53,7 +53,7 @@ for (const [width, height] of [
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
-    for (const name of ["Next step", "Orbit left", "Zoom in"]) {
+    for (const name of ["Next step", "Zoom in", "Fit view"]) {
       const b = await page
         .getByRole("button", { name, exact: true })
         .boundingBox();
@@ -68,10 +68,10 @@ test("supports keyboard controls and reduced motion without losing focus", async
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await addDevice(page, "host");
-  const orbit = page.getByRole("button", { name: "Orbit right", exact: true });
-  await orbit.focus();
+  const zoom = page.getByRole("button", { name: "Zoom in", exact: true });
+  await zoom.focus();
   await page.keyboard.press("Enter");
-  await expect(orbit).toBeFocused();
+  await expect(zoom).toBeFocused();
   await page.getByLabel("Device name", { exact: true }).focus();
   await page.keyboard.press("ControlOrMeta+A");
   await page.keyboard.type("My computer");
@@ -113,7 +113,7 @@ test("keeps input actions reachable after a keyboard-sized viewport and rotation
   );
 
   const scene = await page
-    .getByRole("region", { name: "3D network workspace" })
+    .getByRole("region", { name: "Network topology workspace" })
     .boundingBox();
   expect(scene!.height).toBeGreaterThanOrEqual(160);
   expect(scene!.y + 160).toBeLessThanOrEqual(390);

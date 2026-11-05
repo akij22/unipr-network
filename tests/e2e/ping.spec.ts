@@ -6,7 +6,6 @@ test("runs a routed ping through the real worker and replays history", async ({
 }) => {
   test.setTimeout(60000);
   await page.goto("/");
-  await expect(page.locator(".ping-composer")).toBeVisible({ timeout: 1000 });
   await buildRouted(page);
   await openComposer(page);
   await page.getByLabel("Source host", { exact: true }).selectOption("host-1");

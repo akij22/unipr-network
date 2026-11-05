@@ -4,7 +4,7 @@ const Scene = lazy(() =>
   import("./NetworkScene").then((m) => ({ default: m.NetworkScene })),
 );
 class SceneBoundary extends Component<
-  { children: ReactNode; onFailure: () => void },
+  { children: ReactNode; onFailure: (cause: unknown) => void },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -12,8 +12,8 @@ class SceneBoundary extends Component<
     return { failed: true };
   }
   componentDidCatch(error: Error) {
-    console.error("3D scene failed", error);
-    this.props.onFailure();
+    console.error("Topology canvas failed", error);
+    this.props.onFailure(error);
   }
   render() {
     return this.state.failed ? null : this.props.children;
@@ -35,14 +35,14 @@ export class SceneRecovery extends Component<
     return this.state.failed ? (
       <section
         className="network-stage scene-recovery"
-        aria-label="3D network workspace"
+        aria-label="Network topology workspace"
         role="alert"
       >
-        <h2>The 3D view needs to restart</h2>
+        <h2>The topology canvas needs to restart</h2>
         <p>
-          The browser stopped drawing the network. Your devices, settings and
-          simulation history are preserved. Retry the view; if it happens again,
-          close other graphics-heavy tabs.
+          The browser stopped drawing the network canvas. Your devices,
+          settings and simulation history are preserved. Retry the view; if it
+          happens again, reload the page or close other graphics-heavy tabs.
         </p>
         <button
           onClick={() =>
@@ -52,7 +52,7 @@ export class SceneRecovery extends Component<
             }))
           }
         >
-          Retry 3D view
+          Retry canvas
         </button>
       </section>
     ) : (
@@ -61,9 +61,9 @@ export class SceneRecovery extends Component<
           fallback={
             <section
               className="network-stage scene-recovery"
-              aria-label="Loading 3D network"
+              aria-label="Loading network topology"
             >
-              <p>Loading your 3D workspace…</p>
+              <p>Loading your topology canvas…</p>
             </section>
           }
         >

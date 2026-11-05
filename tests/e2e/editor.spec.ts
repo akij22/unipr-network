@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { menuAction } from "../helpers/ui";
 test("adds and configures a host explicitly", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Add device", exact: true }).click();
+  await menuAction(page, "Add device");
   await page.getByRole("button", { name: "Add host", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Host 1", exact: true }),

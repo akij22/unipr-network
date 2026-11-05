@@ -9,6 +9,9 @@ export function ConnectionBuilder({
   if (!state.connection) return null;
   return (
     <section className="connection-guide" aria-live="polite">
+      <span className="eyebrow">
+        CONNECTION GUIDE · STEP {state.connection.from ? 2 : 1}/2
+      </span>
       <strong>
         {state.connection.from
           ? "Choose the destination port"

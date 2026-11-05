@@ -2,7 +2,7 @@
 
 ## Product direction
 
-UniPRNetwork is an interactive computer-networking learning lab. Learners build and configure networks in a real 3D workspace, run simulations, and inspect packets, device state, and explanations to understand cause and effect. Favor observable, explainable network behavior over visual spectacle or commercial-device emulation.
+UniPRNetwork is an interactive computer-networking learning lab. Learners build and configure networks on a React Flow topology canvas, run simulations, and inspect packets, device state, and explanations to understand cause and effect. Favor observable, explainable network behavior over visual spectacle or commercial-device emulation.
 
 Keep the simulation independent of its presentation so future protocols, learning tools, and scenarios can extend the same coherent model. This direction guides design decisions; it does not authorize additional features.
 
@@ -28,7 +28,7 @@ Keep the simulation independent of its presentation so future protocols, learnin
 
 ## Frontend and learning experience
 
-- Use `hallmark` and UI/UX Pro Max (`ux-ui-pro-max`) for frontend and UI design. Locate and read their skill instructions before design work; the implementation plan records the UI/UX Pro Max reference location and upstream fallback. Preserve the approved dark 3D lab direction.
+- Use `hallmark` and UI/UX Pro Max (`ux-ui-pro-max`) for frontend and UI design. Locate and read their skill instructions before design work; the implementation plan records the UI/UX Pro Max reference location and upstream fallback. Preserve the dark lab direction and React Flow canvas: dragging empty space pans, while dragging a device changes its layout without resetting simulation history.
 - Write all application text, tutorials, errors, and educational content in English. Explain what happened and why, using only protocols actually involved; make modeling simplifications explicit.
 - Support the core workflow on desktop and smartphone, with keyboard and touch alternatives to hover, precise dragging, and multi-touch gestures. Keep simulation controls reachable alongside a useful network view.
 - Avoid fixed device-count limits. Base performance decisions on measurements; visual quality reductions must preserve simulation results. Report emulation and physical-device verification separately.
@@ -49,6 +49,20 @@ Keep the simulation independent of its presentation so future protocols, learnin
 - Do not consider prototype validation sufficient evidence of production correctness.
 
 Use the Bun version pinned by `packageManager` in `package.json` for dependencies and scripts, with `bun.lock` as the sole lockfile. Use `bun install --frozen-lockfile` for reproducible installs and `bun run <script>` for the configured scripts. Run the existing Vitest suite with `bun run test`. Keep Node available for Vite, Vitest and Playwright; their runtime remains Node. Read package.json for current scripts. Verification evidence and outstanding hardware/browser coverage live in docs/verification/device-matrix.md and docs/verification/performance.md. Run Playwright invocations sequentially: concurrent runs clean the same test-results directory. Prototype QA does not establish production correctness.
+
+
+## T3 Code orchestration
+
+Sol (`gpt-6.1-sol`) through the Codex provider and Codex subscription is the main coordinator: split tasks, delegate, integrate results, and verify the final changes.
+
+- Backend tasks: delegate to Codex Sol (`gpt-6.1-sol`) with `target.options.reasoningEffort: "medium"`; use the Codex subscription, rather than OpenCode, for these tasks.
+- Simple, quick frontend/UI tasks: delegate through OpenCode to the Go model `opencode-go/glm-5.3-flash`.
+- UI redesigns and new mobile pages: delegate through OpenCode to the Go model `opencode-go/minimax-m3`.
+
+For every OpenCode delegation, select models from the **Go** section (model IDs prefixed with `opencode-go/`). Resolve and verify the exact Go model ID with `orchestrator_capabilities`; if it is unavailable, report the blocker. Keep backend delegations on the Codex subscription as specified above.
+
+Use T3 Code's native `delegate_task`. Before the first delegation, call `orchestrator_capabilities` to resolve the requested models to exact provider/model IDs and supported options. If unavailable, report the blocker instead of substituting a model. Give each child a self-contained brief, owned files, acceptance criteria, and required checks. Parallelize independent tasks using separate worktrees for concurrent edits; sequence dependent work. Children perform their assigned work without further delegation. Sol reviews the results and runs checks appropriate to the changed code before reporting completion.
+
 
 ## Keep guidance current
 

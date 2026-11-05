@@ -405,13 +405,26 @@ a {
   color: var(--color-muted);
 }
 .connection-guide {
-  background: var(--color-amber-bg);
-  padding: 14px;
-  border-radius: 8px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-blue);
+  border-left: 3px solid var(--color-blue);
+  border-radius: var(--radius-panel);
+  padding: 16px;
   margin-bottom: 12px;
+}
+.connection-guide .eyebrow {
+  display: block;
+  color: var(--color-blue);
+  margin-bottom: 4px;
+}
+.connection-guide strong {
+  display: block;
+  color: var(--color-ink);
 }
 .connection-guide p {
   font-size: 13px;
+  color: var(--color-body);
+  margin: 6px 0 12px;
 }
 .alert {
   margin: 12px;
