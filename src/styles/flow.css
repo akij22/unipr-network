@@ -48,6 +48,13 @@
     border-color var(--dur-short),
     background var(--dur-short);
 }
+.flow-device-icon {
+  width: 104px;
+  height: 76px;
+  object-fit: contain;
+  justify-self: center;
+  pointer-events: none;
+}
 .flow-device:hover {
   border-color: var(--color-rule-strong);
 }
