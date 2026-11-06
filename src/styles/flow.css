@@ -30,67 +30,45 @@
   color: var(--color-muted);
 }
 
-/* A device is a flat panel: one rule, one tone step above the ground. */
+/* A device is the generated icon alone: no card, no border, no text. Hover
+ * and selection glow around the icon instead of drawing a rectangle. */
 .flow-device {
-  display: grid;
-  gap: 2px;
-  min-width: 132px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-control);
-  background: var(--color-panel);
-  color: var(--color-body);
-  font-size: 11px;
-  line-height: 1.35;
-  text-align: start;
+  position: relative;
   cursor: grab;
-  transition:
-    border-color var(--dur-short),
-    background var(--dur-short);
 }
 .flow-device-icon {
   width: 104px;
   height: 76px;
   object-fit: contain;
-  justify-self: center;
   pointer-events: none;
+  transition: filter var(--dur-short);
 }
-.flow-device:hover {
-  border-color: var(--color-rule-strong);
+.flow-device:hover .flow-device-icon {
+  filter: drop-shadow(0 0 6px var(--color-rule-strong));
 }
-.flow-device:focus-visible {
+.flow-device.is-selected .flow-device-icon {
+  filter: drop-shadow(0 0 10px var(--color-blue));
+}
+/* The device identity stays available to assistive tech and to React Flow's
+ * node label without rendering a visible label. */
+.flow-device-identity {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Canvas keyboard focus lands on the React Flow node wrapper, not the icon,
+ * so the focus-visible ring lives there and never reads as a device card. */
+.flow-surface .react-flow__node:focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
-}
-.flow-device.is-selected {
-  border-color: var(--color-blue);
-  background: var(--color-blue-bg);
-}
-.flow-device-kind {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-muted);
-}
-.flow-device.is-selected .flow-device-kind {
-  color: var(--color-blue);
-}
-.flow-device-name {
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-ink);
-  overflow-wrap: anywhere;
-}
-.flow-device-ip {
-  font-size: 10.5px;
-  color: var(--color-muted);
-  overflow-wrap: anywhere;
-}
-.flow-device-ports {
-  font-size: 10px;
-  color: var(--color-muted);
+  outline-offset: 4px;
+  border-radius: var(--radius-control);
 }
 
 /* Ports are the visible ends of a link; they are not drag targets. */
