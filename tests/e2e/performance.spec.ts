@@ -7,7 +7,7 @@ import {
   applyChanges,
 } from "../../src/simulation/state";
 import type { NetworkDocument } from "../../src/app/types";
-import { openComposer } from "../helpers/ui";
+import { menuAction, openComposer } from "../helpers/ui";
 import { writeFile, mkdir } from "node:fs/promises";
 for (const count of [10, 50, 100, 250]) {
   test(`measures ${count} devices without a product limit`, async ({
@@ -29,29 +29,19 @@ for (const count of [10, 50, 100, 250]) {
         view: { cameraPosition: [12, 24, 28], target: [0, 0, 0], depth: "ip" },
       };
     await page.addInitScript(() => {
-      const stats = { calls: 0, frames: 0 };
+      // The topology canvas is SVG, so there is no WebGL draw call to count.
+      // The measured signals are the number of rendered elements and the
+      // frame rate while the viewport changes.
+      const stats = { calls: 0 };
       Object.assign(window, { __gpuStats: stats });
-      for (const prototype of [
-        WebGLRenderingContext.prototype,
-        WebGL2RenderingContext.prototype,
-      ])
-        for (const name of [
-          "clear",
-          "drawArrays",
-          "drawElements",
-          "drawArraysInstanced",
-          "drawElementsInstanced",
-        ] as const) {
-          const original = prototype[name as keyof typeof prototype];
-          if (typeof original !== "function") continue;
-          Object.defineProperty(prototype, name, {
-            value: function (...args: unknown[]) {
-              if (name === "clear") stats.frames++;
-              else stats.calls++;
-              return Reflect.apply(original, this, args);
-            },
-          });
-        }
+      const observer = new MutationObserver((records) => {
+        for (const record of records)
+          stats.calls += record.addedNodes.length + record.removedNodes.length;
+      });
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
     });
     await page.goto("/");
     await page.evaluate(
@@ -70,45 +60,40 @@ for (const count of [10, 50, 100, 250]) {
       },
       { doc: networkDocument, modulePath: "/src/storage/database.ts" },
     );
-    await page
-      .getByRole("button", { name: "My networks", exact: true })
-      .click();
+    await menuAction(page, "My networks");
     await page
       .getByRole("button", { name: "Open Measured topology", exact: true })
       .click();
     await expect(page.locator("[data-scene-ready=true]")).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Select h0", exact: true }),
+      page.locator('.react-flow__node[aria-label="h0"]'),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Reset view", exact: true }).click();
     const gpu = await page.evaluate(async () => {
       const stats = (
-        window as unknown as { __gpuStats: { calls: number; frames: number } }
+        window as unknown as { __gpuStats: { calls: number } }
       ).__gpuStats;
       let frames = 0;
       const start = performance.now(),
-        calls = stats.calls,
-        initialFrames = stats.frames;
+        calls = stats.calls;
+      const pane = document.querySelector(".react-flow__pane"),
+        wheel = () =>
+          pane?.dispatchEvent(
+            new WheelEvent("wheel", {
+              deltaY: -120,
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
       while (performance.now() - start < 1200) {
         await new Promise(requestAnimationFrame);
-        (
-          document.querySelector(
-            '[aria-label="Orbit right"]',
-          ) as HTMLButtonElement
-        ).click();
         frames++;
+        wheel();
       }
-      const canvas = document.querySelector("canvas")!,
-        gl = canvas.getContext("webgl2")!,
-        debug = gl.getExtension("WEBGL_debug_renderer_info");
+      const elapsed = performance.now() - start;
       return {
-        fps:
-          ((stats.frames - initialFrames) * 1000) / (performance.now() - start),
-        drawCallsPerFrame:
-          (stats.calls - calls) / Math.max(1, stats.frames - initialFrames),
-        renderer: debug
-          ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL)
-          : gl.getParameter(gl.RENDERER),
+        fps: (frames * 1000) / elapsed,
+        drawCallsPerFrame: (stats.calls - calls) / Math.max(1, frames),
+        renderer: "none (SVG topology canvas)",
         userAgent: navigator.userAgent,
         heap:
           (performance as Performance & { memory?: { usedJSHeapSize: number } })
@@ -144,13 +129,13 @@ for (const count of [10, 50, 100, 250]) {
       .getByRole("button", { name: "Play simulation", exact: true })
       .click();
     const animationFps = await page.evaluate(async () => {
-      const stats = (window as unknown as { __gpuStats: { frames: number } })
-          .__gpuStats,
-        start = performance.now(),
-        first = stats.frames;
-      while (performance.now() - start < 1000)
+      let frames = 0;
+      const start = performance.now();
+      while (performance.now() - start < 1000) {
         await new Promise(requestAnimationFrame);
-      return ((stats.frames - first) * 1000) / (performance.now() - start);
+        frames++;
+      }
+      return (frames * 1000) / (performance.now() - start);
     });
     await page
       .getByRole("button", { name: "Pause simulation", exact: true })

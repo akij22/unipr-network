@@ -2,7 +2,9 @@ import { expect, test } from "@playwright/test";
 import {
   addDevice,
   configureHost,
+  menuAction,
   openComposer,
+  openMenu,
   selectDevice,
   finishOperation,
 } from "../helpers/ui";
@@ -97,11 +99,16 @@ test("uses the visible remaining source after the selected host is removed", asy
   await configureHost(page, "Host 1", "10.0.0.1");
   await openComposer(page);
   await page.getByLabel("Source host", { exact: true }).selectOption("host-2");
+  await page.locator(".ping-composer summary").click();
   await selectDevice(page, "Host 2");
+  await page
+    .getByText("Position and removal", { exact: true })
+    .scrollIntoViewIfNeeded();
   await page.getByText("Position and removal", { exact: true }).click();
   await page
     .getByRole("button", { name: "Remove device", exact: true })
     .click();
+  await openComposer(page);
   await expect(page.getByLabel("Source host", { exact: true })).toHaveValue(
     "host-1",
   );
@@ -128,7 +135,7 @@ test("keeps unsaved work accessible when saved summary metadata is corrupt", asy
     });
     db.close();
   });
-  await page.getByRole("button", { name: "My networks", exact: true }).click();
+  await menuAction(page, "My networks");
   await expect(
     page
       .getByRole("dialog", { name: "Saved networks", exact: true })
@@ -137,29 +144,41 @@ test("keeps unsaved work accessible when saved summary metadata is corrupt", asy
   await page
     .getByRole("button", { name: "Close networks", exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
-  ).toBeVisible();
+  await expect(page.locator('.react-flow__node[aria-label="Host 1"]')).toBeVisible();
+  await openMenu(page);
   await expect(
     page.getByRole("button", { name: "Save network", exact: true }),
   ).toBeEnabled();
 });
-test("restores the saved camera pose when reopening without resizing", async ({
+test("restores the saved canvas pose when reopening without resizing", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
   await addDevice(page, "host");
-  await page.getByRole("button", { name: "Orbit right", exact: true }).click();
-  const label = page.locator(".scene-label").filter({ hasText: "Host 1" });
-  await expect(label).toBeVisible();
-  const initial = await label.boundingBox(),
-    stage = await page.locator(".scene-canvas").boundingBox();
-  // The contextual inspector closes on reopen, expanding the canvas. Compare
-  // offsets from its center so this checks the saved pose, not panel width.
-  const saved = { x: initial!.x - stage!.x - stage!.width / 2, y: initial!.y - stage!.y - stage!.height / 2 };
-  await page.getByRole("button", { name: "Save network", exact: true }).click();
-  await page.getByLabel("Network name", { exact: true }).fill("Camera pose");
+  // Pan the canvas so the saved pose differs from the default fit.
+  const pane = page.locator(".react-flow__pane");
+  const box = await pane.boundingBox();
+  await page.mouse.move(box!.x + box!.width * 0.5, box!.y + box!.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(box!.x + box!.width * 0.5 + 140, box!.y + box!.height * 0.5 + 60, { steps: 10 });
+  await page.mouse.up();
+  // Wheel zoom differs the pose further from the default fit; zoom lives on
+  // the canvas gesture now.
+  await page.mouse.wheel(0, -120);
+  await expect
+    .poll(async () => {
+      const transform = await page
+        .locator(".react-flow__viewport")
+        .getAttribute("style");
+      return transform;
+    })
+    .not.toContain("translate(0px, 0px)");
+  const saved = await page
+    .locator(".react-flow__viewport")
+    .getAttribute("style");
+  await menuAction(page, "Save network");
+  await page.getByLabel("Network name", { exact: true }).fill("Canvas pose");
   await page
     .getByRole("button", { name: "Save configuration", exact: true })
     .click();
@@ -167,21 +186,17 @@ test("restores the saved camera pose when reopening without resizing", async ({
     page.getByRole("dialog", { name: "Save network", exact: true }),
   ).not.toBeVisible();
   for (let i = 0; i < 5; i++)
-    await page
-      .getByRole("button", { name: "Orbit right", exact: true })
-      .click();
-  await page.getByRole("button", { name: "My networks", exact: true }).click();
+    await page.mouse.wheel(0, -120);
+  await menuAction(page, "My networks");
   await page
-    .getByRole("button", { name: "Open Camera pose", exact: true })
+    .getByRole("button", { name: "Open Canvas pose", exact: true })
     .click();
   await expect
     .poll(async () => {
-      const now = await label.boundingBox(),
-        canvas = await page.locator(".scene-canvas").boundingBox();
-      return (
-        Math.abs(now!.x - canvas!.x - canvas!.width / 2 - saved.x) +
-        Math.abs(now!.y - canvas!.y - canvas!.height / 2 - saved.y)
-      );
+      const now = await page
+        .locator(".react-flow__viewport")
+        .getAttribute("style");
+      return now;
     })
-    .toBeLessThan(3);
+    .toBe(saved);
 });

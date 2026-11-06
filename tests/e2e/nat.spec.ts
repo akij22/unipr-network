@@ -14,6 +14,7 @@ test("shows PAT transformations and a reversible translation table", async ({
   await buildRouted(page);
   await configureHost(page, "Host 2", "203.0.113.10");
   await selectDevice(page, "Router 1");
+  await page.locator(".port-card").filter({ has: page.locator(".port-label", { hasText: /^eth1$/ }) }).locator("summary").click();
   await page
     .getByLabel("IPv4 address eth1", { exact: true })
     .fill("203.0.113.1");
@@ -41,6 +42,7 @@ test("shows PAT transformations and a reversible translation table", async ({
     .getByRole("button", { name: "Apply DHCP settings", exact: true })
     .click();
   await selectDevice(page, "Host 1");
+  await page.locator(".port-card > summary").first().click();
   await page
     .getByRole("button", { name: "Automatic (DHCP)", exact: true })
     .click();

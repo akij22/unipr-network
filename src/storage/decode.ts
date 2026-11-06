@@ -117,6 +117,11 @@ function document(v: unknown): v is NetworkDocument {
   return (
     vector(v.view.cameraPosition) &&
     vector(v.view.target) &&
+    (v.view.viewport === undefined ||
+      (record(v.view.viewport) &&
+        finite(v.view.viewport.x) && finite(v.view.viewport.y) &&
+        finite(v.view.viewport.zoom) &&
+        v.view.viewport.zoom >= 0.2 && v.view.viewport.zoom <= 2.5)) &&
     ["ethernet", "ip", "full"].includes(String(v.view.depth))
   );
 }

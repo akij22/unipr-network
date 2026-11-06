@@ -131,9 +131,6 @@ html, body, #root {
   z-index: 3;
 }
 .network-tools > * { pointer-events: auto; }
-.canvas-app .device-strip { padding: 0; gap: 8px; }
-.canvas-app .device-strip:empty { display: none; }
-.canvas-app .device-strip button { min-width: auto; flex-direction: row; gap: 8px; align-items: center; }
 .canvas-app .connections-list { margin: 8px 0 0; background: var(--color-panel); border-radius: var(--radius-control); padding-inline: 12px; }
 .canvas-app .connections-list:not(:has(button)) { display: none; }
 .canvas-app .connections-list > summary { font-size: 12px; }
@@ -154,15 +151,8 @@ html, body, #root {
 .catalog-hint { font-size: 13px; color: var(--color-muted); margin-block: 12px; }
 .canvas-app .catalog-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .canvas-app .catalog-choice { align-items: start; text-align: start; padding: 16px; }
-.catalog-choice svg { width: 44px; height: 38px; fill: none; stroke: var(--color-blue); stroke-width: 2; }
+.catalog-device-icon { width: 88px; height: 70px; object-fit: contain; align-self: center; pointer-events: none; }
 .canvas-app .catalog-choice span { white-space: normal; }
-.placement-tools { position: absolute; top: 208px; left: var(--overlay-gap); z-index: 3; max-width: calc(100% - 32px); }
-.placement-tools > button { background: var(--color-panel); }
-.placement-guide { padding: 12px; width: min(330px, calc(100vw - 32px)); background: var(--color-panel); border: 1px solid var(--color-blue); border-radius: var(--radius-control); }
-.placement-guide p { font-size: 12px; margin: 6px 0 12px; }
-.placement-guide button { padding-inline: 10px; font-size: 12px; }
-.canvas-app .network-focus:has([data-placement-active="true"]) .event-summary { display: none; }
-.configure-in-scene { display: none; }
 .canvas-app > .alert, .canvas-app > .notice {
   position: absolute;
   z-index: 30;
@@ -180,8 +170,6 @@ html, body, #root {
   .canvas-app .event-summary { max-height: 112px; padding: 8px 12px; }
   .inspection-overlay { top: 136px; max-height: 35dvh; }
   .network-tools { max-width: calc(100% - 2 * var(--overlay-gap)); max-height: 76px; }
-  .canvas-app:has(.placement-tools) .network-tools { bottom: calc(var(--dock-clearance) + 56px); }
-  .placement-tools { top: auto; bottom: var(--dock-clearance); }
 }
 @media (max-width: 30rem) {
   .canvas-app { --dock-clearance: 208px; }
@@ -190,8 +178,8 @@ html, body, #root {
   .canvas-app .reset-buttons { margin-inline-start: auto; }
   .canvas-app .playback-buttons button { padding-inline: 8px; }
   .canvas-app .catalog-grid { grid-template-columns: minmax(0, 1fr); }
-  .canvas-app .catalog-choice { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 12px; padding: 10px; }
-  .catalog-choice svg { grid-row: span 2; }
+  .canvas-app .catalog-choice { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 0 12px; padding: 10px; }
+  .catalog-device-icon { width: 64px; height: 58px; grid-row: span 2; }
 }
 @media (max-height: 500px) and (min-width: 40rem) {
   .canvas-app { --dock-clearance: 120px; }
@@ -363,7 +351,7 @@ html, body, #root {
 .workspace-menu nav button[role="switch"]:hover .workspace-menu-state { color: var(--color-ink); }
 @media (min-width: 70rem) {
   .canvas-app .catalog, .canvas-app .connection-guide, .canvas-app .ping-composer,
-  .canvas-app .event-summary, .canvas-app .placement-tools {
+  .canvas-app .event-summary {
     left: calc(var(--overlay-gap) * 2 + var(--menu-width));
     max-width: calc(100% - var(--menu-width) - var(--overlay-gap) * 3);
   }

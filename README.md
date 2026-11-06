@@ -1,6 +1,6 @@
 # UniPRNetwork
 
-A browser-based learning lab for Ethernet and IPv4. Build a real 3D topology, configure devices, then follow the decisions behind a ping or an explicit DHCP request. All interface and educational content is in English; the default theme is dark.
+A browser-based learning lab for Ethernet and IPv4. Build a topology on a React Flow canvas, configure devices, then follow the decisions behind a ping or an explicit DHCP request. All interface and educational content is in English; the default theme is dark.
 
 ## Run locally
 
@@ -15,14 +15,14 @@ Open the URL printed by Vite. For physical-phone testing, serve the app through 
 
 ## Explore
 
-1. Add hosts, switches, routers, bridges or hubs. Select them through the scene or the device list.
-2. Configure their interfaces. Toggle Tutorial mode for guided explanations. Position buttons and port selectors provide alternatives to dragging.
+1. Add hosts, switches, routers, bridges or hubs. Select devices directly on the canvas. Drag empty space to pan; use the mouse wheel or pinch to zoom.
+2. Drag devices to arrange the topology, then configure their interfaces. Toggle Tutorial mode for guided explanations. Focus a device and use the arrow keys to adjust its position; port selectors let you connect interfaces.
 3. Choose Connect ports and explicitly choose the two endpoints.
 4. Open Send a packet, select a source and destination, and start a ping. For DHCP, apply Automatic (DHCP) on a host and explicitly request its configuration. Enable DHCP or ICMP PAT on a router as needed.
-5. Use Next, Previous, Play and the generated-event slider. Click a protocol or packet heading to inspect theory. Tables, fields and the 3D view follow the same historical step.
+5. Use Next, Previous, Play and the generated-event slider. Click a protocol or packet heading to inspect theory. Tables, fields and the topology canvas follow the same historical step.
 6. Save a named configuration. My networks reopens it with clean simulation state. Data belongs to this browser and is not synchronized.
 
-Configuration changes discard the trace and learned state while keeping the camera. Position/name/view changes preserve simulation state. Reopening restores the saved camera position and target; zoom is fitted to the current viewport. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
+Configuration changes discard the trace and learned state while keeping the canvas view. Position/name/view changes preserve simulation state. Reopening restores the saved canvas position and zoom; older configurations are fitted to the current viewport. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
 
 ## Verification
 
@@ -52,7 +52,7 @@ Physical iOS and Android checks are pending availability. WebKit and Pixel emula
 - `src/simulation`: deterministic virtual-time Ethernet, ARP, IPv4, ICMP, DHCP and ICMP PAT.
 - `src/runtime`: worker protocol, progressive execution, revision checks and reversible historical projections.
 - `src/storage`: validated versioned named documents and temporary IndexedDB journals.
-- `src/app` and `src/features`: React interaction, real Three.js meshes through React Three Fiber, and educational inspection.
+- `src/app` and `src/features`: React interaction, the React Flow topology canvas, and educational inspection. Legacy Three.js components remain in the source tree but are outside the active workspace.
 
 Events use state deltas, disk checkpoints every 50 events and a bounded 100-event memory cache. Rendering speed never decides protocol outcomes. Temporary journals use Web Locks to avoid deleting another tab's active history. Named documents contain configuration, identity, layout and view, without learned state.
 
@@ -62,4 +62,4 @@ The lab models wired Ethernet without collisions, VLANs, STP, Wi-Fi or vendor CL
 
 DHCP uses broadcast DORA, router-integrated servers and infinite leases, without renewal, relay or DNS options. NAT supports ICMP Echo identifiers and corresponding replies/errors, without TCP/UDP PAT, nested NAT or port forwarding. ICMP is a network-layer control protocol. Explanations and packet fields state these simplifications.
 
-No fixed device-count limit is imposed. Large scenes and histories consume browser resources; measured results and current limits are documented rather than inferred from device count.
+No fixed device-count limit is imposed. Large topologies and histories consume browser resources; measured results and current limits are documented rather than inferred from device count. Measurements of the former 3D renderer do not establish React Flow performance.

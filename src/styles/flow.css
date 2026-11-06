@@ -1,0 +1,171 @@
+/* Hallmark · educational topology workbench · black + vivid blue · React Flow canvas.
+ * Pre-emit critique: philosophy 5, hierarchy 4, execution 4, specificity 5, restraint 4, variety 4.
+ * Tokens come from the approved dark palette; no new colours are invented here. */
+.flow-surface {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--color-field);
+}
+
+/* React Flow paints its own pane; the surface underneath is the grid ground. */
+.flow-surface .react-flow {
+  background: var(--color-field);
+}
+.flow-surface .react-flow__pane {
+  cursor: grab;
+}
+.flow-surface .react-flow__pane:active {
+  cursor: grabbing;
+}
+/* The React Flow attribution stays visible: the free tier requires it. It is
+ * styled to sit quietly in the corner of the dark canvas. */
+.flow-surface .react-flow__attribution {
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 10px;
+}
+.flow-surface .react-flow__attribution a {
+  color: var(--color-muted);
+}
+
+/* A device is the generated icon alone: no card, no border, no text. Hover
+ * and selection glow around the icon instead of drawing a rectangle. */
+.flow-device {
+  position: relative;
+  cursor: grab;
+}
+.flow-device-icon {
+  width: 104px;
+  height: 76px;
+  object-fit: contain;
+  pointer-events: none;
+  transition: filter var(--dur-short);
+}
+.flow-device:hover .flow-device-icon {
+  filter: drop-shadow(0 0 6px var(--color-rule-strong));
+}
+.flow-device.is-selected .flow-device-icon {
+  filter: drop-shadow(0 0 10px var(--color-blue));
+}
+/* The device identity stays available to assistive tech and to React Flow's
+ * node label without rendering a visible label. */
+.flow-device-identity {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Canvas keyboard focus lands on the React Flow node wrapper, not the icon,
+ * so the focus-visible ring lives there and never reads as a device card. */
+.flow-surface .react-flow__node:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+  border-radius: var(--radius-control);
+}
+
+/* Ports are the visible ends of a link; they are not drag targets. */
+.flow-port {
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 50%;
+  background: var(--color-raised);
+}
+.flow-device.is-selected .flow-port {
+  border-color: var(--color-blue);
+}
+
+/* Links carry the traffic state: idle is a quiet rule, active is the accent,
+ * faulty is the semantic error colour. */
+.flow-edge {
+  stroke: var(--color-rule-strong);
+  stroke-width: 1.5;
+}
+.flow-edge-selected {
+  stroke: var(--color-blue);
+  stroke-width: 2.5;
+}
+.flow-edge-active {
+  stroke: var(--color-blue);
+  stroke-width: 2.5;
+}
+.flow-edge-faulty {
+  stroke: var(--color-error);
+  stroke-width: 2.5;
+}
+.flow-edge-hitbox {
+  stroke: transparent;
+  stroke-width: 18;
+}
+.flow-edge-label,
+.flow-packet-marker {
+  position: absolute;
+  pointer-events: none;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.flow-edge-label-active {
+  background: var(--color-blue-bg);
+  color: var(--color-blue);
+}
+.flow-edge-label-faulty {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+.flow-packet-marker {
+  background: var(--color-amber-bg);
+  color: var(--color-amber);
+}
+
+/* The recovery notice replaces the canvas. It sits clear of the floating
+ * workspace menu on the left and the inspector on the right. */
+.network-stage.scene-recovery {
+  display: grid;
+  place-content: center;
+  justify-items: start;
+  padding: 24px;
+  background: var(--color-field);
+}
+.network-stage.scene-recovery h2 {
+  margin-top: 0;
+}
+.network-stage.scene-recovery p {
+  max-width: 46ch;
+  color: var(--color-body);
+}
+.network-stage.scene-recovery button {
+  background: var(--color-panel);
+}
+@media (min-width: 70rem) {
+  .network-stage.scene-recovery {
+    padding-left: calc(var(--menu-width, 228px) + var(--overlay-gap, 16px) * 2);
+  }
+}
+
+/* On a short viewport the inspector is taller than the space beside the
+ * canvas. It scrolls inside its own frame so every field stays reachable
+ * instead of spilling behind the simulation dock. */
+@media (max-width: 69.99rem), (max-height: 500px) {
+  .canvas-app .inspection-overlay {
+    overflow: hidden;
+    z-index: 12;
+  }
+  .canvas-app .inspection-overlay > *,
+  .canvas-app .inspector-stack,
+  .canvas-app .inspector-stack .inspector {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+}

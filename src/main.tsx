@@ -7,6 +7,8 @@ import "./styles/layout.css";
 import "./styles/simulation.css";
 import "./styles/saves.css";
 import "./styles/workspace.css";
+import "@xyflow/react/dist/style.css";
+import "./styles/flow.css";
 const worker = new Worker(
   new URL("./runtime/simulation.worker.ts", import.meta.url),
   { type: "module" },

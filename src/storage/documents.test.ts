@@ -180,3 +180,17 @@ it("rejects corrupt saved-network summary metadata before presentation", async (
   });
   db.close();
 });
+
+it("validates optional canvas viewports and still reads legacy documents", async () => {
+  const { decodeDocument } = await import("./decode");
+  const legacy = document();
+  expect(decodeDocument(legacy).ok).toBe(true);
+  const withViewport = (viewport: unknown) => ({
+    ...legacy, view: { ...legacy.view, viewport },
+  });
+  expect(decodeDocument(withViewport({ x: 120, y: -50, zoom: 0.8 })).ok).toBe(true);
+  for (const viewport of [null, {}, { x: 0, y: 0, zoom: 0 },
+    { x: Infinity, y: 0, zoom: 1 }, { x: 0, y: 0, zoom: 10 }]) {
+    expect(decodeDocument(withViewport(viewport)).ok).toBe(false);
+  }
+});

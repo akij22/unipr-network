@@ -40,7 +40,7 @@ for (const [width, height] of [
       .getByRole("navigation", { name: "Simulation controls" })
       .boundingBox();
     const scene = await page
-      .getByRole("region", { name: "3D network workspace" })
+      .getByRole("region", { name: "Network topology workspace" })
       .boundingBox();
     expect(controls).not.toBeNull();
     expect(scene).not.toBeNull();
@@ -53,7 +53,7 @@ for (const [width, height] of [
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
-    for (const name of ["Next step", "Orbit left", "Zoom in"]) {
+    for (const name of ["Next step"]) {
       const b = await page
         .getByRole("button", { name, exact: true })
         .boundingBox();
@@ -68,10 +68,14 @@ test("supports keyboard controls and reduced motion without losing focus", async
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await addDevice(page, "host");
-  const orbit = page.getByRole("button", { name: "Orbit right", exact: true });
-  await orbit.focus();
+  const node = page.locator('.react-flow__node[aria-label="Host 1"]');
+  await node.focus();
   await page.keyboard.press("Enter");
-  await expect(orbit).toBeFocused();
+  await expect(node).toBeFocused();
+  await expect(page.locator("[data-device-node]")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
   await page.getByLabel("Device name", { exact: true }).focus();
   await page.keyboard.press("ControlOrMeta+A");
   await page.keyboard.type("My computer");
@@ -88,7 +92,7 @@ test("returns keyboard focus after closing the device inspector", async ({
     .getByRole("button", { name: "Close inspector", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
+    page.locator('.react-flow__node[aria-label="Host 1"]'),
   ).toBeFocused();
 });
 test("keeps input actions reachable after a keyboard-sized viewport and rotation", async ({
@@ -113,7 +117,7 @@ test("keeps input actions reachable after a keyboard-sized viewport and rotation
   );
 
   const scene = await page
-    .getByRole("region", { name: "3D network workspace" })
+    .getByRole("region", { name: "Network topology workspace" })
     .boundingBox();
   expect(scene!.height).toBeGreaterThanOrEqual(160);
   expect(scene!.y + 160).toBeLessThanOrEqual(390);

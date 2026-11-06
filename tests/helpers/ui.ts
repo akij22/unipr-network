@@ -1,12 +1,53 @@
 import { expect, type Page } from "@playwright/test";
+
+/** Open menu actions when the workspace uses its narrow-screen layout. */
+export async function openMenu(page: Page) {
+  const menu = page.locator(".workspace-menu");
+  if ((await menu.count()) === 0) return;
+  if ((await menu.getAttribute("data-open")) === "true") return;
+  await page.getByRole("button", { name: "Toggle network menu" }).click();
+  await expect(menu).toHaveAttribute("data-open", "true");
+}
+
+/** The floating menu covers part of the canvas and the inspector on a narrow
+ * viewport. The app collapses it after an action; the tests do the same so
+ * the canvas stays reachable. */
+async function collapseMenu(page: Page) {
+  const menu = page.locator(".workspace-menu");
+  if ((await menu.count()) === 0) return;
+  if ((await menu.getAttribute("data-open")) !== "true") return;
+  if (await page.evaluate(() => matchMedia("(min-width: 70rem)").matches))
+    return;
+  await page.getByRole("button", { name: "Toggle network menu" }).click();
+  await expect(menu).toHaveAttribute("data-open", "false");
+}
+
+/** Runs a workspace-menu action. The menu collapses on a narrow viewport, so
+ * the action is only reachable once the menu has been opened. */
+export async function menuAction(page: Page, name: string) {
+  const action = page.getByRole("button", { name, exact: true });
+  if ((await action.count()) === 0) {
+    await openMenu(page);
+  }
+  await action.click();
+}
+
 export async function addDevice(page: Page, kind: string) {
+  await openMenu(page);
   await page.getByRole("button", { name: "Add device", exact: true }).click();
   await page.getByRole("button", { name: `Add ${kind}`, exact: true }).click();
+  await collapseMenu(page);
 }
+/** Use the canvas keyboard alternative so floating inspectors and offscreen
+ * nodes do not require pointer gestures in network-configuration fixtures. */
 export async function selectDevice(page: Page, name: string) {
-  await page
-    .getByRole("button", { name: `Select ${name}`, exact: true })
-    .click();
+  await collapseMenu(page);
+  const node = page.getByRole("group", { name, exact: true });
+  await node.focus();
+  if (await node.locator("[data-device-node]").getAttribute("data-selected") !== "true") {
+    await node.press("Enter");
+  }
+  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
 }
 export async function configureHost(
   page: Page,
@@ -15,7 +56,9 @@ export async function configureHost(
   gateway = "",
 ) {
   await selectDevice(page, name);
-  await page.getByLabel("IPv4 address", { exact: true }).fill(ip);
+  const address = page.getByLabel("IPv4 address", { exact: true });
+  if (!(await address.isVisible())) await page.locator(".port-card > summary").first().click();
+  await address.fill(ip);
   await page.getByLabel("Default gateway", { exact: true }).fill(gateway);
   await page
     .getByRole("button", { name: "Apply settings", exact: true })
@@ -28,9 +71,7 @@ export async function connect(
   to: string,
   toPort: string,
 ) {
-  await page
-    .getByRole("button", { name: "Connect ports", exact: true })
-    .click();
+  await menuAction(page, "Connect ports");
   await selectDevice(page, from);
   await page
     .getByRole("button", { name: `Choose ${fromPort}`, exact: true })
@@ -93,6 +134,13 @@ export async function finishOperation(page: Page) {
 
 export async function openComposer(page: Page) {
   const composer = page.locator(".ping-composer");
+  if ((await composer.count()) === 0) {
+    // The composer lives behind the workspace menu's "Send a packet" action.
+    await openMenu(page);
+    await page.getByRole("button", { name: "Send a packet", exact: true }).click();
+    await expect(composer).toBeVisible();
+    return;
+  }
   if (!(await composer.getAttribute("open").then((v) => v !== null)))
     await composer.locator("summary").click();
 }

@@ -2,24 +2,22 @@ import { expect, test } from "@playwright/test";
 
 test("fills the viewport on resize and confines overlays to their controls", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator('[data-scene-ready="true"] canvas')).toBeVisible();
+  await expect(page.locator('[data-scene-ready="true"]')).toBeVisible();
   for (const [width, height] of [[1440, 900], [768, 1024], [390, 844], [320, 568], [844, 390]]) {
     await page.setViewportSize({ width, height });
     await expect.poll(async () => {
-      const box = await page.locator("canvas").boundingBox();
+      const box = await page.locator(".react-flow").boundingBox();
       return box && [box.x, box.y, box.width, box.height];
     }).toEqual([0, 0, width, height]);
-    await expect.poll(() => page.locator("canvas").evaluate((canvas) => {
-      if (!(canvas instanceof HTMLCanvasElement)) return false;
-      const ratio = Math.min(1.5, devicePixelRatio);
-      return Math.abs(canvas.width / ratio - innerWidth) <= 1 &&
-        Math.abs(canvas.height / ratio - innerHeight) <= 1;
-    })).toBe(true);
     expect(await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
       height: document.documentElement.scrollHeight,
-      target: document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.tagName,
-    }))).toEqual({ width, height, target: "CANVAS" });
+      target: document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.className,
+    }))).toEqual({
+      width,
+      height,
+      target: expect.stringContaining("react-flow"),
+    });
     const controls = await page.getByRole("navigation", { name: "Simulation controls" }).boundingBox();
     expect(controls!.y).toBeGreaterThan(0);
     expect(controls!.y + controls!.height).toBeLessThanOrEqual(height);
@@ -28,9 +26,6 @@ test("fills the viewport on resize and confines overlays to their controls", asy
     await reset.click();
   }
   await expect(page.locator(".topbar, .lab-toolbar, .scene-hud, .scene-empty, .camera-toolbar, .scene-help")).toHaveCount(0);
-  for (const name of ["Zoom in", "Reset view"]) {
-    await expect(page.getByRole("button", { name, exact: true })).toHaveCount(0);
-  }
   await expect(page.getByRole("button", { name: "Toggle network menu" })).toBeVisible();
 });
 
@@ -63,7 +58,7 @@ test("keeps packet inspection floating during an operation", async ({ page }) =>
     const packet = await page.locator(".packet-inspector").boundingBox();
     const dock = await page.locator(".simulation-surface").boundingBox();
     expect(packet!.y + packet!.height).toBeLessThanOrEqual(dock!.y);
-    await expect.poll(async () => (await page.locator("canvas").boundingBox())?.height).toBe(height);
+    await expect.poll(async () => (await page.locator(".react-flow").boundingBox())?.height).toBe(height);
     await page.screenshot({ path: `.taste-skill/packet-${width}.png` });
   }
 });
