@@ -10,10 +10,20 @@ const KIND_LABEL: Record<FlowDevice["kind"], string> = {
   hub: "Hub",
 };
 
-/** One device on the topology canvas. The node is the drag handle, so a
- * learner drags the device itself; the surrounding canvas pans instead. */
+/** One device on the topology canvas: the generated icon is the whole node.
+ * The node is the drag handle, so a learner drags the device itself; the
+ * surrounding canvas pans instead. The device identity (name, kind, address,
+ * ports) stays in the accessibility tree as node text, so a screen reader
+ * still announces exactly what the old card showed. */
 function DeviceNodeImpl({ data }: NodeProps) {
   const device = data as FlowDevice;
+  const identity = [
+    `${device.name} (${KIND_LABEL[device.kind]})`,
+    device.ip || null,
+    `${device.ports} ${device.ports === 1 ? "port" : "ports"}`,
+  ]
+    .filter(Boolean)
+    .join(", ");
   return (
     <div
       className={`flow-device flow-device-${device.kind}${
@@ -41,12 +51,7 @@ function DeviceNodeImpl({ data }: NodeProps) {
         aria-hidden="true"
         draggable={false}
       />
-      <span className="flow-device-kind">{KIND_LABEL[device.kind]}</span>
-      <strong className="flow-device-name">{device.name}</strong>
-      {device.ip && <code className="flow-device-ip">{device.ip}</code>}
-      <span className="flow-device-ports">
-        {device.ports} {device.ports === 1 ? "port" : "ports"}
-      </span>
+      <span className="flow-device-identity">{identity}</span>
     </div>
   );
 }
