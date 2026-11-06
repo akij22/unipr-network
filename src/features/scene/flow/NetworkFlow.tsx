@@ -40,25 +40,14 @@ export function NetworkFlow({
   controller,
   onReady,
   onError,
-  placing,
-  onPlace,
 }: {
   controller: AppController;
   onReady: () => void;
   onError: (cause: unknown) => void;
-  /** When set, a click on empty canvas reports the flow position. */
-  placing?: boolean;
-  onPlace?: (x: number, y: number) => void;
 }) {
   return (
     <ReactFlowProvider>
-      <FlowCanvas
-        controller={controller}
-        onReady={onReady}
-        onError={onError}
-        placing={placing}
-        onPlace={onPlace}
-      />
+      <FlowCanvas controller={controller} onReady={onReady} onError={onError} />
     </ReactFlowProvider>
   );
 }
@@ -67,14 +56,10 @@ function FlowCanvas({
   controller,
   onReady,
   onError,
-  placing = false,
-  onPlace,
 }: {
   controller: AppController;
   onReady: () => void;
   onError: (cause: unknown) => void;
-  placing?: boolean;
-  onPlace?: (x: number, y: number) => void;
 }) {
   const state = useApp(controller);
   const flow = useReactFlow<FlowNode, FlowEdge>();
@@ -107,14 +92,13 @@ function FlowCanvas({
         position: { x: device.x, y: device.y },
         data: device,
         selected: device.selected,
-        draggable: !placing,
         connectable: false,
         deletable: false,
         selectable: true,
         focusable: true,
         ariaLabel: device.name,
       })),
-    [placing, view.devices],
+    [view.devices],
   );
 
   const [nodes, setNodes] = useState<FlowNode[]>([]);
@@ -195,7 +179,7 @@ function FlowCanvas({
     (changes: NodeChange<FlowNode>[]) => {
       setNodes(nodes => applyNodeChanges(changes, nodes));
       const selected = changes.find(change => change.type === "select" && change.selected);
-      if (selected) void controller.dispatch({ type: "selection.set", selection: { kind: "device", id: selected.id } });
+      if (selected?.type === "select") void controller.dispatch({ type: "selection.set", selection: { kind: "device", id: selected.id } });
       for (const change of changes) {
         if (change.type !== "position" || !change.position) continue;
         const layout = canvasToLayout(change.position.x, change.position.y);
@@ -231,22 +215,10 @@ function FlowCanvas({
   );
 
   const handlePaneClick = useCallback(
-    (event: React.MouseEvent) => {
-      if (placing) {
-        try {
-          const position = flow.screenToFlowPosition({
-            x: event.clientX,
-            y: event.clientY,
-          });
-          onPlace?.(position.x, position.y);
-        } catch (cause) {
-          onError(cause);
-        }
-        return;
-      }
+    () => {
       void controller.dispatch({ type: "selection.set", selection: null });
     },
-    [controller, flow, onError, onPlace, placing],
+    [controller],
   );
 
   const handleMoveEnd = useCallback(
@@ -255,30 +227,6 @@ function FlowCanvas({
     },
     [saveViewport],
   );
-
-  const fitView = useCallback(() => {
-    try {
-      void flow.fitView({ padding: 0.25, maxZoom: 1.5, duration: 0 }).catch(onError);
-    } catch (cause) {
-      onError(cause);
-    }
-  }, [flow, onError]);
-
-  const zoomIn = useCallback(() => {
-    try {
-      void flow.zoomIn({ duration: 0 }).catch(onError);
-    } catch (cause) {
-      onError(cause);
-    }
-  }, [flow, onError]);
-
-  const zoomOut = useCallback(() => {
-    try {
-      void flow.zoomOut({ duration: 0 }).catch(onError);
-    } catch (cause) {
-      onError(cause);
-    }
-  }, [flow, onError]);
 
   return (
     <div className="flow-surface" data-flow-ready={ready}>
@@ -294,7 +242,7 @@ function FlowCanvas({
         onEdgeClick={handleEdgeClick}
         onEdgesChange={(changes: EdgeChange<FlowEdge>[]) => {
           const selected = changes.find(change => change.type === "select" && change.selected);
-          if (selected) void controller.dispatch({ type: "selection.set", selection: { kind: "link", id: selected.id } });
+          if (selected?.type === "select") void controller.dispatch({ type: "selection.set", selection: { kind: "link", id: selected.id } });
         }}
         onPaneClick={handlePaneClick}
         onMove={handleMoveEnd}
@@ -326,17 +274,6 @@ function FlowCanvas({
           color="var(--color-rule-strong)"
         />
       </ReactFlow>
-      <div className="flow-toolbar" role="group" aria-label="Canvas view controls">
-        <button type="button" aria-label="Zoom in" onClick={zoomIn}>
-          Zoom in
-        </button>
-        <button type="button" aria-label="Zoom out" onClick={zoomOut}>
-          Zoom out
-        </button>
-        <button type="button" aria-label="Fit view" onClick={fitView}>
-          Fit view
-        </button>
-      </div>
     </div>
   );
 }

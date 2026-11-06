@@ -27,7 +27,7 @@ export function DeviceCatalog({
         <h2>Add to your network</h2>
         <button onClick={onClose}>Close</button>
       </div>
-      <p className="catalog-hint">Choose a device to add it to the grid. Then use <strong>Position device</strong> to choose its location.</p>
+      <p className="catalog-hint">Choose a device to add it. Then drag it on the canvas to choose its location.</p>
       <div className="catalog-grid">
         {choices.map(([kind, label, description]) => (
           <button

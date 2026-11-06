@@ -53,7 +53,7 @@ for (const [width, height] of [
         () => document.documentElement.scrollWidth <= innerWidth,
       ),
     ).toBe(true);
-    for (const name of ["Next step", "Zoom in", "Fit view"]) {
+    for (const name of ["Next step"]) {
       const b = await page
         .getByRole("button", { name, exact: true })
         .boundingBox();
@@ -68,10 +68,14 @@ test("supports keyboard controls and reduced motion without losing focus", async
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await addDevice(page, "host");
-  const zoom = page.getByRole("button", { name: "Zoom in", exact: true });
-  await zoom.focus();
+  const node = page.locator('.react-flow__node[aria-label="Host 1"]');
+  await node.focus();
   await page.keyboard.press("Enter");
-  await expect(zoom).toBeFocused();
+  await expect(node).toBeFocused();
+  await expect(page.locator("[data-device-node]")).toHaveAttribute(
+    "data-selected",
+    "true",
+  );
   await page.getByLabel("Device name", { exact: true }).focus();
   await page.keyboard.press("ControlOrMeta+A");
   await page.keyboard.type("My computer");
@@ -88,7 +92,7 @@ test("returns keyboard focus after closing the device inspector", async ({
     .getByRole("button", { name: "Close inspector", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
+    page.locator('.react-flow__node[aria-label="Host 1"]'),
   ).toBeFocused();
 });
 test("keeps input actions reachable after a keyboard-sized viewport and rotation", async ({

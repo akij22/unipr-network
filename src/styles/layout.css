@@ -350,25 +350,6 @@ a {
 .port-status[data-connected="true"]::before {
   background: var(--color-good);
 }
-.device-strip {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 14px 0;
-}
-.device-strip button {
-  display: flex;
-  flex-direction: column;
-  text-align: start;
-  min-width: 96px;
-  align-items: flex-start;
-  font-size: 12px;
-}
-.device-strip button span {
-  font-size: 11px;
-  color: var(--color-muted);
-  text-transform: capitalize;
-}
 .link-list {
   display: flex;
   flex-wrap: wrap;

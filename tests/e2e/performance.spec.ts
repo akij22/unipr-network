@@ -66,25 +66,28 @@ for (const count of [10, 50, 100, 250]) {
       .click();
     await expect(page.locator("[data-scene-ready=true]")).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Select h0", exact: true }),
+      page.locator('.react-flow__node[aria-label="h0"]'),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Fit view", exact: true }).click();
     const gpu = await page.evaluate(async () => {
       const stats = (
         window as unknown as { __gpuStats: { calls: number } }
       ).__gpuStats;
       let frames = 0;
       const start = performance.now(),
-        calls = stats.calls,
-        initialFrames = frames;
+        calls = stats.calls;
+      const pane = document.querySelector(".react-flow__pane"),
+        wheel = () =>
+          pane?.dispatchEvent(
+            new WheelEvent("wheel", {
+              deltaY: -120,
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
       while (performance.now() - start < 1200) {
         await new Promise(requestAnimationFrame);
         frames++;
-        (
-          document.querySelector(
-            '[aria-label="Zoom in"]',
-          ) as HTMLButtonElement
-        ).click();
+        wheel();
       }
       const elapsed = performance.now() - start;
       return {

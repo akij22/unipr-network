@@ -157,10 +157,10 @@ function DeviceForm({
             });
             requestAnimationFrame(() =>
               document
-                .querySelector<HTMLButtonElement>(
-                  `[data-device-id="${CSS.escape(device.id)}"]`,
+                .querySelector<HTMLElement>(
+                  `.react-flow__node[data-id="${CSS.escape(device.id)}"]`,
                 )
-                ?.focus(),
+                ?.focus({ preventScroll: true }),
             );
           }}
         >

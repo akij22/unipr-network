@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 import { menuAction, openComposer } from "../helpers/ui";
 
-/** A point on the canvas that no overlay panel covers. The placement guide
- * and the device strip float over the canvas, so a fixed coordinate would
- * depend on which panels are open. */
+/** A point on the canvas that no overlay panel covers. The floating menu
+ * and the device strip used to float here; inspector panels may cover part
+ * of the canvas, so a fixed coordinate would depend on which panels are open. */
 async function freeCanvasPoint(page: Page, ratio = { x: 0.62, y: 0.66 }) {
   const box = await page.locator(".react-flow__pane").boundingBox();
   if (!box) throw new Error("Canvas pane has no bounds");
@@ -23,7 +23,7 @@ async function freeCanvasPoint(page: Page, ratio = { x: 0.62, y: 0.66 }) {
   return point;
 }
 
-test("renders a real topology canvas and exposes view and device selection", async ({
+test("renders a real topology canvas and selects a device on it", async ({
   page,
 }) => {
   await page.goto("/");
@@ -33,12 +33,24 @@ test("renders a real topology canvas and exposes view and device selection", asy
   await expect(page.locator(".react-flow__pane")).toBeVisible();
   // The canvas is SVG, not a WebGL surface.
   await expect(page.locator("canvas")).toHaveCount(0);
-  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
-  await page.getByRole("button", { name: "Fit view", exact: true }).click();
   await expect(page.locator("[data-device-node]")).toHaveCount(1);
   await expect(
     page.getByRole("heading", { name: "Host 1", exact: true }),
   ).toBeVisible();
+  // The view lives entirely on canvas gestures: wheel zooms, dragging empty
+  // space pans. No zoom, fit or device-shortcut buttons remain.
+  await expect(page.getByRole("button", { name: "Zoom in", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Zoom out", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Fit view", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Position device", exact: true })).toHaveCount(0);
+  await expect(page.locator(".device-strip")).toHaveCount(0);
+  const viewport = page.locator(".react-flow__viewport");
+  const before = await viewport.getAttribute("style");
+  await page.locator(".react-flow__pane").hover();
+  await page.mouse.wheel(0, -240);
+  await expect(viewport).not.toHaveAttribute("style", before!);
+  await page.locator('.react-flow__node[aria-label="Host 1"]').click();
+  await expect(page.getByLabel("Device name", { exact: true })).toBeVisible();
 });
 
 test("drags a device to a new position and keeps simulation history", async ({
@@ -79,46 +91,18 @@ test("moves a selected device with the keyboard and preserves history", async ({
   await menuAction(page, "Add device");
   await page.getByRole("button", { name: "Add host", exact: true }).click();
   await expect(page.locator('[data-scene-ready="true"]')).toBeVisible();
-  const node = page.locator("[data-device-node]");
-  const before = await node.boundingBox();
-  await page.getByRole("button", { name: "Position device", exact: true }).click();
-  await expect(page.locator("[data-placement-active]")).toHaveAttribute(
-    "data-placement-active",
+  const node = page.locator('.react-flow__node[aria-label="Host 1"]');
+  await node.click();
+  await expect(page.locator("[data-device-node]")).toHaveAttribute(
+    "data-selected",
     "true",
   );
-  await page.getByRole("button", { name: "Right", exact: true }).focus();
-  await page.keyboard.press("Enter");
-  await expect.poll(async () => (await node.boundingBox())!.x).not.toBe(before!.x);
-  await page.keyboard.press("Escape");
-  await expect(page.locator("[data-placement-active]")).toHaveAttribute(
-    "data-placement-active",
-    "false",
-  );
+  const before = (await node.boundingBox())!.x;
+  // The canvas keyboard support: the focused, selected node moves one grid
+  // step per arrow key press.
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(async () => (await node.boundingBox())!.x).not.toBe(before);
   await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue("0");
-});
-
-test("places a device by tapping the canvas while positioning", async ({
-  page,
-  isMobile,
-}) => {
-  await page.goto("/");
-  await menuAction(page, "Add device");
-  await page.getByRole("button", { name: "Add host", exact: true }).click();
-  await expect(page.locator('[data-scene-ready="true"]')).toBeVisible();
-  const node = page.locator("[data-device-node]");
-  const before = await node.boundingBox();
-  await page.getByRole("button", { name: "Position device", exact: true }).click();
-  const point = await freeCanvasPoint(page);
-  if (isMobile) await page.touchscreen.tap(point.x, point.y);
-  else await page.mouse.click(point.x, point.y);
-  await expect(page.locator("[data-placement-active]")).toHaveAttribute(
-    "data-placement-active",
-    "false",
-  );
-  await expect.poll(async () => {
-    const after = await node.boundingBox();
-    return Math.abs(after!.x - before!.x) + Math.abs(after!.y - before!.y);
-  }).toBeGreaterThan(20);
 });
 
 test("dismisses the device catalog with Escape and returns focus", async ({ page, isMobile }) => {

@@ -15,14 +15,14 @@ Open the URL printed by Vite. For physical-phone testing, serve the app through 
 
 ## Explore
 
-1. Add hosts, switches, routers, bridges or hubs. Select them through the canvas or the device list. Drag empty space to pan; zoom and fit the view with the canvas controls.
-2. Drag devices to arrange the topology, then configure their interfaces. Toggle Tutorial mode for guided explanations. Position buttons and port selectors provide alternatives to dragging.
+1. Add hosts, switches, routers, bridges or hubs. Select devices directly on the canvas. Drag empty space to pan; use the mouse wheel or pinch to zoom.
+2. Drag devices to arrange the topology, then configure their interfaces. Toggle Tutorial mode for guided explanations. Focus a device and use the arrow keys to adjust its position; port selectors let you connect interfaces.
 3. Choose Connect ports and explicitly choose the two endpoints.
 4. Open Send a packet, select a source and destination, and start a ping. For DHCP, apply Automatic (DHCP) on a host and explicitly request its configuration. Enable DHCP or ICMP PAT on a router as needed.
 5. Use Next, Previous, Play and the generated-event slider. Click a protocol or packet heading to inspect theory. Tables, fields and the topology canvas follow the same historical step.
 6. Save a named configuration. My networks reopens it with clean simulation state. Data belongs to this browser and is not synchronized.
 
-Configuration changes discard the trace and learned state while keeping the camera. Position/name/view changes preserve simulation state. Reopening restores the saved camera position and target; zoom is fitted to the current viewport. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
+Configuration changes discard the trace and learned state while keeping the canvas view. Position/name/view changes preserve simulation state. Reopening restores the saved canvas position and zoom; older configurations are fitted to the current viewport. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
 
 ## Verification
 

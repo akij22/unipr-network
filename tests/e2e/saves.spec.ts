@@ -22,12 +22,9 @@ test("saves a named configuration and reopens it with clean state", async ({
   await page
     .getByRole("button", { name: "Open My first lab", exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Select Host 1", exact: true })
-    .click();
+  const node = page.locator('.react-flow__node[aria-label="Host 1"]');
+  await expect(node).toBeVisible();
+  await node.click();
   await expect(page.getByLabel("IPv4 address", { exact: true })).toHaveValue(
     "192.168.1.10",
   );
@@ -64,7 +61,5 @@ test("explains a failed save while retaining the editable network", async ({
   await page
     .getByRole("button", { name: "Close save dialog", exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
-  ).toBeVisible();
+  await expect(page.locator('.react-flow__node[aria-label="Host 1"]')).toBeVisible();
 });

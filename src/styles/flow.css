@@ -143,28 +143,6 @@
   color: var(--color-amber);
 }
 
-/* The toolbar floats over the canvas. It sits clear of the right-hand
- * inspector, and above the bottom device strip on narrow screens. */
-.flow-toolbar {
-  position: absolute;
-  z-index: 5;
-  right: calc(min(380px, 100% - 2 * var(--overlay-gap, 16px)) + var(--overlay-gap, 16px));
-  bottom: calc(var(--dock-clearance, 132px) + var(--overlay-gap, 16px));
-  display: flex;
-  gap: 6px;
-}
-.flow-toolbar button {
-  min-height: 44px;
-  padding: 8px 12px;
-  font-size: 12px;
-  background: var(--color-panel);
-}
-
-/* Empty space between device shortcuts must pass gestures to the canvas
- * and its view controls. Only the shortcut buttons intercept input. */
-.canvas-app .device-strip { pointer-events: none; }
-.canvas-app .device-strip button { pointer-events: auto; }
-
 /* The recovery notice replaces the canvas. It sits clear of the floating
  * workspace menu on the left and the inspector on the right. */
 .network-stage.scene-recovery {
@@ -204,25 +182,5 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     min-height: 0;
-  }
-}
-@media (max-width: 69.99rem) {
-  .flow-toolbar {
-    right: var(--overlay-gap, 12px);
-    bottom: calc(var(--dock-clearance, 174px) + 76px);
-  }
-}
-@media (max-width: 30rem) {
-  .flow-toolbar {
-    bottom: calc(var(--dock-clearance, 208px) + 76px);
-  }
-  .flow-toolbar button {
-    font-size: 11px;
-    padding-inline: 9px;
-  }
-}
-@media (max-height: 500px) and (min-width: 40rem) {
-  .flow-toolbar {
-    bottom: calc(var(--dock-clearance, 120px) + var(--overlay-gap, 16px));
   }
 }

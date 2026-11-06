@@ -9,8 +9,8 @@ test("recovers from a canvas failure and preserves the network", async ({
   await page.route("**/NetworkFlow.tsx*", async (route) => {
     const response = await route.fetch();
     const body = (await response.text()).replace(
-      "onPlace }) {",
-      'onPlace }) { if (window.__canvasBroken) throw new Error("canvas failure");',
+      "const state = useApp(controller);",
+      'if (window.__canvasBroken) throw new Error("canvas failure"); const state = useApp(controller);',
     );
     await route.fulfill({ response, body });
   });
@@ -22,9 +22,7 @@ test("recovers from a canvas failure and preserves the network", async ({
   await expect(
     page.getByRole("button", { name: "Retry canvas", exact: true }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Host 1", exact: true })).toBeVisible();
   await page.evaluate(() => {
     (window as unknown as { __canvasBroken: boolean }).__canvasBroken = false;
   });
@@ -32,9 +30,7 @@ test("recovers from a canvas failure and preserves the network", async ({
     .getByRole("button", { name: "Retry canvas", exact: true })
     .click();
   await expect(page.locator("[data-scene-ready=true]")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
-  ).toBeVisible();
+  await expect(page.locator('.react-flow__node[aria-label="Host 1"]')).toBeVisible();
   // The canvas never asks the browser for a WebGL context.
   await expect(page.locator("canvas")).toHaveCount(0);
 });

@@ -144,9 +144,7 @@ test("keeps unsaved work accessible when saved summary metadata is corrupt", asy
   await page
     .getByRole("button", { name: "Close networks", exact: true })
     .click();
-  await expect(
-    page.getByRole("button", { name: "Select Host 1", exact: true }),
-  ).toBeVisible();
+  await expect(page.locator('.react-flow__node[aria-label="Host 1"]')).toBeVisible();
   await openMenu(page);
   await expect(
     page.getByRole("button", { name: "Save network", exact: true }),
@@ -165,7 +163,9 @@ test("restores the saved canvas pose when reopening without resizing", async ({
   await page.mouse.down();
   await page.mouse.move(box!.x + box!.width * 0.5 + 140, box!.y + box!.height * 0.5 + 60, { steps: 10 });
   await page.mouse.up();
-  await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+  // Wheel zoom differs the pose further from the default fit; zoom lives on
+  // the canvas gesture now.
+  await page.mouse.wheel(0, -120);
   await expect
     .poll(async () => {
       const transform = await page
@@ -186,7 +186,7 @@ test("restores the saved canvas pose when reopening without resizing", async ({
     page.getByRole("dialog", { name: "Save network", exact: true }),
   ).not.toBeVisible();
   for (let i = 0; i < 5; i++)
-    await page.getByRole("button", { name: "Zoom in", exact: true }).click();
+    await page.mouse.wheel(0, -120);
   await menuAction(page, "My networks");
   await page
     .getByRole("button", { name: "Open Canvas pose", exact: true })

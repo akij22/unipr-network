@@ -98,25 +98,6 @@ export function App({ controller, renderActions }: {
             <EventSummary controller={controller} />
           </div>
           <div className="network-tools">
-            <div className="device-strip" aria-label="Network devices">
-              {state.document.network.devices.map((d) => (
-                <button
-                  key={d.id}
-                  data-device-id={d.id}
-                  aria-label={`Select ${state.document.layout[d.id]?.name ?? d.id}`}
-                  aria-pressed={state.selection?.id === d.id}
-                  onClick={() =>
-                    void controller.dispatch({
-                      type: "selection.set",
-                      selection: { kind: "device", id: d.id },
-                    })
-                  }
-                >
-                  <strong>{state.document.layout[d.id]?.name ?? d.id}</strong>
-                  <span>{d.kind}</span>
-                </button>
-              ))}
-            </div>
             <details className="connections-list">
               <summary>Connections ({state.document.network.links.length})</summary>
               <div className="link-list">

@@ -9,9 +9,9 @@ export async function openMenu(page: Page) {
   await expect(menu).toHaveAttribute("data-open", "true");
 }
 
-/** The floating menu covers the device strip and the inspector on a narrow
+/** The floating menu covers part of the canvas and the inspector on a narrow
  * viewport. The app collapses it after an action; the tests do the same so
- * the controls below stay reachable. */
+ * the canvas stays reachable. */
 async function collapseMenu(page: Page) {
   const menu = page.locator(".workspace-menu");
   if ((await menu.count()) === 0) return;
@@ -38,12 +38,16 @@ export async function addDevice(page: Page, kind: string) {
   await page.getByRole("button", { name: `Add ${kind}`, exact: true }).click();
   await collapseMenu(page);
 }
+/** Use the canvas keyboard alternative so floating inspectors and offscreen
+ * nodes do not require pointer gestures in network-configuration fixtures. */
 export async function selectDevice(page: Page, name: string) {
-  const button = page.getByRole("button", { name: `Select ${name}`, exact: true });
-  // The device strip sits under the floating menu on a narrow viewport.
-  if (!(await button.isVisible().catch(() => false))) await openMenu(page);
-  await button.click();
   await collapseMenu(page);
+  const node = page.getByRole("group", { name, exact: true });
+  await node.focus();
+  if (await node.locator("[data-device-node]").getAttribute("data-selected") !== "true") {
+    await node.press("Enter");
+  }
+  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
 }
 export async function configureHost(
   page: Page,
