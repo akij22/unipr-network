@@ -34,6 +34,13 @@ function DeviceNodeImpl({ data }: NodeProps) {
         className="flow-port flow-port-out"
         id="out"
       />
+      <img
+        className="flow-device-icon"
+        src={`/device-icons/${device.kind}.png`}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+      />
       <span className="flow-device-kind">{KIND_LABEL[device.kind]}</span>
       <strong className="flow-device-name">{device.name}</strong>
       {device.ip && <code className="flow-device-ip">{device.ip}</code>}

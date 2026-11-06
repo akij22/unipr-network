@@ -154,7 +154,7 @@ html, body, #root {
 .catalog-hint { font-size: 13px; color: var(--color-muted); margin-block: 12px; }
 .canvas-app .catalog-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 .canvas-app .catalog-choice { align-items: start; text-align: start; padding: 16px; }
-.catalog-choice svg { width: 44px; height: 38px; fill: none; stroke: var(--color-blue); stroke-width: 2; }
+.catalog-device-icon { width: 88px; height: 70px; object-fit: contain; align-self: center; pointer-events: none; }
 .canvas-app .catalog-choice span { white-space: normal; }
 .placement-tools { position: absolute; top: 208px; left: var(--overlay-gap); z-index: 3; max-width: calc(100% - 32px); }
 .placement-tools > button { background: var(--color-panel); }
@@ -190,8 +190,8 @@ html, body, #root {
   .canvas-app .reset-buttons { margin-inline-start: auto; }
   .canvas-app .playback-buttons button { padding-inline: 8px; }
   .canvas-app .catalog-grid { grid-template-columns: minmax(0, 1fr); }
-  .canvas-app .catalog-choice { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 0 12px; padding: 10px; }
-  .catalog-choice svg { grid-row: span 2; }
+  .canvas-app .catalog-choice { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 0 12px; padding: 10px; }
+  .catalog-device-icon { width: 64px; height: 58px; grid-row: span 2; }
 }
 @media (max-height: 500px) and (min-width: 40rem) {
   .canvas-app { --dock-clearance: 120px; }
