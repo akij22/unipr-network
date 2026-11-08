@@ -2,14 +2,14 @@
   color: var(--color-error);
   background: var(--color-error-bg);
   padding: 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-control);
 }
 .notice {
   margin: 10px 20px;
   padding: 10px 14px;
   background: var(--color-good-bg);
   color: var(--color-good);
-  border-radius: 6px;
+  border-radius: var(--radius-control);
   font-size: 12px;
 }
 .saved-list {

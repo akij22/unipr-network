@@ -1,4 +1,4 @@
-/* Hallmark · educational topology workbench · black + vivid blue · React Flow canvas.
+/* Hallmark · educational topology workbench · india dark theme (saffron accent) · React Flow canvas.
  * Pre-emit critique: philosophy 5, hierarchy 4, execution 4, specificity 5, restraint 4, variety 4.
  * Tokens come from the approved dark palette; no new colours are invented here. */
 .flow-surface {
@@ -47,7 +47,7 @@
   filter: drop-shadow(0 0 6px var(--color-rule-strong));
 }
 .flow-device.is-selected .flow-device-icon {
-  filter: drop-shadow(0 0 10px var(--color-blue));
+  filter: drop-shadow(0 0 10px var(--color-accent));
 }
 /* The device identity stays available to assistive tech and to React Flow's
  * node label without rendering a visible label. */
@@ -80,7 +80,7 @@
   background: var(--color-raised);
 }
 .flow-device.is-selected .flow-port {
-  border-color: var(--color-blue);
+  border-color: var(--color-accent);
 }
 
 /* Links carry the traffic state: idle is a quiet rule, active is the accent,
@@ -90,11 +90,11 @@
   stroke-width: 1.5;
 }
 .flow-edge-selected {
-  stroke: var(--color-blue);
+  stroke: var(--color-accent);
   stroke-width: 2.5;
 }
 .flow-edge-active {
-  stroke: var(--color-blue);
+  stroke: var(--color-accent);
   stroke-width: 2.5;
 }
 .flow-edge-faulty {
@@ -110,14 +110,14 @@
   position: absolute;
   pointer-events: none;
   padding: 2px 7px;
-  border-radius: 999px;
+  border-radius: var(--radius-tight);
   font-size: 10.5px;
   line-height: 1.5;
   white-space: nowrap;
 }
 .flow-edge-label-active {
-  background: var(--color-blue-bg);
-  color: var(--color-blue);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
 }
 .flow-edge-label-faulty {
   background: var(--color-error-bg);

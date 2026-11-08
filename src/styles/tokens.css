@@ -1,30 +1,41 @@
 /* 3D network lab · dark tokens.
- * Theme: tweakcn preset (black surfaces + vivid blue primary, Geist type, 8px radius).
- * Shared production CSS tokens; scene colors are named in scene-tokens.ts. */
+ * Theme: tweakcn "India" dark preset (cmkr1zzlc000j04lb9iz9g43m) — saffron
+ * primary #ff9933 on near-black, Plus Jakarta Sans, square-ish radii.
+ * Surface adaptation: the preset's card (#050505) is nearly indistinguishable
+ * from its background (#0a0a0a), so panels sit between the preset's popover
+ * (#1a1a1a) and secondary (#262626) steps to keep canvas / panel / raised
+ * hierarchy legible. Semantic warning/success/error and the network segment
+ * blues stay outside the theme; packet data uses JetBrains Mono.
+ * Scene colors are named in scene-tokens.ts. */
 :root {
-  /* Surfaces: background / card / secondary / muted from the theme. */
-  --color-paper: oklch(0 0 0);
-  --color-panel: oklch(0.145 0 0);
-  --color-raised: oklch(0.25 0 0);
-  --color-field: oklch(0.1 0 0);
+  /* Surfaces: theme background (#0a0a0a), popover (#1a1a1a) and secondary
+   * (#262626); the nearly-invisible preset card (#050505) is lifted to
+   * #101010 so the canvas ground stays readable against the page. */
+  --color-paper: #0a0a0a;
+  --color-field: #101010;
+  --color-panel: #1a1a1a;
+  --color-raised: #262626;
   /* Text: theme foreground, with a body step between it and muted-foreground. */
-  --color-ink: oklch(0.946 0 0);
-  --color-body: oklch(0.88 0 0);
-  --color-muted: oklch(0.72 0 0);
+  --color-ink: #ebebeb;
+  --color-body: #cccccc;
+  --color-muted: #999999;
   /* Lines: theme border and input. */
-  --color-rule: oklch(0.26 0 0);
-  --color-rule-strong: oklch(0.32 0 0);
-  --color-glass: oklch(0.145 0 0 / 0.9);
-  /* Interactive accent: theme chart-4 (light blue) over chart-1 (blue wash). */
-  --color-blue: oklch(0.75 0.13 269);
-  --color-blue-bg: oklch(0.21 0.06 268);
-  --color-primary: oklch(0.46 0.22 266);
-  --color-on-primary: oklch(0.985 0 0);
-  /* Network segments: blue-tinted A, neutral B (the theme is monochrome + blue). */
+  --color-rule: #212121;
+  --color-rule-strong: #383838;
+  --color-glass: rgba(26, 26, 26, 0.94);
+  /* Interactive accent: theme accent foreground (#fa7d00) over accent wash
+   * (#331f0a); primary buttons use the theme primary #ff9933 with the preset's
+   * dark on-primary so the label stays legible on hover. */
+  --color-accent: #fa7d00;
+  --color-accent-bg: #331f0a;
+  --color-primary: #ff9933;
+  --color-on-primary: #2e1700;
+  /* Network segments: blue-tinted A stays a deliberate protocol/segment
+   * identity, not the UI accent; neutral B as before. */
   --color-network-a: oklch(0.21 0.06 268);
   --color-network-a-line: oklch(0.42 0.15 266);
-  --color-network-b: oklch(0.25 0 0);
-  --color-network-b-line: oklch(0.58 0 0);
+  --color-network-b: #262626;
+  --color-network-b-line: #5c5c5c;
   /* Semantic colors are outside the theme; warning/success keep their meaning. */
   --color-amber: oklch(0.85 0.125 80);
   --color-amber-bg: oklch(0.3 0.045 80);
@@ -32,26 +43,29 @@
   --color-good-bg: oklch(0.24 0.05 160);
   --color-error: oklch(0.69 0.2 23.91);
   --color-error-bg: oklch(0.26 0.06 24);
-  --color-focus: oklch(0.75 0.13 269);
-  --color-backdrop: oklch(0 0 0 / 0.82);
+  --color-focus: #fa7d00;
+  --color-backdrop: #0a0a0aeb;
   --color-device-shell: oklch(0.62 0 0);
   --color-device-face: oklch(0.38 0 0);
   --color-device-edge: oklch(0.78 0 0);
   --color-transparent: transparent;
   --color-current: currentColor;
-  /* Typography: Geist / Geist Mono from the theme; display shares the sans face. */
-  --font-display: "Geist", "Inter", sans-serif;
-  --font-body: "Geist", "Inter", sans-serif;
-  --font-mono: "Geist Mono", "JetBrains Mono", monospace;
+  /* Typography: Plus Jakarta Sans for interface text (the theme sans),
+   * JetBrains Mono for addresses and packet data. */
+  --font-display: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-body: "Plus Jakarta Sans", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
-  /* Theme radius: 0.5rem, with the panel at the next step up. */
-  --radius-control: 8px;
-  --radius-panel: 12px;
+  /* Theme radius: 0, kept compact and near-square; small radii only where they
+   * aid legibility of interactive targets and media marks. */
+  --radius-tight: 3px;
+  --radius-control: 4px;
+  --radius-panel: 6px;
   --text-sm: 12px;
   --text-body: 14px;
   --text-title: 24px;

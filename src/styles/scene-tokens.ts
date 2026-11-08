@@ -1,17 +1,18 @@
-/* 3D scene colors aligned with the tweakcn dark theme: neutral surfaces + vivid blue. */
+/* 3D scene colors aligned with the tweakcn "India" dark theme: neutral surfaces + saffron accent.
+ * Blue remains a network-segment identity (see tokens.css --color-network-*), not the scene accent. */
 export const sceneColors = {
-  background: "#000000",
-  grid: "#3a4150",
-  gridSection: "#55607a",
+  background: "#0a0a0a",
+  grid: "#3a3836",
+  gridSection: "#56534f",
   shell: "#a1a1a1",
   face: "#333333",
-  screen: "#9db4ff",
-  accent: "#4f6bff",
+  screen: "#ffc587",
+  accent: "#fa7d00",
   cable: "#4a4a4a",
   packet: "#ffd685",
-  selected: "#a8bcff",
+  selected: "#ffa94d",
   port: "#0d0d0d",
-  light: "#d8e2ff",
+  light: "#e8e2d6",
   router: "#8b97a8",
   switch: "#7d8794",
   bridge: "#7f938f",
