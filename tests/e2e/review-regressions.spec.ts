@@ -4,7 +4,7 @@ import {
   configureHost,
   menuAction,
   openComposer,
-  openMenu,
+  openTopMenu,
   selectDevice,
   finishOperation,
 } from "../helpers/ui";
@@ -82,9 +82,9 @@ test("cancels while an advancement response is pending and ignores its late arri
       window as typeof window & { __advanceGate: { release: () => void } }
     ).__advanceGate.release(),
   );
-  await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue(
-    "0",
-  );
+  // Cancel rolls back the operation and clears the playback row with it.
+  await expect(page.locator('[data-simulation-visible="false"]')).toBeAttached();
+  await expect(page.getByRole("slider", { name: "Known events" })).toHaveCount(0);
   await expect(page.locator("[data-sim-status]")).toHaveAttribute(
     "data-sim-status",
     "idle",
@@ -145,7 +145,7 @@ test("keeps unsaved work accessible when saved summary metadata is corrupt", asy
     .getByRole("button", { name: "Close networks", exact: true })
     .click();
   await expect(page.locator('.react-flow__node[aria-label="Host 1"]')).toBeVisible();
-  await openMenu(page);
+  await openTopMenu(page, "File");
   await expect(
     page.getByRole("button", { name: "Save network", exact: true }),
   ).toBeEnabled();

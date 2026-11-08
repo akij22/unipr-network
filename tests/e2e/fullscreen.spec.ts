@@ -3,6 +3,9 @@ import { expect, test } from "@playwright/test";
 test("fills the viewport on resize and confines overlays to their controls", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('[data-scene-ready="true"]')).toBeVisible();
+  // Topology editing shows no playback row: no controls and no reserved space.
+  await expect(page.locator('[data-simulation-visible="false"]')).toBeAttached();
+  await expect(page.getByRole("navigation", { name: "Simulation controls" })).toHaveCount(0);
   for (const [width, height] of [[1440, 900], [768, 1024], [390, 844], [320, 568], [844, 390]]) {
     await page.setViewportSize({ width, height });
     await expect.poll(async () => {
@@ -18,15 +21,30 @@ test("fills the viewport on resize and confines overlays to their controls", asy
       height,
       target: expect.stringContaining("react-flow"),
     });
+  }
+  // Canvas still fills the viewport, and adding devices never reveals playback.
+  const { addDevice, configureHost, openComposer } = await import("../helpers/ui");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await addDevice(page, "host");
+  await expect(page.getByRole("navigation", { name: "Simulation controls" })).toHaveCount(0);
+  await configureHost(page, "Host 1", "10.0.0.1");
+  await openComposer(page);
+  await page.getByLabel("Destination IPv4", { exact: true }).fill("10.0.0.2");
+  await page.getByRole("button", { name: "Start ping", exact: true }).click();
+  // The playback row mounts with the new operation and stays within the viewport.
+  await expect(page.locator('[data-simulation-visible="true"]')).toBeAttached();
+  for (const [width, height] of [[1440, 900], [768, 1024], [390, 844], [320, 568], [844, 390]]) {
+    await page.setViewportSize({ width, height });
     const controls = await page.getByRole("navigation", { name: "Simulation controls" }).boundingBox();
     expect(controls!.y).toBeGreaterThan(0);
     expect(controls!.y + controls!.height).toBeLessThanOrEqual(height);
-    const reset = page.getByRole("button", { name: "Reset network state" });
-    await expect(reset).toBeInViewport();
-    await reset.click();
   }
-  await expect(page.locator(".topbar, .lab-toolbar, .scene-hud, .scene-empty, .camera-toolbar, .scene-help")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Toggle network menu" })).toBeVisible();
+  await page.getByRole("button", { name: "Reset network state" }).click();
+  await expect(page.locator('[data-simulation-visible="false"]')).toBeAttached();
+  await expect(page.getByRole("navigation", { name: "Simulation controls" })).toHaveCount(0);
+  await expect(page.locator(".lab-toolbar, .scene-hud, .scene-empty, .camera-toolbar, .scene-help, .workspace-menu, .statusbar")).toHaveCount(0);
+  await expect(page.locator(".topbar")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Topology", exact: true })).toBeVisible();
 });
 
 // Expose the existing controller only in this intercepted test response, never in the app.
@@ -56,7 +74,7 @@ test("keeps packet inspection floating during an operation", async ({ page }) =>
     await page.setViewportSize({ width, height });
     await expect(page.locator(".packet-inspector")).toBeInViewport();
     const packet = await page.locator(".packet-inspector").boundingBox();
-    const dock = await page.locator(".simulation-surface").boundingBox();
+    const dock = await page.locator(".device-dock-pill").boundingBox();
     expect(packet!.y + packet!.height).toBeLessThanOrEqual(dock!.y);
     await expect.poll(async () => (await page.locator(".react-flow").boundingBox())?.height).toBe(height);
     await page.screenshot({ path: `.taste-skill/packet-${width}.png` });

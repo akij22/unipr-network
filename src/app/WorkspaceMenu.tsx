@@ -16,80 +16,110 @@ const ICONS = {
   network: icon("M12 4v5M12 9l-6 6M12 9l6 6M6 15v5M18 15v5"),
 } as const;
 
-function Group({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="workspace-menu-group" role="group" aria-label={label}>
-      <span className="workspace-menu-group-label" aria-hidden="true">{label}</span>
-      {children}
-    </div>
-  );
-}
+type MenuId = "file" | "topology" | "simulation" | "help";
 
+const MENU_LABELS: Record<MenuId, string> = {
+  file: "File",
+  topology: "Topology",
+  simulation: "Simulation",
+  help: "Help",
+};
+
+/** Top menus for the workspace. Each menu is a disclosure: a native button
+ * toggles a popover of plain buttons, so Tab, Enter and Space behave as usual. */
 export function WorkspaceMenu({ controller, actions }: {
   controller: AppController;
   actions: WorkspaceActions;
 }) {
   const state = useApp(controller);
-  const [open, setOpen] = useState(() => matchMedia("(min-width: 70rem)").matches);
-  const toggle = useRef<HTMLButtonElement>(null);
+  const [openMenu, setOpenMenu] = useState<MenuId | null>(null);
+  const bar = useRef<HTMLElement>(null);
   useEffect(() => {
-    const media = matchMedia("(min-width: 70rem)");
-    const resize = () => setOpen(media.matches);
-    media.addEventListener("change", resize);
-    return () => media.removeEventListener("change", resize);
-  }, []);
-  const run = (action: () => unknown) => {
+    if (!openMenu) return;
+    const dismiss = (event: PointerEvent) => {
+      if (!bar.current?.contains(event.target as Node)) setOpenMenu(null);
+    };
+    document.addEventListener("pointerdown", dismiss);
+    return () => document.removeEventListener("pointerdown", dismiss);
+  }, [openMenu]);
+  const trigger = (id: MenuId) =>
+    bar.current?.querySelector<HTMLButtonElement>(`[data-menu="${id}"]`);
+  const choose = (id: MenuId, action: () => unknown) => {
+    setOpenMenu(null);
+    trigger(id)?.focus({ preventScroll: true });
     void action();
-    if (!matchMedia("(min-width: 70rem)").matches) {
-      setOpen(false);
-      toggle.current?.focus({ preventScroll: true });
-    }
   };
+  const menu = (id: MenuId, items: ReactNode) => (
+    <div
+      className="topbar-menu"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+          setOpenMenu((current) => (current === id ? null : current));
+      }}
+    >
+      <button
+        type="button"
+        className="topbar-trigger"
+        data-menu={id}
+        aria-expanded={openMenu === id}
+        aria-controls={`topbar-${id}`}
+        onClick={() => setOpenMenu(openMenu === id ? null : id)}
+      >
+        {MENU_LABELS[id]}
+      </button>
+      <div id={`topbar-${id}`} className="topbar-popover" role="group" aria-label={MENU_LABELS[id]} hidden={openMenu !== id}>
+        {items}
+      </div>
+    </div>
+  );
   const devices = state.document.network.devices.length;
   const links = state.document.network.links.length;
+  const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
   return (
-    <aside className="workspace-menu" data-open={open} aria-label="Network tools"
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          setOpen(false);
-          toggle.current?.focus({ preventScroll: true });
-        }
-      }}>
-      <button ref={toggle} className="workspace-menu-toggle" aria-label="Toggle network menu"
-        aria-expanded={open} aria-controls="workspace-menu-actions" onClick={() => setOpen(!open)}>
-        <span className="workspace-menu-badge">{ICONS.network}</span>
-        <span className="workspace-menu-heading">
-          <span className="workspace-menu-title">Network tools</span>
-          <span className="workspace-menu-meta">{devices} devices · {links} links</span>
-        </span>
-        <svg className="workspace-menu-chevron" viewBox="0 0 20 20" aria-hidden="true">
-          <path d={open ? "m6 12 4-4 4 4" : "m6 8 4 4 4-4"} />
-        </svg>
-      </button>
-      <nav id="workspace-menu-actions" aria-label="Network actions" hidden={!open}>
-        <Group label="Build">
-          <button className="primary" disabled={state.busy} aria-expanded={actions.catalog}
-            onClick={() => run(actions.toggleCatalog)}>{ICONS.add}<span>Add device</span></button>
-          <button disabled={state.busy || devices < 2}
-            aria-pressed={!!state.connection} onClick={() => run(actions.startConnection)}>
+    <header className="topbar" ref={bar}>
+      <div className="topbar-brand">
+        <span className="topbar-mark" aria-hidden="true">{ICONS.network}</span>
+        <span className="topbar-brand-name">UniPRNet</span>
+      </div>
+      <nav
+        className="topbar-menus"
+        aria-label="Workspace menus"
+        onKeyDown={(event) => {
+          if (event.key !== "Escape" || !openMenu) return;
+          const id = openMenu;
+          setOpenMenu(null);
+          trigger(id)?.focus({ preventScroll: true });
+        }}
+      >
+        {menu("file", <>
+          <button type="button" className="topbar-item" disabled={state.busy}
+            onClick={() => choose("file", actions.openSave)}>{ICONS.save}<span>Save network</span></button>
+          <button type="button" className="topbar-item"
+            onClick={() => choose("file", actions.openNetworks)}>{ICONS.library}<span>My networks</span></button>
+        </>)}
+        {menu("topology", <>
+          <button type="button" className="topbar-item" disabled={state.busy}
+            onClick={() => choose("topology", actions.openCatalog)}>{ICONS.add}<span>Add device</span></button>
+          <button type="button" className="topbar-item" disabled={state.busy || devices < 2}
+            aria-pressed={!!state.connection} onClick={() => choose("topology", actions.startConnection)}>
             {ICONS.connect}<span>Connect ports</span></button>
-        </Group>
-        <Group label="Test">
-          <button disabled={state.busy || !state.runtimeReady} aria-expanded={actions.ping}
-            onClick={() => run(actions.openPing)}>{ICONS.send}<span>Send a packet</span></button>
-        </Group>
-        <Group label="Library">
-          <button disabled={state.busy} aria-label="Save network" onClick={() => run(actions.openSave)}>
-            {ICONS.save}<span>Save network</span></button>
-          <button onClick={() => run(actions.openNetworks)}>{ICONS.library}<span>My networks</span></button>
-        </Group>
-        <button role="switch" className="workspace-menu-switch" aria-label="Tutorial mode"
-          aria-checked={state.tutorial} onClick={() => run(actions.toggleTutorial)}>
-          <span className="workspace-menu-switch-label">Tutorial</span>
-          <span className="workspace-menu-state">{state.tutorial ? "On" : "Off"}</span>
-          <span className="workspace-menu-track" data-on={state.tutorial} aria-hidden="true" />
-        </button>
+        </>)}
+        {menu("simulation", <>
+          <button type="button" className="topbar-item" disabled={state.busy || !state.runtimeReady}
+            onClick={() => choose("simulation", actions.openPing)}>{ICONS.send}<span>Send a packet</span></button>
+        </>)}
+        {menu("help", <>
+          <button type="button" role="switch" className="topbar-item topbar-switch" aria-label="Tutorial mode"
+            aria-checked={state.tutorial} onClick={() => choose("help", actions.toggleTutorial)}>
+            <span className="topbar-switch-label">Tutorial mode</span>
+            <span className="topbar-switch-state">{state.tutorial ? "On" : "Off"}</span>
+            <span className="topbar-track" data-on={state.tutorial} aria-hidden="true" />
+          </button>
+        </>)}
       </nav>
-    </aside>
+      <p className="topbar-status">
+        {count(devices, "device")} · {count(links, "link")}{state.busy ? " · Updating network…" : ""}
+      </p>
+    </header>
   );
 }

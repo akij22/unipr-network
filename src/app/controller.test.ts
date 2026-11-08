@@ -22,6 +22,24 @@ it("adds five device types and preserves network state through visual edits", as
   expect(app.getSnapshot().projection.revision).toBe(revision);
   expect(app.getSnapshot().document.network.devices[0].ports[0].mac).toBe(mac);
 });
+it("leaves the inspector closed when adding the first device", async () => {
+  const app = make();
+  await app.dispatch({ type: "device.add", kind: "host" });
+  expect(app.getSnapshot().selection).toBeNull();
+  expect(app.getSnapshot().document.network.devices.map((d) => d.id)).toEqual(["host-1"]);
+});
+it("clears an explicitly selected device when adding another device", async () => {
+  const app = make();
+  await app.dispatch({ type: "device.add", kind: "host" });
+  await app.dispatch({ type: "selection.set", selection: { kind: "device", id: "host-1" } });
+  expect(app.getSnapshot().selection).toEqual({ kind: "device", id: "host-1" });
+  const first = structuredClone(app.getSnapshot().document.network.devices[0]);
+  await app.dispatch({ type: "device.add", kind: "switch" });
+  expect(app.getSnapshot().selection).toBeNull();
+  expect(app.getSnapshot().document.network.devices).toHaveLength(2);
+  expect(app.getSnapshot().document.network.devices[0]).toEqual(first);
+  expect(app.getSnapshot().document.network.devices[1].id).toBe("switch-1");
+});
 it("creates a cable using two explicit port selections", async () => {
   const app = make();
   await app.dispatch({ type: "device.add", kind: "host" });

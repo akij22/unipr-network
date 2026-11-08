@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addDevice, configureHost, openComposer } from "../helpers/ui";
+import { addDevice, configureHost, openComposer, selectDevice } from "../helpers/ui";
 for (const [width, height] of [
   [320, 568],
   [360, 640],
@@ -88,6 +88,7 @@ test("returns keyboard focus after closing the device inspector", async ({
 }) => {
   await page.goto("/");
   await addDevice(page, "host");
+  await selectDevice(page, "Host 1");
   await page
     .getByRole("button", { name: "Close inspector", exact: true })
     .click();
@@ -101,6 +102,7 @@ test("keeps input actions reachable after a keyboard-sized viewport and rotation
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await addDevice(page, "host");
+  await selectDevice(page, "Host 1");
   await page.getByLabel("IPv4 address", { exact: true }).focus();
   await page.setViewportSize({ width: 390, height: 340 });
   await page.getByLabel("IPv4 address", { exact: true }).fill("10.0.0.1");

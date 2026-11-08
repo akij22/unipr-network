@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { menuAction, openComposer } from "../helpers/ui";
+import { menuAction, openComposer, selectDevice } from "../helpers/ui";
 
 /** A point on the canvas that no overlay panel covers. The floating menu
  * and the device strip used to float here; inspector panels may cover part
@@ -34,9 +34,7 @@ test("renders a real topology canvas and selects a device on it", async ({
   // The canvas is SVG, not a WebGL surface.
   await expect(page.locator("canvas")).toHaveCount(0);
   await expect(page.locator("[data-device-node]")).toHaveCount(1);
-  await expect(
-    page.getByRole("heading", { name: "Host 1", exact: true }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close inspector", exact: true })).toBeHidden();
   // The view lives entirely on canvas gestures: wheel zooms, dragging empty
   // space pans. No zoom, fit or device-shortcut buttons remain.
   await expect(page.getByRole("button", { name: "Zoom in", exact: true })).toHaveCount(0);
@@ -60,6 +58,7 @@ test("drags a device to a new position and keeps simulation history", async ({
   await menuAction(page, "Add device");
   await page.getByRole("button", { name: "Add host", exact: true }).click();
   await expect(page.locator('[data-scene-ready="true"]')).toBeVisible();
+  await selectDevice(page, "Host 1");
   await page.getByLabel("IPv4 address", { exact: true }).fill("10.0.0.1");
   await page.getByRole("button", { name: "Apply settings", exact: true }).click();
   await openComposer(page);
@@ -102,17 +101,19 @@ test("moves a selected device with the keyboard and preserves history", async ({
   // step per arrow key press.
   await page.keyboard.press("ArrowRight");
   await expect.poll(async () => (await node.boundingBox())!.x).not.toBe(before);
-  await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue("0");
+  // Editing the topology shows no playback row; there is no history step yet.
+  await expect(page.locator('[data-simulation-visible="false"]')).toBeAttached();
+  await expect(page.getByRole("slider", { name: "Known events" })).toHaveCount(0);
 });
 
-test("dismisses the device catalog with Escape and returns focus", async ({ page, isMobile }) => {
+test("dismisses the device catalog with Escape and returns focus to the opening menu", async ({ page }) => {
   await page.goto("/");
-  const add = page.getByRole("button", { name: "Add device", exact: true });
+  const topology = page.getByRole("button", { name: "Topology", exact: true });
   await menuAction(page, "Add device");
   await expect(page.getByRole("button", { name: "Add host", exact: true })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("region", { name: "Device catalog" })).not.toBeVisible();
-  await expect(isMobile ? page.getByRole("button", { name: "Toggle network menu" }) : add).toBeFocused();
+  await expect(topology).toBeFocused();
 });
 
 async function dragCanvas(page: Page, touch: boolean, from: { x: number; y: number }, to: { x: number; y: number }) {
@@ -139,7 +140,6 @@ test("pans blank space without moving devices", async ({ page, isMobile }) => {
   await page.goto("/");
   await menuAction(page, "Add device");
   await page.getByRole("button", { name: "Add host", exact: true }).click();
-  await page.getByRole("button", { name: "Close inspector", exact: true }).click();
   await expect(page.locator(".react-flow__node")).toBeVisible();
   const nodePosition = await page.locator(".react-flow__node").getAttribute("style");
   const viewport = await page.locator(".react-flow__viewport").getAttribute("style");

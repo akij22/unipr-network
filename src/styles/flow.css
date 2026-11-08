@@ -147,15 +147,9 @@
 .network-stage.scene-recovery button {
   background: var(--color-panel);
 }
-@media (min-width: 70rem) {
-  .network-stage.scene-recovery {
-    padding-left: calc(var(--menu-width, 228px) + var(--overlay-gap, 16px) * 2);
-  }
-}
-
 /* On a short viewport the inspector is taller than the space beside the
  * canvas. It scrolls inside its own frame so every field stays reachable
- * instead of spilling behind the simulation dock. */
+ * instead of spilling behind the top chrome or the device dock. */
 @media (max-width: 69.99rem), (max-height: 500px) {
   .canvas-app .inspection-overlay {
     overflow: hidden;

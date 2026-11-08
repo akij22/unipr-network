@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { addDevice, menuAction } from "../helpers/ui";
+import { addDevice, menuAction, selectDevice } from "../helpers/ui";
 test("saves a named configuration and reopens it with clean state", async ({
   page,
 }) => {
   await page.goto("/");
   await addDevice(page, "host");
+  await selectDevice(page, "Host 1");
   await page.getByLabel("IPv4 address", { exact: true }).fill("192.168.1.10");
   await page
     .getByRole("button", { name: "Apply settings", exact: true })

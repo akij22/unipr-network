@@ -7,13 +7,14 @@ import type { ProtocolId } from "../../simulation/types";
 import { ProtocolDetails } from "../learning/ProtocolDetails";
 export function EventSummary({ controller }: { controller: AppController }) {
   const s = useApp(controller),
+    unavailable = !s.runtimeReady && !s.busy,
     event = s.runtimeReady ? s.projection.event : null,
     shown = event ? presentEvent(event, s.document) : null,
     [protocol, setProtocol] = useState<ProtocolId | null>(null);
   return (
     <section
       className="event-summary"
-      data-sim-status={s.runtimeReady ? s.projection.status : "resource-error"}
+      data-sim-status={s.runtimeReady ? s.projection.status : unavailable ? "resource-error" : "idle"}
       aria-busy={s.busy}
       aria-label="Current simulation event"
     >
@@ -22,7 +23,7 @@ export function EventSummary({ controller }: { controller: AppController }) {
           {event ? `EVENT ${event.index}` : "OBSERVE & UNDERSTAND"}
         </span>
         <h2>
-          {!s.runtimeReady
+          {unavailable
             ? "Simulation needs to reconnect"
             : (shown?.title ??
               (s.projection.status === "active"
@@ -31,7 +32,7 @@ export function EventSummary({ controller }: { controller: AppController }) {
         </h2>
       </div>
       <p aria-live="polite">
-        {!s.runtimeReady
+        {unavailable
           ? "Your configuration is kept. Start a new operation to retry, or save before reloading."
           : (shown?.summary ??
             (s.projection.status === "active"

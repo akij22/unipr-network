@@ -44,7 +44,11 @@ export function PingComposer({ controller, initiallyOpen = false, onClose }: {
           if (current.runtimeReady && current.projection.operationId !== previous && composer.current) {
             composer.current.open = false;
             onClose?.();
-            document.querySelector<HTMLButtonElement>('[aria-label="Next step"]')?.focus({ preventScroll: true });
+            // The playback row mounts with the new operation; wait for its
+            // render before moving focus to the first playback control.
+            requestAnimationFrame(() => {
+              document.querySelector<HTMLButtonElement>('[aria-label="Next step"]')?.focus({ preventScroll: true });
+            });
           }
         }}
       >

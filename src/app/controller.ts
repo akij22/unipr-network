@@ -440,7 +440,7 @@ export function createAppController(
                 },
               },
             },
-            selection: { kind: "device", id },
+            selection: null,
           });
           await apply({
             ...state.document.network,

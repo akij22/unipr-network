@@ -14,19 +14,6 @@
 .ping-arrow {
   display: none;
 }
-.simulation-dock {
-  position: sticky;
-  top: 8px;
-  z-index: 10;
-  background: var(--color-panel);
-  border: 1px solid var(--color-rule);
-  border-radius: 10px;
-  padding: 10px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
 .playback-buttons,
 .reset-buttons {
   display: flex;

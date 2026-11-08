@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { addDevice } from "../helpers/ui";
+import { addDevice, selectDevice } from "../helpers/ui";
 test("recovers from a canvas failure and preserves the network", async ({
   page,
 }) => {
@@ -22,7 +22,7 @@ test("recovers from a canvas failure and preserves the network", async ({
   await expect(
     page.getByRole("button", { name: "Retry canvas", exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Host 1", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close inspector", exact: true })).toBeHidden();
   await page.evaluate(() => {
     (window as unknown as { __canvasBroken: boolean }).__canvasBroken = false;
   });
@@ -31,6 +31,7 @@ test("recovers from a canvas failure and preserves the network", async ({
     .click();
   await expect(page.locator("[data-scene-ready=true]")).toBeVisible();
   await expect(page.locator('.react-flow__node[aria-label="Host 1"]')).toBeVisible();
+  await selectDevice(page, "Host 1");
   // The canvas never asks the browser for a WebGL context.
   await expect(page.locator("canvas")).toHaveCount(0);
 });

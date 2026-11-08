@@ -50,4 +50,7 @@ test("runs a routed ping through the real worker and replays history", async ({
     "data-sim-status",
     "idle",
   );
+  // Reset clears the operation, so the playback row disappears again.
+  await expect(page.locator('[data-simulation-visible="false"]')).toBeAttached();
+  await expect(page.getByRole("navigation", { name: "Simulation controls", exact: true })).toHaveCount(0);
 });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { AppController } from "./types";
 
-/** Shared state/actions for the side menu and custom App.renderActions entry points. */
+/** Shared state/actions for the top menus and custom App.renderActions entry points. */
 export function useWorkspaceActions(controller: AppController) {
   const [catalog, setCatalog] = useState(false);
   const [save, setSave] = useState(false);
@@ -14,6 +14,11 @@ export function useWorkspaceActions(controller: AppController) {
       void controller.dispatch({ type: "connection.cancel" });
       setCatalog((open) => !open);
     },
+    openCatalog: () => {
+      setPing(false);
+      void controller.dispatch({ type: "connection.cancel" });
+      setCatalog(true);
+    },
     startConnection: () => {
       setCatalog(false);
       setPing(false);
@@ -25,11 +30,13 @@ export function useWorkspaceActions(controller: AppController) {
       setPing(true);
     },
     openSave: () => {
+      setCatalog(false);
       void controller.dispatch({ type: "issue.clear" });
       void controller.dispatch({ type: "simulation.play", enabled: false });
       setSave(true);
     },
     openNetworks: () => {
+      setCatalog(false);
       void controller.dispatch({ type: "simulation.play", enabled: false });
       setNetworks(true);
     },

@@ -361,30 +361,6 @@ a {
   overflow: clip;
   text-overflow: ellipsis;
 }
-.catalog {
-  border: 1px solid var(--color-blue);
-  border-radius: var(--radius-panel);
-  padding: 16px;
-  background: var(--color-panel);
-  margin-bottom: 12px;
-}
-.catalog-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
-  margin-top: 12px;
-}
-.catalog-choice {
-  display: flex;
-  flex-direction: column;
-  text-align: start;
-  white-space: normal;
-  gap: 6px;
-}
-.catalog-choice span {
-  font-size: 12px;
-  color: var(--color-muted);
-}
 .connection-guide {
   background: var(--color-panel);
   border: 1px solid var(--color-blue);
@@ -429,16 +405,6 @@ a {
   background: var(--color-transparent);
   font-size: 12px;
   padding: 8px 0;
-}
-.statusbar {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 10px 20px;
-  border-top: 1px solid var(--color-rule);
-  font-size: 11px;
-  color: var(--color-muted);
-  flex-wrap: wrap;
 }
 button,
 summary,

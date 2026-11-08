@@ -15,12 +15,14 @@ Open the URL printed by Vite. For physical-phone testing, serve the app through 
 
 ## Explore
 
-1. Add hosts, switches, routers, bridges or hubs. Select devices directly on the canvas. Drag empty space to pan; use the mouse wheel or pinch to zoom.
-2. Drag devices to arrange the topology, then configure their interfaces. Toggle Tutorial mode for guided explanations. Focus a device and use the arrow keys to adjust its position; port selectors let you connect interfaces.
-3. Choose Connect ports and explicitly choose the two endpoints.
-4. Open Send a packet, select a source and destination, and start a ping. For DHCP, apply Automatic (DHCP) on a host and explicitly request its configuration. Enable DHCP or ICMP PAT on a router as needed.
-5. Use Next, Previous, Play and the generated-event slider. Click a protocol or packet heading to inspect theory. Tables, fields and the topology canvas follow the same historical step.
-6. Save a named configuration. My networks reopens it with clean simulation state. Data belongs to this browser and is not synchronized.
+The top bar holds four menus for the existing workspace actions.
+
+1. **Topology → Add device** (or the **+** dock centred at the bottom) adds hosts, switches, routers, bridges or hubs. Adding a device never opens the inspector. Select a device directly on the canvas to configure it. Drag empty space to pan; use the mouse wheel or pinch to zoom.
+2. Drag devices to arrange the topology, then configure their interfaces. **Help → Tutorial mode** enables guided explanations. Focus a device and use the arrow keys to adjust its position; port selectors let you connect interfaces.
+3. Choose **Topology → Connect ports** and explicitly choose the two endpoints.
+4. Open **Simulation → Send a packet**, select a source and destination, and start a ping. For DHCP, apply Automatic (DHCP) on a host and explicitly request its configuration. Enable DHCP or ICMP PAT on a router as needed.
+5. Once a ping or simulation starts, the playback row (Next, Previous, Play and the generated-event slider) appears under the menus; it stays for reviewing history and hides again on Reset, Cancel or a configuration change. Click a protocol or packet heading to inspect theory. Tables, fields and the topology canvas follow the same historical step.
+6. **File → Save network** stores a named configuration; **File → My networks** reopens it with clean simulation state. Data belongs to this browser and is not synchronized.
 
 Configuration changes discard the trace and learned state while keeping the canvas view. Position/name/view changes preserve simulation state. Reopening restores the saved canvas position and zoom; older configurations are fitted to the current viewport. Cancel rolls back the current operation; Reset clears learned ARP/MAC entries, DHCP assignments and PAT bindings. Starting from an old historical step is blocked.
 

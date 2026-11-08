@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useWorkspaceActions, type WorkspaceActions } from "./use-workspace-actions";
 import { WorkspaceMenu } from "./WorkspaceMenu";
 import type { AppController } from "./types";
@@ -17,15 +17,21 @@ import { PacketInspector } from "../features/simulation/PacketInspector";
 import { SaveNetwork } from "../features/saved-networks/SaveNetwork";
 import { SavedNetworks } from "../features/saved-networks/SavedNetworks";
 
-function restoreMenuFocus() {
+function restoreFocus(target: () => HTMLElement | null | undefined) {
   requestAnimationFrame(() => {
     // Preserve focus already moved to playback or another surviving control.
     if (document.activeElement !== document.body &&
-      !document.activeElement?.closest(".catalog, .ping-composer")) return;
-    const menu = document.querySelector<HTMLElement>(".workspace-menu");
-    menu?.querySelector<HTMLButtonElement>(menu.dataset.open === "true"
-      ? "nav button" : ".workspace-menu-toggle")?.focus({ preventScroll: true });
+      !document.activeElement?.closest(".device-dock, .ping-composer")) return;
+    target()?.focus({ preventScroll: true });
   });
+}
+
+function restoreMenuFocus(menu: "topology" | "simulation") {
+  restoreFocus(() => document.querySelector<HTMLElement>(`[data-menu="${menu}"]`));
+}
+
+function restoreDockFocus() {
+  restoreFocus(() => document.querySelector<HTMLElement>(".device-dock-toggle"));
 }
 
 export function App({ controller, renderActions }: {
@@ -36,11 +42,32 @@ export function App({ controller, renderActions }: {
   const actions = useWorkspaceActions(controller);
   const { catalog, save, networks, ping, setCatalog, setSave, setNetworks } = actions;
   const [inspecting, setInspecting] = useState<"packet" | "device">("device");
+  const catalogFromDock = useRef(false);
+  useEffect(() => {
+    if (!catalog) catalogFromDock.current = false;
+  }, [catalog]);
+  const toggleDock = () => {
+    const closing = catalog;
+    catalogFromDock.current = !closing;
+    actions.toggleCatalog();
+    if (closing) restoreDockFocus();
+  };
+  const closeCatalog = () => {
+    const fromDock = catalogFromDock.current;
+    setCatalog(false);
+    if (fromDock) restoreDockFocus();
+    else restoreMenuFocus("topology");
+  };
   const packetActive = state.projection.operationId !== null,
     deviceActive = state.selection !== null;
   return (
-    <div className="app canvas-app">
-      {renderActions ? renderActions(actions) : <WorkspaceMenu controller={controller} actions={actions} />}
+    <div className="app canvas-app" data-simulation-visible={String(packetActive)}>
+      <div className="top-chrome">
+        {renderActions ? renderActions(actions) : <WorkspaceMenu controller={controller} actions={actions} />}
+        {/* The playback row belongs to a started operation: a running or
+          retained simulation history shows it; topology editing does not. */}
+        {packetActive && <SimulationControls controller={controller} />}
+      </div>
       {state.issue && !save && !networks && (
         <div role="alert" className="alert">
           <div>
@@ -81,17 +108,14 @@ export function App({ controller, renderActions }: {
         <div className="lab">
           {ping && <PingComposer controller={controller} initiallyOpen onClose={() => {
             actions.setPing(false);
-            restoreMenuFocus();
+            restoreMenuFocus("simulation");
           }} />}
-          {catalog && (
-            <DeviceCatalog
-              controller={controller}
-              onClose={() => {
-                setCatalog(false);
-                restoreMenuFocus();
-              }}
-            />
-          )}
+          <DeviceCatalog
+            controller={controller}
+            open={catalog}
+            onToggle={toggleDock}
+            onClose={closeCatalog}
+          />
           <ConnectionBuilder controller={controller} />
           <div className="network-focus">
             <SceneRecovery controller={controller} />
@@ -158,19 +182,6 @@ export function App({ controller, renderActions }: {
           </div>
         </div>
       </main>
-      <div className="simulation-overlay">
-        <div className="simulation-surface">
-          <SimulationControls controller={controller} />
-          <footer className="statusbar">
-            <span>
-              {state.document.network.devices.length} devices ·{" "}
-              {state.document.network.links.length} links
-            </span>
-            <span>{state.busy ? "Updating network…" : "Ready to explore"}</span>
-            <span>Ethernet · IPv4</span>
-          </footer>
-        </div>
-      </div>
     </div>
   );
 }
