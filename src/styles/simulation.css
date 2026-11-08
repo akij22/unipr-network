@@ -20,7 +20,7 @@
   z-index: 10;
   background: var(--color-panel);
   border: 1px solid var(--color-rule);
-  border-radius: 10px;
+  border-radius: var(--radius-panel);
   padding: 10px;
   display: flex;
   gap: 12px;
@@ -54,7 +54,7 @@
 .timeline input {
   min-height: 20px;
   padding: 0;
-  accent-color: var(--color-blue);
+  accent-color: var(--color-accent);
   border: 0;
 }
 .event-summary {
@@ -72,7 +72,7 @@
   margin: 0;
 }
 .step-badge {
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-size: 10px;
   letter-spacing: 0.08em;
   font-weight: 700;
@@ -96,14 +96,14 @@
   padding: 4px 10px;
   min-height: 32px;
   font-size: 11px;
-  color: var(--color-blue);
-  background: var(--color-blue-bg);
+  color: var(--color-accent);
+  background: var(--color-accent-bg);
 }
 .packet-inspector {
   background: var(--color-panel);
   border: 1px solid var(--color-rule);
   padding: 18px;
-  border-radius: 10px;
+  border-radius: var(--radius-panel);
   margin: 18px 0;
 }
 .packet-inspector .section-head {
@@ -120,14 +120,14 @@
   padding: 12px;
   background: var(--color-field);
   border: 1px solid var(--color-rule);
-  border-radius: 7px;
+  border-radius: var(--radius-control);
   min-width: 0;
 }
 .packet-card-title {
   background: var(--color-transparent);
   border: 0;
   padding: 4px 0;
-  color: var(--color-blue);
+  color: var(--color-accent);
   font-size: 12px;
   min-height: 36px;
 }
@@ -143,7 +143,7 @@
 mark {
   background: var(--color-amber-bg);
   color: var(--color-amber);
-  border-radius: 3px;
+  border-radius: var(--radius-tight);
   padding: 2px 3px;
 }
 del {
@@ -159,7 +159,7 @@ del {
   background: var(--color-panel);
   color: var(--color-body);
   border: 1px solid var(--color-rule);
-  border-radius: 12px;
+  border-radius: var(--radius-panel);
   padding: 24px;
   max-width: min(560px, calc(100% - 24px));
   max-height: 85dvh;
@@ -197,9 +197,9 @@ del {
   color: var(--color-ink);
 }
 .inspector-tabs button[aria-pressed="true"] {
-  background: var(--color-blue-bg);
-  border-color: var(--color-blue);
-  color: var(--color-blue);
+  background: var(--color-accent-bg);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 .table-summary {
   margin: 4px 0 14px;
@@ -225,8 +225,8 @@ td small {
   font-size: 10px;
 }
 .used-route {
-  background: var(--color-blue-bg);
-  color: var(--color-blue);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
 }
 .state-entries {
   margin: 10px 0;
@@ -253,11 +253,11 @@ td small {
 .bit-grid span {
   text-align: center;
   padding: 5px 0;
-  border-radius: 3px;
+  border-radius: var(--radius-tight);
 }
 .network-bit {
-  background: var(--color-blue-bg);
-  color: var(--color-blue);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
 }
 .host-bit {
   background: var(--color-amber-bg);

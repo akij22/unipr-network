@@ -1,4 +1,4 @@
-/* Hallmark · educational workbench · black + vivid blue · topology and contextual inspector.
+/* Hallmark · educational workbench · india dark theme (saffron accent) · topology and contextual inspector.
  * Pre-emit critique: philosophy 5, hierarchy 4, execution 4, specificity 5, restraint 5, variety 4. */
 * {
   box-sizing: border-box;
@@ -24,7 +24,7 @@ select {
 button,
 a,
 summary {
-  -webkit-tap-highlight-color: var(--color-blue-bg);
+  -webkit-tap-highlight-color: var(--color-accent-bg);
 }
 button {
   min-height: 44px;
@@ -40,8 +40,8 @@ button {
     border-color var(--dur-short);
 }
 button:hover {
-  border-color: var(--color-blue);
-  background: var(--color-blue-bg);
+  border-color: var(--color-accent);
+  background: var(--color-accent-bg);
 }
 button:active {
   transform: translateY(1px);
@@ -52,8 +52,8 @@ button:disabled {
 }
 button[aria-pressed="true"],
 button[aria-checked="true"] {
-  border-color: var(--color-blue);
-  background: var(--color-blue-bg);
+  border-color: var(--color-accent);
+  background: var(--color-accent-bg);
 }
 button.primary {
   background: var(--color-primary);
@@ -131,12 +131,12 @@ legend {
 }
 summary {
   cursor: pointer;
-  color: var(--color-blue);
+  color: var(--color-accent);
   min-height: 44px;
   padding: 10px 0;
 }
 a {
-  color: var(--color-blue);
+  color: var(--color-accent);
 }
 .row {
   display: flex;
@@ -199,16 +199,16 @@ a {
 }
 .interface {
   border: 1px solid var(--color-rule);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   padding: 12px;
   margin: 12px 0;
 }
 .port-label {
   border: 1px solid var(--color-rule);
-  background: var(--color-blue-bg);
-  color: var(--color-blue);
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
   padding: 3px 8px;
-  border-radius: 5px;
+  border-radius: var(--radius-tight);
 }
 .address-row {
   display: grid;
@@ -231,10 +231,10 @@ a {
   padding-inline: 10px;
 }
 .tutorial {
-  background: var(--color-blue-bg);
+  background: var(--color-accent-bg);
   padding: 12px;
-  border-left: 2px solid var(--color-blue);
-  border-radius: 5px;
+  border-left: 2px solid var(--color-accent);
+  border-radius: var(--radius-tight);
   margin: 16px 0;
 }
 .tutorial p {
@@ -362,7 +362,7 @@ a {
   text-overflow: ellipsis;
 }
 .catalog {
-  border: 1px solid var(--color-blue);
+  border: 1px solid var(--color-accent);
   border-radius: var(--radius-panel);
   padding: 16px;
   background: var(--color-panel);
@@ -387,15 +387,15 @@ a {
 }
 .connection-guide {
   background: var(--color-panel);
-  border: 1px solid var(--color-blue);
-  border-left: 3px solid var(--color-blue);
+  border: 1px solid var(--color-accent);
+  border-left: 3px solid var(--color-accent);
   border-radius: var(--radius-panel);
   padding: 16px;
   margin-bottom: 12px;
 }
 .connection-guide .eyebrow {
   display: block;
-  color: var(--color-blue);
+  color: var(--color-accent);
   margin-bottom: 4px;
 }
 .connection-guide strong {
@@ -411,7 +411,7 @@ a {
   margin: 12px;
   padding: 14px 18px;
   border: 1px solid var(--color-error);
-  border-radius: 8px;
+  border-radius: var(--radius-control);
   background: var(--color-error-bg);
   display: flex;
   align-items: flex-start;
@@ -510,7 +510,7 @@ select {
   white-space: normal;
 }
 .scene-label.selected {
-  border-color: var(--color-blue);
+  border-color: var(--color-accent);
 }
 @media (min-width: 70rem) {
   .scene-canvas {
