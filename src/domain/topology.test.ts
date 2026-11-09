@@ -1,6 +1,6 @@
 import { fixture } from "../../tests/fixtures/networks";
 import { expect, it } from "vitest";
-import { connectPorts } from "./topology";
+import { connectDevices, connectPorts } from "./topology";
 import { validateConfiguration } from "./configuration";
 import type { NetworkConfig } from "./types";
 const network: NetworkConfig = {
@@ -108,4 +108,49 @@ it("rejects reserved manual endpoint addresses and switched /31 hosts, preservin
     ),
   ).toBe(true);
   expect(validateConfiguration(fixture("router31"))).toEqual([]);
+});
+
+it("automatically connects the first free existing ports in stored order", () => {
+  const config: NetworkConfig = {
+    devices: [
+      { id: "s", kind: "switch", ports: ["z", "b", "a"].map((id) => ({ id, mac: null, address: null })) },
+      { id: "t", kind: "switch", ports: ["z", "c", "a"].map((id) => ({ id, mac: null, address: null })) },
+    ],
+    links: [{ id: "existing", ends: [{ deviceId: "t", portId: "z" }, { deviceId: "s", portId: "z" }] }],
+  };
+  const before = structuredClone(config);
+  const result = connectDevices(config, "s", "t", "new");
+  expect(result).toEqual({ ok: true, value: { ...before, links: [...before.links, {
+    id: "new", ends: [{ deviceId: "s", portId: "b" }, { deviceId: "t", portId: "c" }],
+  }] } });
+  expect(config).toEqual(before);
+});
+it.each([
+  ["missing", "h", "PORT_NOT_FOUND", "missing"],
+  ["s", "missing", "PORT_NOT_FOUND", "missing"],
+  ["s", "s", "SELF_CONNECTION", "s"],
+  ["h", "s", "PORT_OCCUPIED", "h"],
+  ["s", "h", "PORT_OCCUPIED", "h"],
+])("rejects automatic connection %s to %s atomically", (source, target, code, deviceId) => {
+  const config = structuredClone(network);
+  config.links = [{ id: "existing", ends: [{ deviceId: "s", portId: "p1" }, { deviceId: "h", portId: "p1" }] }];
+  const before = structuredClone(config);
+  expect(connectDevices(config, source, target, "new")).toMatchObject({
+    ok: false, issue: { code, category: "input", deviceIds: [deviceId] },
+  });
+  expect(config).toEqual(before);
+});
+it("does not create a port on a device without ports", () => {
+  const config = structuredClone(network);
+  config.devices[1].ports = [];
+  expect(connectDevices(config, "s", "h", "new")).toMatchObject({
+    ok: false, issue: { code: "PORT_OCCUPIED", category: "input" },
+  });
+  expect(config.devices[1].ports).toEqual([]);
+});
+it("retains connectPorts duplicate cable validation for automatic connections", () => {
+  const config = fixture("l2Loop");
+  expect(connectDevices(config, "s1", "s2", "l1")).toMatchObject({
+    ok: false, issue: { code: "DUPLICATE_ID", category: "input" },
+  });
 });

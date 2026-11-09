@@ -278,3 +278,80 @@ it("withholds observations and retries the retained network if reopening fails a
     projection: { status: "active" },
   });
 });
+
+it("automatically connects physical endpoints with one revision and resets learned history", async () => {
+  const app = make();
+  const network = fixture("pat");
+  network.links = network.links.filter((link) => link.id !== "l4");
+  await app.dispatch({ type: "config.apply", network });
+  await app.dispatch({ type: "simulation.start", operation: { kind: "ping", sourceId: "a", destination: "192.168.1.11" } });
+  while (app.getSnapshot().projection.status === "active")
+    await app.dispatch({ type: "simulation.next" });
+  await app.dispatch({ type: "simulation.previous" });
+  expect(app.getSnapshot().projection.frontier).toBeGreaterThan(0);
+  expect(app.getSnapshot().projection.state.arp).not.toEqual({});
+  await app.dispatch({ type: "connection.start" });
+  const before = structuredClone(app.getSnapshot());
+  await app.dispatch({ type: "connection.connectDevices", sourceId: "r1", targetId: "remote" });
+  const after = app.getSnapshot();
+  expect(after.issue).toBeNull();
+  expect(after.connection).toBeNull();
+  expect(after.document.network.devices).toEqual(before.document.network.devices);
+  expect(after.document.network.links.slice(0, -1)).toEqual(before.document.network.links);
+  const cable = after.document.network.links.at(-1)!;
+  expect(cable.ends).toEqual([{ deviceId: "r1", portId: "eth1" }, { deviceId: "remote", portId: "eth0" }]);
+  expect(cable.id).toBeTruthy();
+  expect(before.document.network.links.some((link) => link.id === cable.id)).toBe(false);
+  expect(after.projection).toMatchObject({ revision: before.projection.revision + 1, cursor: 0, frontier: 0, operationId: null, status: "idle" });
+  expect(after.projection.state.arp).toEqual({});
+  expect(after).toMatchObject({ dirty: true, runtimeReady: true, playing: false });
+});
+it.each([
+  ["missing", "s1", "PORT_NOT_FOUND"],
+  ["s1", "missing", "PORT_NOT_FOUND"],
+  ["s1", "s1", "SELF_CONNECTION"],
+  ["a", "s1", "PORT_OCCUPIED"],
+  ["s1", "b", "PORT_OCCUPIED"],
+])("rejects automatic connection %s to %s without changing configuration or history", async (sourceId, targetId, code) => {
+  const app = make();
+  await app.dispatch({ type: "config.apply", network: fixture("lan") });
+  await app.dispatch({ type: "simulation.start", operation: { kind: "ping", sourceId: "a", destination: "192.168.1.20" } });
+  await app.dispatch({ type: "simulation.next" });
+  await app.dispatch({ type: "connection.start" });
+  await app.dispatch({ type: "connection.choosePort", port: { deviceId: "s1", portId: "p3" } });
+  const before = app.getSnapshot();
+  await app.dispatch({ type: "connection.connectDevices", sourceId, targetId });
+  expect(app.getSnapshot().issue).toMatchObject({ code, category: "input" });
+  expect(app.getSnapshot()).toEqual({ ...before, issue: app.getSnapshot().issue });
+  expect(app.getSnapshot().document).toBe(before.document);
+  expect(app.getSnapshot().projection).toBe(before.projection);
+});
+it("connects unconfigured devices without assigning IP settings or requiring connection mode", async () => {
+  const app = make();
+  await app.dispatch({ type: "device.add", kind: "host" });
+  await app.dispatch({ type: "device.add", kind: "switch" });
+  const devices = structuredClone(app.getSnapshot().document.network.devices);
+  await app.dispatch({ type: "connection.connectDevices", sourceId: "host-1", targetId: "switch-1" });
+  expect(app.getSnapshot().document.network.devices).toEqual(devices);
+  expect(app.getSnapshot().document.network.links).toHaveLength(1);
+  expect(app.getSnapshot().issue).toBeNull();
+});
+
+it("preserves pending endpoint selection when automatic cable configuration is rejected", async () => {
+  const app = make();
+  const network = fixture("router31");
+  network.links = [];
+  await app.dispatch({ type: "config.apply", network });
+  await app.dispatch({ type: "device.add", kind: "switch" });
+  await app.dispatch({ type: "connection.start" });
+  await app.dispatch({
+    type: "connection.choosePort",
+    port: { deviceId: "switch-1", portId: "p1" },
+  });
+  const before = app.getSnapshot();
+  await app.dispatch({
+    type: "connection.connectDevices", sourceId: "r1", targetId: "switch-1",
+  });
+  expect(app.getSnapshot().issue?.code).toBe("UNSUPPORTED_31_LINK");
+  expect(app.getSnapshot()).toEqual({ ...before, issue: app.getSnapshot().issue });
+});

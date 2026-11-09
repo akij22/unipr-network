@@ -3,6 +3,7 @@ import {
   applyNodeChanges,
   Background,
   BackgroundVariant,
+  ConnectionMode,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
@@ -12,8 +13,10 @@ import {
   type Node,
   type NodeChange,
   type OnInit,
+  type OnConnect,
   type OnNodeDrag,
   type Viewport,
+  type IsValidConnection,
 } from "@xyflow/react";
 import type { AppController } from "../../../app/types";
 import { useApp } from "../../../app/use-app";
@@ -92,7 +95,7 @@ function FlowCanvas({
         position: { x: device.x, y: device.y },
         data: device,
         selected: device.selected,
-        connectable: false,
+        connectable: true,
         deletable: false,
         selectable: true,
         focusable: true,
@@ -116,6 +119,9 @@ function FlowCanvas({
         type: "topology" as const,
         source: link.source,
         target: link.target,
+        // Every link terminates on the single cable dot of each device.
+        sourceHandle: "cable",
+        targetHandle: "cable",
         selected: link.selected,
         deletable: false,
         focusable: true,
@@ -195,7 +201,10 @@ function FlowCanvas({
   );
 
   const handleNodeClick = useCallback(
-    (_event: React.MouseEvent, node: FlowNode) => {
+    (event: React.MouseEvent, node: FlowNode) => {
+      // Pressing a device's cable dot must not select the device; the dot is
+      // a connector, not the node surface.
+      if ((event.target as HTMLElement).closest(".flow-cable-dot")) return;
       void controller.dispatch({
         type: "selection.set",
         selection: { kind: "device", id: node.id },
@@ -204,6 +213,28 @@ function FlowCanvas({
     [controller],
   );
 
+  /** Dropping on another device's dot asks the controller to connect the two
+   * devices. The controller picks the first unoccupied ports on both ends
+   * atomically; a rejected request is reported as a friendly issue instead of
+   * being silently dropped. React Flow draws no edge on its own: the derived
+   * edges appear once the configuration accepts the change. */
+  const handleConnect: OnConnect = useCallback(
+    (connection) => {
+      void controller.dispatch({
+        type: "connection.connectDevices",
+        sourceId: connection.source,
+        targetId: connection.target,
+      });
+    },
+    [controller],
+  );
+
+  /** The canvas only rejects a device cabled to itself; occupied ports and
+   * other topology rules stay with the controller, which reports the reason. */
+  const isConnectionValid: IsValidConnection<Edge> = useCallback(
+    (connection) => connection.source !== connection.target,
+    [],
+  );
   const handleEdgeClick = useCallback(
     (_event: React.MouseEvent, edge: FlowEdge) => {
       void controller.dispatch({
@@ -239,6 +270,8 @@ function FlowCanvas({
         onNodesChange={handleNodesChange}
         onNodeClick={handleNodeClick}
         onNodeDragStop={handleNodeDragStop}
+        onConnect={handleConnect}
+        isValidConnection={isConnectionValid}
         onEdgeClick={handleEdgeClick}
         onEdgesChange={(changes: EdgeChange<FlowEdge>[]) => {
           const selected = changes.find(change => change.type === "select" && change.selected);
@@ -254,7 +287,10 @@ function FlowCanvas({
         zoomOnDoubleClick={false}
         selectionOnDrag={false}
         multiSelectionKeyCode={null}
-        nodesConnectable={false}
+        nodesConnectable
+        connectionMode={ConnectionMode.Loose}
+        connectOnClick
+        autoPanOnConnect
         nodesFocusable
         edgesFocusable
         elementsSelectable

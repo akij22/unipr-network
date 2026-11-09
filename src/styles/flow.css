@@ -71,16 +71,81 @@
   border-radius: var(--radius-control);
 }
 
-/* Ports are the visible ends of a link; they are not drag targets. */
-.flow-port {
-  width: 9px;
-  height: 9px;
-  border: 1px solid var(--color-rule-strong);
+/* The cable dot is the single connector on each device: a small accent dot
+ * with a generous 44px press target. It is a connector, not a drag handle,
+ * so React Flow's nodrag class keeps device drags starting at the icon. */
+.flow-cable-dot {
+  width: 11px;
+  height: 11px;
+  border: 0;
   border-radius: 50%;
-  background: var(--color-raised);
+  background: transparent;
+  cursor: crosshair;
+  touch-action: none;
+  transition: background var(--dur-short) var(--ease-out);
 }
-.flow-device.is-selected .flow-port {
+/* Keep the measured handle at the marker size so cable ends touch the dot.
+ * The transparent pseudo-element expands pointer/touch hit testing to 44px. */
+.flow-cable-dot::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.flow-cable-dot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid var(--color-accent);
+  box-sizing: border-box;
+  transform: translate(-50%, -50%);
+  transition:
+    border-color var(--dur-short) var(--ease-out),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+.flow-cable-dot:hover,
+.flow-cable-dot.connectingfrom,
+.flow-cable-dot.connectingto,
+.flow-cable-dot.clickconnecting {
+  background: var(--color-accent-bg);
+}
+.flow-cable-dot:hover::after,
+.flow-cable-dot.connectingfrom::after,
+.flow-cable-dot.connectingto::after,
+.flow-cable-dot.clickconnecting::after {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-bg);
+}
+.flow-cable-dot:active::after {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.flow-cable-dot:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.flow-device.is-selected .flow-cable-dot::after {
+  border-color: var(--color-accent);
+}
+/* While a connection is being drawn the potential endpoint lights up. */
+.flow-cable-dot.valid::after {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+/* The free-hanging connection line keeps the accent, not React Flow's
+ * default grey. */
+.flow-surface .react-flow__connection {
+  stroke: var(--color-accent);
+  stroke-width: 2;
 }
 
 /* Links carry the traffic state: idle is a quiet rule, active is the accent,
@@ -151,6 +216,11 @@
  * canvas. It scrolls inside its own frame so every field stays reachable
  * instead of spilling behind the top chrome or the device dock. */
 @media (max-width: 69.99rem), (max-height: 500px) {
+  .canvas-app .connection-guide {
+    top: auto;
+    bottom: var(--dock-clearance);
+    max-height: 25dvh;
+  }
   .canvas-app .inspection-overlay {
     overflow: hidden;
     z-index: 12;

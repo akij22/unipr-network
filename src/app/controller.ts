@@ -1,6 +1,6 @@
 import type { SimulationClient, SessionCommand } from "../runtime/messages";
 import { issue, type Device, type NetworkConfig } from "../domain/types";
-import { connectPorts } from "../domain/topology";
+import { connectDevices, connectPorts } from "../domain/topology";
 import { validateConfiguration } from "../domain/configuration";
 import { createInitialState, copy } from "../simulation/state";
 import type { AppController, AppState, NetworkDocument } from "./types";
@@ -514,6 +514,26 @@ export function createAppController(
               device.nat = null;
           }
           await apply(config);
+          return;
+        }
+        case "connection.connectDevices": {
+          const result = connectDevices(
+            state.document.network,
+            action.sourceId,
+            action.targetId,
+            crypto.randomUUID(),
+          );
+          if (!result.ok) {
+            set({ issue: result.issue });
+            return;
+          }
+          const problem = validateConfiguration(result.value)[0];
+          if (problem) {
+            set({ issue: problem });
+            return;
+          }
+          set({ connection: null });
+          await apply(result.value);
           return;
         }
         case "connection.start":

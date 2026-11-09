@@ -14,55 +14,11 @@ export function DeviceInspector({ controller }: { controller: AppController }) {
   const state = useApp(controller),
     selected = state.selection,
     [tab, setTab] = useState("configure");
-  if (selected?.kind === "link") {
-    const link = state.document.network.links.find((l) => l.id === selected.id);
-    return (
-      <aside className="inspector">
-        <div className="section-head"><h2>Ethernet connection</h2>
-        <button aria-label="Close inspector" onClick={() => void controller.dispatch({ type: "selection.set", selection: null })}>Close</button></div>
-        {link?.ends.map((end) => (
-          <p key={end.deviceId}>
-            {state.document.layout[end.deviceId]?.name} ·{" "}
-            <code>{end.portId}</code>
-          </p>
-        ))}
-        <p>
-          Frames carry the next-hop MAC address on this link. Select an event to
-          inspect its actual frame.
-        </p>
-        <button
-          onClick={() =>
-            void controller.dispatch({ type: "link.remove", id: selected.id })
-          }
-        >
-          Disconnect cable
-        </button>
-      </aside>
-    );
-  }
+  if (selected?.kind !== "device") return null;
   const device = state.document.network.devices.find(
-    (d) => d.id === selected?.id,
+    (d) => d.id === selected.id,
   );
-  if (!device)
-    return (
-      <aside className="inspector empty-inspector">
-        <span className="eyebrow">DEVICE INSPECTOR</span>
-        <h2>
-          Build a network.
-          <br />
-          See why it works.
-        </h2>
-        <p>
-          Add a host, connect it to another device and configure its network.
-          Select any device to inspect its interfaces.
-        </p>
-        <ol>
-          <li>Add your devices</li>
-          <li>Connect available ports</li>
-          <li>Configure and send a packet</li>
-        </ol>
-      </aside>
-    );
+  if (!device) return null;
   return (
     <div className="inspector-stack">
       <nav className="inspector-tabs" aria-label="Device inspection">

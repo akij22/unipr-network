@@ -24,6 +24,7 @@ export type AppAction =
   | { type: "port.remove"; deviceId: string; portId: string }
   | { type: "config.apply"; network: NetworkConfig }
   | { type: "selection.set"; selection: AppState["selection"] }
+  | { type: "connection.connectDevices"; sourceId: string; targetId: string }
   | { type: "connection.start" }
   | { type: "connection.choosePort"; port: PortRef }
   | { type: "connection.cancel" }

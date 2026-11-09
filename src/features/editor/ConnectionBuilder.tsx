@@ -15,10 +15,12 @@ export function ConnectionBuilder({
       <strong>
         {state.connection.from
           ? "Choose the destination port"
-          : "Choose the first port"}
+          : "Choose a port to connect"}
       </strong>
       <p>
-        Select a device and an available port.{" "}
+        Drag between orange dots, or tap two dots, to use free ports
+        automatically. For a manual choice, select an available port in each
+        device's inspector.{" "}
         {state.connection.from &&
           `Starting at ${state.document.layout[state.connection.from.deviceId]?.name} · ${state.connection.from.portId}.`}
       </p>

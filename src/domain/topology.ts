@@ -58,3 +58,32 @@ export function connectPorts(
     return fail(issue("DUPLICATE_ID", [], {}, "input"));
   return ok({ ...config, links: [...config.links, { id, ends: [from, to] }] });
 }
+
+export function connectDevices(
+  config: NetworkConfig,
+  sourceId: string,
+  targetId: string,
+  id: string,
+): Result<NetworkConfig> {
+  if (sourceId === targetId)
+    return fail(issue("SELF_CONNECTION", [sourceId], {}, "input"));
+  const source = config.devices.find((device) => device.id === sourceId),
+    target = config.devices.find((device) => device.id === targetId);
+  if (!source || !target)
+    return fail(issue("PORT_NOT_FOUND", [!source ? sourceId : targetId], {}, "input"));
+  const occupied = new Set(config.links.flatMap((link) => link.ends.map(portKey)));
+  const from = source.ports.find(
+    (port) => !occupied.has(portKey({ deviceId: sourceId, portId: port.id })),
+  ),
+    to = target.ports.find(
+      (port) => !occupied.has(portKey({ deviceId: targetId, portId: port.id })),
+    );
+  if (!from || !to)
+    return fail(issue("PORT_OCCUPIED", [!from ? sourceId : targetId], {}, "input"));
+  return connectPorts(
+    config,
+    { deviceId: sourceId, portId: from.id },
+    { deviceId: targetId, portId: to.id },
+    id,
+  );
+}

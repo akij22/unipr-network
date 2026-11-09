@@ -59,9 +59,52 @@ export function App({ controller, renderActions }: {
     else restoreMenuFocus("topology");
   };
   const packetActive = state.projection.operationId !== null,
-    deviceActive = state.selection !== null;
+    deviceActive = state.selection?.kind === "device";
+  // Plain Backspace/Delete deletes the currently selected device or cable.
+  // The controller owns removal (device removal also drops attached cables);
+  // React Flow's own delete key stays disabled (deleteKeyCode={null}).
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Backspace" && event.key !== "Delete") return;
+      if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        event.repeat ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey
+      )
+        return;
+      const target = event.target;
+      // Never intercept keys aimed at text entry or editable UI.
+      if (
+        target instanceof Element &&
+        target.closest(
+          "input, textarea, select, [contenteditable]:not([contenteditable='false']), [role='textbox'], dialog, [role='dialog']",
+        )
+      )
+        return;
+      const snapshot = controller.getSnapshot();
+      if (save || networks) return;
+      // Reserve these keys on the canvas even without a selection: WebKit
+      // otherwise treats Backspace as browser history navigation.
+      event.preventDefault();
+      const selection = snapshot.selection;
+      if (snapshot.busy || !selection) return;
+      if (selection.kind === "device")
+        void controller.dispatch({ type: "device.remove", id: selection.id });
+      else
+        void controller.dispatch({ type: "link.remove", id: selection.id });
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [controller, save, networks]);
   return (
-    <div className="app canvas-app" data-simulation-visible={String(packetActive)}>
+    <div
+      className="app canvas-app"
+      data-simulation-visible={String(packetActive)}
+    >
       <div className="top-chrome">
         {renderActions ? renderActions(actions) : <WorkspaceMenu controller={controller} actions={actions} />}
         {/* The playback row belongs to a started operation: a running or
@@ -120,32 +163,6 @@ export function App({ controller, renderActions }: {
           <div className="network-focus">
             <SceneRecovery controller={controller} />
             <EventSummary controller={controller} />
-          </div>
-          <div className="network-tools">
-            <details className="connections-list">
-              <summary>Connections ({state.document.network.links.length})</summary>
-              <div className="link-list">
-                {state.document.network.links.map((l, i) => (
-                  <button
-                    key={l.id}
-                    onClick={() =>
-                      void controller.dispatch({
-                        type: "selection.set",
-                        selection: { kind: "link", id: l.id },
-                      })
-                    }
-                  >
-                    Link {i + 1}:{" "}
-                    {l.ends
-                      .map(
-                        (e) =>
-                          `${state.document.layout[e.deviceId].name} · ${e.portId}`,
-                      )
-                      .join(" ↔ ")}
-                  </button>
-                ))}
-              </div>
-            </details>
           </div>
           <div className="inspection-overlay">
             {packetActive && deviceActive ? (
