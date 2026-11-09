@@ -27,24 +27,33 @@ const tips: Record<DeviceKind, string[]> = {
 };
 export function Tutorial({ kind }: { kind: DeviceKind }) {
   const [step, setStep] = useState(0),
-    items = tips[kind];
+    items = tips[kind],
+    current = Math.min(step, items.length - 1);
   return (
-    <section className="tutorial">
-      <span className="eyebrow">
-        GUIDED SETUP · {step + 1}/{items.length}
-      </span>
-      <p>{items[Math.min(step, items.length - 1)]}</p>
-      <div className="row">
-        <button disabled={step === 0} onClick={() => setStep(step - 1)}>
+    <details className="guide" open>
+      <summary>
+        <span className="eyebrow">Guided setup</span>
+        <span className="guide-progress">
+          {current + 1}/{items.length}
+        </span>
+      </summary>
+      <p>{items[current]}</p>
+      <div className="guide-controls">
+        <button
+          className="text-button"
+          disabled={current === 0}
+          onClick={() => setStep(current - 1)}
+        >
           Previous tip
         </button>
         <button
-          disabled={step === items.length - 1}
-          onClick={() => setStep(step + 1)}
+          className="text-button"
+          disabled={current === items.length - 1}
+          onClick={() => setStep(current + 1)}
         >
           Next tip
         </button>
       </div>
-    </section>
+    </details>
   );
 }
