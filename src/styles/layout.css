@@ -230,49 +230,391 @@ a {
   font-size: 12px;
   padding-inline: 10px;
 }
-.tutorial {
-  background: var(--color-accent-bg);
-  padding: 12px;
-  border-left: 2px solid var(--color-accent);
-  border-radius: var(--radius-control);
-  margin: 16px 0;
-}
-.tutorial p {
-  font-size: 13px;
-}
-.tutorial button {
-  background: var(--color-panel);
-  font-size: 12px;
-}
-.inspector-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 18px 0;
-}
-.inspector-actions .primary {
-  flex: 1;
-}
-/* Inspector hierarchy: labelled groups and collapsible port cards. */
+/* Inspector hierarchy: compact guide, grouped setting cards and a sticky apply bar. */
 .device-head h2 {
   font-size: 18px;
   margin: 6px 0 0;
 }
+.guide {
+  margin: 16px 0 0;
+  padding: 10px 14px 12px;
+  background: var(--color-accent-bg);
+  border-left: 2px solid var(--color-accent);
+  border-radius: var(--radius-control);
+}
+.guide > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 36px;
+  list-style: none;
+  cursor: pointer;
+}
+.guide > summary::-webkit-details-marker {
+  display: none;
+}
+.guide > summary .eyebrow {
+  color: var(--color-accent);
+  font-size: 11px;
+}
+.guide-progress {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-muted);
+}
+.guide p {
+  margin: 4px 0 6px;
+  font-size: 13px;
+  color: var(--color-body);
+}
+.guide-controls {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.guide-controls button {
+  font-size: 12px;
+  padding-inline: 10px;
+}
 .inspector-group {
   display: grid;
   gap: 8px;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-rule);
+  margin-top: 12px;
+  padding: 14px;
+  background: var(--color-field);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
 }
 .group-label {
   margin: 0;
-  font-family: var(--font-mono);
-  font-weight: 400;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-ink);
+}
+.group-hint,
+.field-hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
   color: var(--color-muted);
+}
+.field-error {
+  margin: -4px 0 6px;
+  font-size: 12px;
+  color: var(--color-error);
+}
+input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+.inspector-group .segmented button {
+  flex: 1 1 0;
+  font-size: 13px;
+}
+.inspector > details:not(.guide) {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  background: var(--color-field);
+}
+.inspector > details:not(.guide) > summary {
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-ink);
+}
+.inspector-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px -20px -20px;
+  padding: 12px 20px 16px;
+  background: var(--color-panel);
+  border-top: 1px solid var(--color-rule-strong);
+  border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+  box-shadow: 0 -8px 16px var(--color-backdrop);
+}
+.inspector-footer .primary {
+  flex: 1 1 160px;
+}
+.apply-status {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+.apply-status[data-state="dirty"] {
+  color: var(--color-amber);
+}
+.apply-status[data-state="invalid"] {
+  color: var(--color-error);
+}
+.apply-status[data-state="clean"] {
+  color: var(--color-good);
+}
+/* Inspector refresh: rounder geometry, Geist typography and tuned form controls.
+   Scoped to the inspector so the rest of the workspace keeps its tokens. */
+.inspector-stack,
+.inspector {
+  --radius-tight: 8px;
+  --radius-control: 12px;
+  --radius-panel: 22px;
+  --font-display: "Geist", "Inter", sans-serif;
+  --font-body: "Geist", "Inter", sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", monospace;
+}
+.inspector {
+  padding: 22px;
+  border-color: rgba(255, 255, 255, 0.07);
+  background: linear-gradient(180deg, #1b1b1b 0%, #161616 100%);
+  box-shadow: 0 28px 56px -28px rgba(0, 0, 0, 0.7);
+}
+.inspector h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.inspector .device-head > button {
+  min-height: 36px;
+  padding-inline: 16px;
+  border-radius: 999px;
+}
+.inspector .device-head .port-label {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.inspector-stack .inspector-tabs {
+  padding: 4px;
+  gap: 2px;
+  margin-bottom: 14px;
+  background: var(--color-field);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+}
+.inspector-stack .inspector-tabs button {
+  min-height: 36px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.inspector label {
+  margin: 0;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--color-muted);
+}
+.inspector input,
+.inspector select {
+  min-height: 46px;
+  padding: 11px 14px;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius-control);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  transition:
+    border-color var(--dur-short),
+    box-shadow var(--dur-short);
+}
+.inspector input:hover,
+.inspector select:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.inspector input:focus,
+.inspector select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px var(--color-accent-bg);
+}
+.inspector input[aria-invalid="true"] {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 4px var(--color-error-bg);
+}
+.inspector input[inputmode="decimal"],
+.inspector input[type="number"] {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 47.99rem) {
+  .inspector input,
+  .inspector select {
+    font-size: 16px;
+  }
+}
+.inspector button {
+  border-radius: var(--radius-control);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.09);
+  font-size: 13px;
+  font-weight: 500;
+}
+.inspector button:hover {
+  border-color: rgba(250, 125, 0, 0.55);
+  background: var(--color-accent-bg);
+}
+.inspector button.primary {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 10px 24px -12px var(--color-primary);
+}
+.inspector button.primary:disabled {
+  box-shadow: none;
+}
+.inspector button.danger,
+.inspector .text-button {
+  background: transparent;
+}
+.inspector .group-head button {
+  min-height: 34px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.inspector .segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-field);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-control);
+}
+.inspector .segmented button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-muted);
+}
+.inspector .segmented button:hover:not([aria-pressed="true"]) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-ink);
+}
+.inspector .segmented button[aria-pressed="true"] {
+  background: var(--color-raised);
+  color: var(--color-ink);
+  box-shadow:
+    inset 0 0 0 1px rgba(250, 125, 0, 0.6),
+    0 4px 12px -6px rgba(0, 0, 0, 0.6);
+}
+.inspector .inspector-group {
+  gap: 12px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.inspector .group-label {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.inspector .group-hint,
+.inspector .field-hint {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.inspector .field-error {
+  margin: 0;
+  padding-inline: 2px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.inspector .port-card {
+  margin: 0;
+  padding: 4px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 16px;
+  background: #1d1d1d;
+}
+.inspector .port-card > summary {
+  min-height: 44px;
+}
+.inspector .port-card[open] {
+  padding-bottom: 14px;
+}
+.inspector .port-card > label,
+.inspector .port-card > .address-row,
+.inspector .port-card > .field-row {
+  margin-block: 8px;
+}
+.inspector .port-label {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+.inspector .port-status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.inspector .port-status[data-connected="true"] {
+  background: var(--color-good-bg);
+}
+.inspector .interface {
+  border-radius: 16px;
+}
+.inspector .guide {
+  padding: 12px 16px 14px;
+  border: 1px solid rgba(250, 125, 0, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(250, 125, 0, 0.12), rgba(250, 125, 0, 0.03));
+}
+.inspector .guide > summary {
+  min-height: 40px;
+}
+.inspector .guide p {
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.inspector .guide-controls button {
+  min-height: 36px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  background: transparent;
+  border-color: transparent;
+}
+.inspector > details:not(.guide) {
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+.inspector > details:not(.guide) > summary {
+  min-height: 44px;
+}
+.inspector .inspector-footer {
+  margin: 18px -22px -22px;
+  padding: 14px 22px 18px;
+  border-radius: 0 0 22px 22px;
+  background: rgba(22, 22, 22, 0.94);
+  backdrop-filter: blur(14px);
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+.inspector .apply-status {
+  font-size: 13px;
+  font-weight: 500;
 }
 .group-head {
   display: flex;
@@ -286,6 +628,7 @@ a {
 }
 .port-card {
   padding: 2px 12px;
+  background: var(--color-panel);
 }
 .port-card > summary {
   display: flex;

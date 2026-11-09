@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { AppController } from "../../app/types";
 import type { Device, NetworkConfig } from "../../domain/types";
+import { parseIPv4 } from "../../domain/ipv4";
 import { useApp } from "../../app/use-app";
 import { copy } from "../../simulation/state";
 import { Tutorial } from "./Tutorial";
@@ -78,6 +79,13 @@ function DeviceForm({
       Object.fromEntries(device.ports.map((p) => [p.id, !p.address?.ip])),
     );
   const update = (next: Device) => setDraft(next);
+  const uid = useId(),
+    dirty = name !== meta.name || JSON.stringify(draft) !== JSON.stringify(device),
+    invalid = hasInvalidInput(draft),
+    gatewayMessage =
+      draft.kind === "host" && draft.addressing.mode === "manual"
+        ? ipv4Error(draft.addressing.gateway ?? "")
+        : undefined;
   const apply = async () => {
     await controller.dispatch({ type: "device.rename", id: device.id, name });
     const network: NetworkConfig = {
@@ -159,23 +167,43 @@ function DeviceForm({
               Automatic (DHCP)
             </button>
           </div>
+          <p className="group-hint">
+            {draft.addressing.mode === "dhcp"
+              ? "This host asks a DHCP server on its link for an address, prefix and gateway."
+              : "You enter the address, prefix and default gateway yourself."}
+          </p>
           {draft.addressing.mode === "manual" && (
-            <label>
-              Default gateway
-              <input
-                placeholder="192.168.1.1"
-                value={draft.addressing.gateway ?? ""}
-                onChange={(e) =>
-                  update({
-                    ...draft,
-                    addressing: {
-                      mode: "manual",
-                      gateway: e.target.value || null,
-                    },
-                  })
-                }
-              />
-            </label>
+            <>
+              <label>
+                Default gateway
+                <input
+                  placeholder="192.168.1.1"
+                  autoComplete="off"
+                  inputMode="decimal"
+                  spellCheck={false}
+                  aria-invalid={gatewayMessage ? true : undefined}
+                  aria-describedby={
+                    gatewayMessage
+                      ? `${uid}-gateway-hint ${uid}-gateway-error`
+                      : `${uid}-gateway-hint`
+                  }
+                  value={draft.addressing.gateway ?? ""}
+                  onChange={(e) =>
+                    update({
+                      ...draft,
+                      addressing: {
+                        mode: "manual",
+                        gateway: e.target.value || null,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <FieldError id={`${uid}-gateway-error`} message={gatewayMessage} />
+              <p id={`${uid}-gateway-hint`} className="field-hint">
+                Used for traffic to other networks. It must be on this host&apos;s link.
+              </p>
+            </>
           )}
         </section>
       )}
@@ -207,6 +235,10 @@ function DeviceForm({
                   ? `${port.address.ip}/${port.address.prefix}`
                   : "No address set"
                 : "Layer 2 only";
+          const ipMessage = ipv4Error(port.address?.ip ?? ""),
+            prefixMessage = port.address
+              ? prefixError(port.address.prefix)
+              : undefined;
           return (
             <details
               className="interface port-card"
@@ -243,6 +275,8 @@ function DeviceForm({
                     spellCheck={false}
                     value={port.address?.ip ?? ""}
                     placeholder="192.168.1.10"
+                    aria-invalid={ipMessage ? true : undefined}
+                    aria-describedby={ipMessage ? `${uid}-${i}-ip-error` : undefined}
                     onChange={(e) =>
                       update({
                         ...draft,
@@ -270,6 +304,10 @@ function DeviceForm({
                     min="0"
                     max="32"
                     value={port.address?.prefix ?? 24}
+                    aria-invalid={prefixMessage ? true : undefined}
+                    aria-describedby={
+                      prefixMessage ? `${uid}-${i}-prefix-error` : undefined
+                    }
                     onChange={(e) =>
                       update({
                         ...draft,
@@ -290,6 +328,11 @@ function DeviceForm({
                 </label>
               </div>
             )}
+            <FieldError id={`${uid}-${i}-ip-error`} message={ipMessage} />
+            <FieldError
+              id={`${uid}-${i}-prefix-error`}
+              message={prefixMessage}
+            />
             {port.mac && (
               <div className="field-row small">
                 <span>MAC address</span>
@@ -356,6 +399,14 @@ function DeviceForm({
                 Route {i + 1} destination
                 <input
                   value={route.destination.ip}
+                  inputMode="decimal"
+                  spellCheck={false}
+                  aria-invalid={ipv4Error(route.destination.ip) ? true : undefined}
+                  aria-describedby={
+                    ipv4Error(route.destination.ip)
+                      ? `${uid}-route-${i}-destination-error`
+                      : undefined
+                  }
                   onChange={(e) =>
                     update({
                       ...draft,
@@ -374,6 +425,10 @@ function DeviceForm({
                   }
                 />
               </label>
+              <FieldError
+                id={`${uid}-route-${i}-destination-error`}
+                message={ipv4Error(route.destination.ip)}
+              />
               <label>
                 Route {i + 1} prefix
                 <input
@@ -381,6 +436,12 @@ function DeviceForm({
                   min="0"
                   max="32"
                   value={route.destination.prefix}
+                  aria-invalid={prefixError(route.destination.prefix) ? true : undefined}
+                  aria-describedby={
+                    prefixError(route.destination.prefix)
+                      ? `${uid}-route-${i}-prefix-error`
+                      : undefined
+                  }
                   onChange={(e) =>
                     update({
                       ...draft,
@@ -399,10 +460,22 @@ function DeviceForm({
                   }
                 />
               </label>
+              <FieldError
+                id={`${uid}-route-${i}-prefix-error`}
+                message={prefixError(route.destination.prefix)}
+              />
               <label>
                 Route {i + 1} next hop
                 <input
                   value={route.nextHop ?? ""}
+                  inputMode="decimal"
+                  spellCheck={false}
+                  aria-invalid={ipv4Error(route.nextHop ?? "") ? true : undefined}
+                  aria-describedby={
+                    ipv4Error(route.nextHop ?? "")
+                      ? `${uid}-route-${i}-next-hop-error`
+                      : undefined
+                  }
                   onChange={(e) =>
                     update({
                       ...draft,
@@ -413,6 +486,10 @@ function DeviceForm({
                   }
                 />
               </label>
+              <FieldError
+                id={`${uid}-route-${i}-next-hop-error`}
+                message={ipv4Error(route.nextHop ?? "")}
+              />
               <label>
                 Route {i + 1} outgoing interface
                 <select
@@ -468,48 +545,64 @@ function DeviceForm({
           )}
         </section>
       )}
-      <div className="inspector-actions">
+      <footer className="inspector-footer">
+        <span
+          className="apply-status"
+          data-state={invalid ? "invalid" : dirty ? "dirty" : "clean"}
+          role="status"
+        >
+          {invalid
+            ? "Fix the highlighted fields to apply"
+            : dirty
+              ? "Unsaved changes"
+              : "All changes applied"}
+        </span>
         <button
           className="primary"
-          disabled={state.busy}
+          disabled={state.busy || !dirty || invalid}
           onClick={() => void apply()}
         >
           Apply settings
         </button>
-      </div>
-      <details>
-        <summary>Position and removal</summary>
-        <div className="row">
-          {[
-            ["Move left", -2, 0],
-            ["Move right", 2, 0],
-            ["Move forward", 0, -2],
-            ["Move back", 0, 2],
-          ].map(([label, dx, dz]) => (
-            <button
-              key={String(label)}
-              onClick={() =>
-                void controller.dispatch({
-                  type: "device.move",
-                  id: device.id,
-                  x: meta.x + Number(dx),
-                  z: meta.z + Number(dz),
-                })
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <button
-          className="danger"
-          onClick={() =>
-            void controller.dispatch({ type: "device.remove", id: device.id })
-          }
-        >
-          Remove device
-        </button>
-      </details>
+      </footer>
     </aside>
   );
+}
+function ipv4Error(value: string): string | undefined {
+  return value.trim() !== "" && !parseIPv4(value).ok
+    ? "Enter an IPv4 address such as 192.168.1.10."
+    : undefined;
+}
+function prefixError(prefix: number): string | undefined {
+  return Number.isInteger(prefix) && prefix >= 0 && prefix <= 32
+    ? undefined
+    : "Enter a prefix length from 0 to 32.";
+}
+function hasInvalidInput(device: Device): boolean {
+  const gateway =
+    device.kind === "host" && device.addressing.mode === "manual"
+      ? device.addressing.gateway
+      : null;
+  return Boolean(
+    (gateway && ipv4Error(gateway)) ||
+      device.ports.some(
+        (port) =>
+          port.address !== null &&
+          (ipv4Error(port.address.ip) || prefixError(port.address.prefix)),
+      ) ||
+      (device.kind === "router" &&
+        device.routes.some(
+          (route) =>
+            ipv4Error(route.destination.ip) ||
+            prefixError(route.destination.prefix) ||
+            (route.nextHop && ipv4Error(route.nextHop)),
+        )),
+  );
+}
+function FieldError({ id, message }: { id: string; message?: string }) {
+  return message ? (
+    <p id={id} className="field-error" aria-live="polite">
+      {message}
+    </p>
+  ) : null;
 }

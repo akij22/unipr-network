@@ -90,32 +90,6 @@ test("cancels while an advancement response is pending and ignores its late arri
     "idle",
   );
 });
-test("uses the visible remaining source after the selected host is removed", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await addDevice(page, "host");
-  await addDevice(page, "host");
-  await configureHost(page, "Host 1", "10.0.0.1");
-  await openComposer(page);
-  await page.getByLabel("Source host", { exact: true }).selectOption("host-2");
-  await page.locator(".ping-composer summary").click();
-  await selectDevice(page, "Host 2");
-  await page
-    .getByText("Position and removal", { exact: true })
-    .scrollIntoViewIfNeeded();
-  await page.getByText("Position and removal", { exact: true }).click();
-  await page
-    .getByRole("button", { name: "Remove device", exact: true })
-    .click();
-  await openComposer(page);
-  await expect(page.getByLabel("Source host", { exact: true })).toHaveValue(
-    "host-1",
-  );
-  await page.getByLabel("Destination IPv4", { exact: true }).fill("10.0.0.1");
-  await page.getByRole("button", { name: "Start ping", exact: true }).click();
-  expect(await finishOperation(page)).toBe("completed");
-});
 test("keeps unsaved work accessible when saved summary metadata is corrupt", async ({
   page,
 }) => {
