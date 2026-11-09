@@ -88,6 +88,10 @@ test("centres the dock on the bottom edge and keeps the top bar free of it", asy
       return box!.x + box!.width / 2;
     };
     expect(Math.abs(await centre() - width / 2)).toBeLessThanOrEqual(1);
+    const button = await toggle.boundingBox();
+    const closedPill = await pill.boundingBox();
+    expect(Math.abs(button!.x + button!.width / 2 - await centre())).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(button!.y + button!.height / 2 - (closedPill!.y + closedPill!.height / 2))).toBeLessThanOrEqual(0.5);
     await toggle.click();
     await expect(page.getByRole("region", { name: "Device catalog", exact: true })).toBeVisible();
     expect(Math.abs(await centre() - width / 2)).toBeLessThanOrEqual(1);
