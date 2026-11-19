@@ -32,8 +32,11 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: var(--color-paper);
-  border-top: 1px solid var(--color-rule-strong);
+  background: #171717;
+  border: 1px solid #262626;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 20%);
 }
 
 .host-terminals[hidden] {
@@ -60,28 +63,26 @@
 }
 
 .terminal-tab {
-  display: flex;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
   align-items: center;
-  gap: 8px;
+  flex: 1;
   min-width: 0;
-  padding-inline-start: var(--overlay-gap);
-  background: var(--color-panel);
-  border-inline-end: 1px solid var(--color-rule);
+  padding-inline: 16px;
+  background: #262626;
 }
 
 .terminal-tab-name {
+  grid-column: 2;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--color-ink);
-  font-size: var(--text-sm);
-  font-weight: 600;
+  text-align: center;
+  color: #a3a3a3;
+  font: 12px var(--font-mono);
 }
 
-.terminal-tab > svg {
-  flex: none;
-}
 
 .terminal-status button,
 .terminal-tab button {
@@ -97,7 +98,8 @@
 }
 
 .terminal-tab button {
-  height: 32px;
+  justify-self: end;
+  height: 36px;
 }
 
 .terminal-status button:hover,
@@ -134,7 +136,8 @@
 .terminal-log {
   flex: 1;
   min-height: 0;
-  padding: 8px var(--overlay-gap);
+  padding: 16px;
+  color: #a3a3a3;
   overflow: auto;
   overscroll-behavior: contain;
   font: var(--text-sm)/1.5 var(--font-mono);
@@ -154,17 +157,18 @@
   white-space: pre-wrap;
 }
 
-.terminal-command,
-.terminal-form label {
-  color: var(--color-primary);
-}
+.terminal-prompt { color: #a3a3a3; }
+.terminal-prompt > :first-child { color: #38bdf8; }
+.terminal-prompt > :nth-child(2) { color: #34d399; }
+.terminal-prompt > :nth-child(3) { color: #7dd3fc; }
+.terminal-command { color: #d4d4d4; }
+.terminal-verb { color: #34d399; }
 
 .terminal-form {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px var(--overlay-gap);
-  border-top: 1px solid var(--color-rule);
   font: var(--text-sm)/1.5 var(--font-mono);
 }
 
@@ -176,11 +180,19 @@
   white-space: nowrap;
 }
 
+.terminal-form input:focus {
+  outline: none;
+}
+
 .terminal-form input {
+  padding-inline: 0;
   flex: 1;
   min-width: 0;
   min-height: 44px;
-  color: var(--color-ink);
+  border: 0;
+  background: transparent;
+  color: #34d399;
+  caret-color: #d4d4d4;
 }
 
 @media (min-width: 60rem) and (min-height: 501px) {

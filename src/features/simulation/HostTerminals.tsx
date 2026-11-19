@@ -34,6 +34,14 @@ function hostConfiguration(state: AppState, hostId: string) {
   ].filter(Boolean).join("\n");
 }
 
+function HostPrompt({ name }: { name: string }) {
+  return (
+    <span className="terminal-prompt">
+      <span>{name}</span><span>:</span><span>~</span>$
+    </span>
+  );
+}
+
 function TerminalIcon() {
   return (
     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
@@ -138,9 +146,8 @@ export function HostTerminals({ controller, hostId, expanded, onExpandedChange }
       <section id={bodyId} className="host-terminals" aria-label="Terminals" hidden={!expanded}>
         <header className="terminal-bar">
           <div className="terminal-tab">
-            <TerminalIcon />
             <span className="terminal-tab-name" title={hostName ?? undefined}>
-              {hostName ?? "Terminals"}
+              {hostName ? `${hostName} — CLI` : "Terminals"}
             </span>
             <button
               ref={closeButton}
@@ -165,22 +172,22 @@ export function HostTerminals({ controller, hostId, expanded, onExpandedChange }
                 {entries.length === 0 && <p>Enter <code>help</code> to see available commands.</p>}
                 {entries.map(({ command, output }, index) => (
                   <div className="terminal-entry" key={index}>
-                    <div className="terminal-command"><span aria-hidden="true">$ </span>{command}</div>
+                    <div className="terminal-command"><HostPrompt name={hostName} />{" "}<span className="terminal-verb">{command.split(/\s/, 1)[0]}</span>{command.replace(/^\S+/, "")}</div>
                     <div>{output}</div>
                   </div>
                 ))}
               </div>
               <form className="terminal-form" key={hostId} onSubmit={submit}>
-                <label htmlFor={`${bodyId}-command`} title={hostName}>{hostName}:~$</label>
+                <label htmlFor={`${bodyId}-command`} title={hostName}><HostPrompt name={hostName} /></label>
                 <input
                   id={`${bodyId}-command`}
                   aria-label={`${hostName} terminal command`}
                   name="command"
                   autoComplete="off"
+                  enterKeyHint="go"
                   autoCapitalize="off"
                   spellCheck={false}
                 />
-                <button type="submit">Run</button>
               </form>
             </>
           ) : (

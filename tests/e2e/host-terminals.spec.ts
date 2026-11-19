@@ -49,7 +49,8 @@ test("opens the PC terminal only from the bottom bar and closes it from its tab"
   }
 
   await input.fill("help");
-  await terminals.getByRole("button", { name: "Run" }).click();
+  await expect(terminals.getByRole("button", { name: "Run", exact: true })).toHaveCount(0);
+  await input.press("Enter");
   const firstLog = terminals.getByRole("log", { name: "Host 1 terminal output" });
   await expect(firstLog).toContainText("Show available commands");
   await firstLog.press("Backspace");
