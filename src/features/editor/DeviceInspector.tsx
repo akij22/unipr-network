@@ -113,7 +113,9 @@ function DeviceForm({
           <h2>{meta.name}</h2>
         </div>
         <button
+          type="button"
           aria-label="Close inspector"
+          title="Close inspector"
           onClick={() => {
             void controller.dispatch({
               type: "selection.set",
@@ -128,7 +130,18 @@ function DeviceForm({
             );
           }}
         >
-          Close
+          <svg
+            aria-hidden="true"
+            width="16"
+            height="16"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            <path d="m3 3 8 8m0-8-8 8" />
+          </svg>
         </button>
       </div>
       {state.tutorial && <Tutorial kind={device.kind} />}

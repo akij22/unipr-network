@@ -20,7 +20,7 @@ class SceneBoundary extends Component<
   }
 }
 export class SceneRecovery extends Component<
-  { controller: AppController },
+  { controller: AppController; onHostActivate?: (id: string) => void },
   { failed: boolean; generation: number }
 > {
   state = { failed: false, generation: 0 };
@@ -67,7 +67,11 @@ export class SceneRecovery extends Component<
             </section>
           }
         >
-          <Scene controller={this.props.controller} onContextLost={this.fail} />
+          <Scene
+            controller={this.props.controller}
+            onContextLost={this.fail}
+            onHostActivate={this.props.onHostActivate}
+          />
         </Suspense>
       </SceneBoundary>
     );

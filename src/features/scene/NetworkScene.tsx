@@ -8,9 +8,11 @@ import { NetworkFlow } from "./flow/NetworkFlow";
 export function NetworkScene({
   controller,
   onContextLost,
+  onHostActivate,
 }: {
   controller: AppController;
   onContextLost: (cause?: unknown) => void;
+  onHostActivate?: (id: string) => void;
 }) {
   const [ready, setReady] = useState(false);
   return (
@@ -20,7 +22,12 @@ export function NetworkScene({
       data-scene-ready={ready}
     >
       <div className="scene-canvas">
-        <NetworkFlow controller={controller} onReady={() => setReady(true)} onError={onContextLost} />
+        <NetworkFlow
+          controller={controller}
+          onReady={() => setReady(true)}
+          onError={onContextLost}
+          onHostActivate={onHostActivate}
+        />
       </div>
     </section>
   );

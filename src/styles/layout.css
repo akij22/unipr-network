@@ -384,8 +384,12 @@ input[aria-invalid="true"] {
   letter-spacing: -0.02em;
 }
 .inspector .device-head > button {
-  min-height: 36px;
-  padding-inline: 16px;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
   border-radius: 999px;
 }
 .inspector .device-head .port-label {
@@ -475,9 +479,16 @@ input[aria-invalid="true"] {
   border-radius: 14px;
   font-size: 14px;
   font-weight: 600;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
     0 10px 24px -12px var(--color-primary);
+}
+.inspector button.primary:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
 .inspector button.primary:disabled {
   box-shadow: none;

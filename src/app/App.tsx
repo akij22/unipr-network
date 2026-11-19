@@ -14,6 +14,7 @@ import {
 } from "../features/simulation/SimulationControls";
 import { EventSummary } from "../features/simulation/EventSummary";
 import { PacketInspector } from "../features/simulation/PacketInspector";
+import { HostTerminals } from "../features/simulation/HostTerminals";
 import { SaveNetwork } from "../features/saved-networks/SaveNetwork";
 import { SavedNetworks } from "../features/saved-networks/SavedNetworks";
 
@@ -42,6 +43,21 @@ export function App({ controller, renderActions }: {
   const actions = useWorkspaceActions(controller);
   const { catalog, save, networks, ping, setCatalog, setSave, setNetworks } = actions;
   const [inspecting, setInspecting] = useState<"packet" | "device">("device");
+  const [terminal, setTerminal] = useState<{
+    epoch: number;
+    hostId: string | null;
+    expanded: boolean;
+  }>({ epoch: state.viewEpoch, hostId: null, expanded: false });
+  const currentTerminal = terminal.epoch === state.viewEpoch;
+  const terminalHostId = currentTerminal && state.document.network.devices.some(
+    (device) => device.kind === "host" && device.id === terminal.hostId,
+  ) ? terminal.hostId : null;
+  const terminalExpanded = currentTerminal && terminal.expanded;
+  useEffect(() => {
+    if (currentTerminal && terminal.hostId && !terminalHostId) {
+      setTerminal((previous) => ({ ...previous, hostId: null }));
+    }
+  }, [currentTerminal, terminal.hostId, terminalHostId]);
   const catalogFromDock = useRef(false);
   useEffect(() => {
     if (!catalog) catalogFromDock.current = false;
@@ -77,7 +93,7 @@ export function App({ controller, renderActions }: {
       )
         return;
       const target = event.target;
-      // Never intercept keys aimed at text entry or editable UI.
+      // Leave text entry and dialogs to their own controls.
       if (
         target instanceof Element &&
         target.closest(
@@ -90,6 +106,7 @@ export function App({ controller, renderActions }: {
       // Reserve these keys on the canvas even without a selection: WebKit
       // otherwise treats Backspace as browser history navigation.
       event.preventDefault();
+      if (target instanceof Element && target.closest(".host-terminals, .terminal-status")) return;
       const selection = snapshot.selection;
       if (snapshot.busy || !selection) return;
       if (selection.kind === "device")
@@ -104,6 +121,7 @@ export function App({ controller, renderActions }: {
     <div
       className="app canvas-app"
       data-simulation-visible={String(packetActive)}
+      data-terminal-expanded={terminalExpanded}
     >
       <div className="top-chrome">
         {renderActions ? renderActions(actions) : <WorkspaceMenu controller={controller} actions={actions} />}
@@ -161,7 +179,14 @@ export function App({ controller, renderActions }: {
           />
           <ConnectionBuilder controller={controller} />
           <div className="network-focus">
-            <SceneRecovery controller={controller} />
+            <SceneRecovery
+              controller={controller}
+              onHostActivate={(hostId) => setTerminal({
+                epoch: state.viewEpoch,
+                hostId,
+                expanded: terminalExpanded,
+              })}
+            />
             <EventSummary controller={controller} />
           </div>
           <div className="inspection-overlay">
@@ -197,6 +222,17 @@ export function App({ controller, renderActions }: {
               <DeviceInspector controller={controller} />
             ) : null}
           </div>
+          <HostTerminals
+            key={state.viewEpoch}
+            controller={controller}
+            hostId={terminalHostId}
+            expanded={terminalExpanded}
+            onExpandedChange={(expanded) => setTerminal({
+              epoch: state.viewEpoch,
+              hostId: terminalHostId,
+              expanded,
+            })}
+          />
         </div>
       </main>
     </div>

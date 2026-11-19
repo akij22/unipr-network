@@ -43,14 +43,21 @@ export function NetworkFlow({
   controller,
   onReady,
   onError,
+  onHostActivate,
 }: {
   controller: AppController;
   onReady: () => void;
   onError: (cause: unknown) => void;
+  onHostActivate?: (id: string) => void;
 }) {
   return (
     <ReactFlowProvider>
-      <FlowCanvas controller={controller} onReady={onReady} onError={onError} />
+      <FlowCanvas
+        controller={controller}
+        onReady={onReady}
+        onError={onError}
+        onHostActivate={onHostActivate}
+      />
     </ReactFlowProvider>
   );
 }
@@ -59,10 +66,12 @@ function FlowCanvas({
   controller,
   onReady,
   onError,
+  onHostActivate,
 }: {
   controller: AppController;
   onReady: () => void;
   onError: (cause: unknown) => void;
+  onHostActivate?: (id: string) => void;
 }) {
   const state = useApp(controller);
   const flow = useReactFlow<FlowNode, FlowEdge>();
@@ -209,8 +218,9 @@ function FlowCanvas({
         type: "selection.set",
         selection: { kind: "device", id: node.id },
       });
+      if (node.data.kind === "host") onHostActivate?.(node.id);
     },
-    [controller],
+    [controller, onHostActivate],
   );
 
   /** Dropping on another device's dot asks the controller to connect the two
@@ -260,7 +270,17 @@ function FlowCanvas({
   );
 
   return (
-    <div className="flow-surface" data-flow-ready={ready}>
+    <div
+      className="flow-surface"
+      data-flow-ready={ready}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        if (!(event.target instanceof HTMLElement) ||
+            !event.target.classList.contains("react-flow__node")) return;
+        const id = event.target.dataset.id;
+        if (id && flow.getNode(id)?.data.kind === "host") onHostActivate?.(id);
+      }}
+    >
       <ReactFlow<FlowNode, FlowEdge>
         nodes={nodes}
         edges={edges}
