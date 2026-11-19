@@ -30,11 +30,11 @@ export function Tutorial({ kind }: { kind: DeviceKind }) {
     items = tips[kind],
     current = Math.min(step, items.length - 1);
   return (
-    <details className="guide" open>
+    <details className="guide">
       <summary>
         <span className="eyebrow">Guided setup</span>
         <span className="guide-progress">
-          {current + 1}/{items.length}
+          {current + 1} of {items.length}
         </span>
       </summary>
       <p>{items[current]}</p>

@@ -10,6 +10,7 @@ import "./styles/workspace.css";
 import "@xyflow/react/dist/style.css";
 import "./styles/flow.css";
 import "./styles/terminals.css";
+import "./styles/device-inspector.css";
 const worker = new Worker(
   new URL("./runtime/simulation.worker.ts", import.meta.url),
   { type: "module" },
