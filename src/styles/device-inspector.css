@@ -1,0 +1,44 @@
+/* Docked device inspector, matching the desktop design frame. */
+@media (min-width: 60rem) and (min-height: 501px) {
+  .canvas-app:has(.inspection-overlay .inspector-stack) { --terminal-sidebar: 344px; }
+  .canvas-app .inspection-overlay:has(.inspector-stack) {
+    width: var(--terminal-sidebar);
+    right: 0;
+    top: var(--chrome-height);
+  }
+}
+.inspection-overlay .inspector-stack {
+  --color-panel: #1a1c1f;
+  --color-field: #141619;
+  --color-rule: #35383c;
+  --color-muted: #a5abb2;
+  background: var(--color-panel);
+  box-shadow: inset 1px 0 var(--color-rule);
+  font-family: Inter, sans-serif;
+}
+.device-inspector-header { position: relative; padding: 16px 20px; }
+.device-inspector-header small { color: #a5abb2; font-size: 12px; }
+.device-inspector-header h2 { margin: 6px 36px 4px 0; font: 600 28px/1.2 Inter,sans-serif; }
+.device-class { text-transform: capitalize; }
+.device-inspector-header button { position: absolute; top: 4px; right: 4px; width: 44px; background: transparent; border: 0; }
+.inspector-stack .inspector-tabs { margin: 0; padding: 0 18px; border: 0; border-bottom: 1px solid #35383c; border-radius: 0; background: transparent; }
+.inspector-stack .inspector-tabs button { background: transparent; border: 0; border-radius: 0; color: #a5abb2; }
+.inspector-stack .inspector-tabs button[aria-pressed="true"] { background: transparent; color: #ffaa4b; box-shadow: inset 0 -2px #ffaa4b; }
+.inspector-stack .inspector { padding: 16px 20px; border: 0; border-radius: 0; box-shadow: none; background: #1a1c1f; font-family: Inter,sans-serif; }
+.inspector-stack .inspector-group { padding: 12px 0; margin: 0; border: 0; border-bottom: 1px solid #35383c; border-radius: 0; background: transparent; }
+.inspector-stack .inspector .group-label { font-size: 17px; }
+.inspector-stack .inspector input { min-height: 38px; border-radius: 5px; background: #141619; border: 1px solid #35383c; }
+.inspector-stack .inspector .port-card { padding: 0; border: 0; background: transparent; }
+.inspector-stack .port-card summary { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.inspector-stack .port-card .port-status { background: transparent; color: #a5abb2; border: 0; }
+.inspector-stack .port-card[open] .port-address { display: none; }
+.inspector-stack .assignment-label { margin: 14px 0 6px; font-size: 12px; color: #a5abb2; }
+.inspector-stack .inspector .segmented { margin-bottom: 14px; border-radius: 5px; background: #111315; }
+.inspector-stack .segmented button[aria-pressed="true"] { background: #363b40; color: #f1f2f3; border-color: transparent; }
+.inspector-stack .inspector .guide { padding: 10px 0; background: transparent; border: 0; }
+.inspector-stack .inspector .inspector-footer { margin-inline: -20px; padding: 12px 20px; background: #1a1c1f; border-radius: 0; box-shadow: none; }
+.inspector-stack .inspector-footer button.primary { border-radius: 5px; min-height: 40px; flex: 0 1 auto; }
+@media (max-width: 59.99rem), (max-height: 500px) {
+  .device-inspector-header { padding: 6px 12px; }
+  .device-inspector-header h2 { display: inline-block; font-size: 17px; margin: 0 8px; }
+}

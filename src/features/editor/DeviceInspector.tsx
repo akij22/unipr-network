@@ -22,6 +22,42 @@ export function DeviceInspector({ controller }: { controller: AppController }) {
   if (!device) return null;
   return (
     <div className="inspector-stack">
+      <header className="device-inspector-header">
+        <small>Device inspector</small>
+        <h2>{state.document.layout[device.id].name}</h2>
+        <small className="device-class">{device.kind} / {device.kind === "host" ? "Endpoint" : device.kind === "router" ? "Layer 3" : device.kind === "hub" ? "Layer 1" : "Layer 2"}</small>
+        <button
+          type="button"
+          aria-label="Close inspector"
+          title="Close inspector"
+          onClick={() => {
+            void controller.dispatch({
+              type: "selection.set",
+              selection: null,
+            });
+            requestAnimationFrame(() =>
+              document
+                .querySelector<HTMLElement>(
+                  `.react-flow__node[data-id="${CSS.escape(device.id)}"]`,
+                )
+                ?.focus({ preventScroll: true }),
+            );
+          }}
+        >
+          <svg
+            aria-hidden="true"
+            width="16"
+            height="16"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            <path d="m3 3 8 8m0-8-8 8" />
+          </svg>
+        </button>
+      </header>
       <nav className="inspector-tabs" aria-label="Device inspection">
         {(
           [
@@ -76,7 +112,7 @@ function DeviceForm({
     [draft, setDraft] = useState(copy(device)),
     [name, setName] = useState(meta.name),
     [openPorts, setOpenPorts] = useState<Record<string, boolean>>(() =>
-      Object.fromEntries(device.ports.map((p) => [p.id, !p.address?.ip])),
+      Object.fromEntries(device.ports.map((p) => [p.id, device.kind === "host" || !p.address?.ip])),
     );
   const update = (next: Device) => setDraft(next);
   const uid = useId(),
@@ -98,118 +134,16 @@ function DeviceForm({
   };
   return (
     <aside className="inspector" aria-label="Device inspector">
-      <div className="section-head device-head">
-        <div>
-          <span className="port-label">
-            {device.kind.toUpperCase()} ·{" "}
-            {device.kind === "router"
-              ? "LAYER 3"
-              : device.kind === "hub"
-                ? "LAYER 1"
-                : device.kind === "host"
-                  ? "ENDPOINT"
-                  : "LAYER 2"}
-          </span>
-          <h2>{meta.name}</h2>
-        </div>
-        <button
-          aria-label="Close inspector"
-          onClick={() => {
-            void controller.dispatch({
-              type: "selection.set",
-              selection: null,
-            });
-            requestAnimationFrame(() =>
-              document
-                .querySelector<HTMLElement>(
-                  `.react-flow__node[data-id="${CSS.escape(device.id)}"]`,
-                )
-                ?.focus({ preventScroll: true }),
-            );
-          }}
-        >
-          Close
-        </button>
-      </div>
-      {state.tutorial && <Tutorial kind={device.kind} />}
       <section className="inspector-group" aria-label="Identity">
-        <h3 className="group-label">Identity</h3>
+
         <label>
           Device name
           <input value={name} onChange={(e) => setName(e.target.value)} />
         </label>
       </section>
-      {draft.kind === "host" && (
-        <section className="inspector-group" aria-label="Addressing">
-          <h3 className="group-label">Addressing</h3>
-          <div className="segmented">
-            <button
-              aria-pressed={draft.addressing.mode === "manual"}
-              onClick={() =>
-                update({
-                  ...draft,
-                  addressing: { mode: "manual", gateway: null },
-                })
-              }
-            >
-              Manual
-            </button>
-            <button
-              aria-pressed={draft.addressing.mode === "dhcp"}
-              onClick={() =>
-                update({
-                  ...draft,
-                  ports: draft.ports.map((p) => ({ ...p, address: null })),
-                  addressing: { mode: "dhcp" },
-                })
-              }
-            >
-              Automatic (DHCP)
-            </button>
-          </div>
-          <p className="group-hint">
-            {draft.addressing.mode === "dhcp"
-              ? "This host asks a DHCP server on its link for an address, prefix and gateway."
-              : "You enter the address, prefix and default gateway yourself."}
-          </p>
-          {draft.addressing.mode === "manual" && (
-            <>
-              <label>
-                Default gateway
-                <input
-                  placeholder="192.168.1.1"
-                  autoComplete="off"
-                  inputMode="decimal"
-                  spellCheck={false}
-                  aria-invalid={gatewayMessage ? true : undefined}
-                  aria-describedby={
-                    gatewayMessage
-                      ? `${uid}-gateway-hint ${uid}-gateway-error`
-                      : `${uid}-gateway-hint`
-                  }
-                  value={draft.addressing.gateway ?? ""}
-                  onChange={(e) =>
-                    update({
-                      ...draft,
-                      addressing: {
-                        mode: "manual",
-                        gateway: e.target.value || null,
-                      },
-                    })
-                  }
-                />
-              </label>
-              <FieldError id={`${uid}-gateway-error`} message={gatewayMessage} />
-              <p id={`${uid}-gateway-hint`} className="field-hint">
-                Used for traffic to other networks. It must be on this host&apos;s link.
-              </p>
-            </>
-          )}
-        </section>
-      )}
       <section className="inspector-group" aria-label="Ports">
         <div className="group-head">
-          <h3 className="group-label">Ports</h3>
+          <h3 className="group-label">{device.kind === "host" ? "Network interface" : "Ports"}</h3>
           {device.kind !== "host" && device.kind !== "bridge" && (
             <button
               onClick={() =>
@@ -224,9 +158,11 @@ function DeviceForm({
           )}
         </div>
         {draft.ports.map((port, i) => {
-          const connected = state.document.network.links.some((l) =>
+          const link = state.document.network.links.find((l) =>
             l.ends.some((e) => e.deviceId === device.id && e.portId === port.id),
           );
+          const peer = link?.ends.find(e => e.deviceId !== device.id || e.portId !== port.id);
+          const connected = Boolean(link);
           const addressSummary =
             draft.kind === "host" && draft.addressing.mode === "dhcp"
               ? "Address from DHCP"
@@ -258,9 +194,37 @@ function DeviceForm({
                   className="port-status"
                   data-connected={connected ? "true" : "false"}
                 >
-                  {connected ? "Connected" : "Available"}
+                  {peer ? `Connected to ${state.document.layout[peer.deviceId]?.name ?? peer.deviceId} · ${peer.portId}` : "Available"}
                 </span>
               </summary>
+            {draft.kind === "host" && <>
+              <p className="assignment-label">Address assignment</p>
+                <div className="segmented">
+                  <button
+                    aria-pressed={draft.addressing.mode === "manual"}
+                    onClick={() =>
+                      update({
+                        ...draft,
+                        addressing: { mode: "manual", gateway: null },
+                      })
+                    }
+                  >
+                    Manual
+                  </button>
+                  <button
+                    aria-pressed={draft.addressing.mode === "dhcp"}
+                    onClick={() =>
+                      update({
+                        ...draft,
+                        ports: draft.ports.map((p) => ({ ...p, address: null })),
+                        addressing: { mode: "dhcp" },
+                      })
+                    }
+                  >
+                    Automatic (DHCP)
+                  </button>
+                </div>
+            </>}
             {(draft.kind === "router" ||
               (draft.kind === "host" &&
                 draft.addressing.mode === "manual")) && (
@@ -328,6 +292,39 @@ function DeviceForm({
                 </label>
               </div>
             )}
+          {draft.kind === "host" && draft.addressing.mode === "manual" && (
+            <>
+              <label>
+                Default gateway
+                <input
+                  placeholder="192.168.1.1"
+                  autoComplete="off"
+                  inputMode="decimal"
+                  spellCheck={false}
+                  aria-invalid={gatewayMessage ? true : undefined}
+                  aria-describedby={
+                    gatewayMessage
+                      ? `${uid}-gateway-hint ${uid}-gateway-error`
+                      : `${uid}-gateway-hint`
+                  }
+                  value={draft.addressing.gateway ?? ""}
+                  onChange={(e) =>
+                    update({
+                      ...draft,
+                      addressing: {
+                        mode: "manual",
+                        gateway: e.target.value || null,
+                      },
+                    })
+                  }
+                />
+              </label>
+              <FieldError id={`${uid}-gateway-error`} message={gatewayMessage} />
+              <p id={`${uid}-gateway-hint`} className="field-hint">
+                Used for traffic to other networks. It must be on this host&apos;s link.
+              </p>
+            </>
+          )}
             <FieldError id={`${uid}-${i}-ip-error`} message={ipMessage} />
             <FieldError
               id={`${uid}-${i}-prefix-error`}
@@ -531,7 +528,7 @@ function DeviceForm({
           />
         </details>
       )}
-      {(device.kind === "host" || device.kind === "router") && (
+      {((device.kind === "host" && device.addressing.mode === "dhcp") || device.kind === "router") && (
         <section className="inspector-group" aria-label="Services">
           <h3 className="group-label">Services</h3>
           {device.kind === "host" && device.addressing.mode === "dhcp" && (
@@ -545,6 +542,7 @@ function DeviceForm({
           )}
         </section>
       )}
+      {state.tutorial && <Tutorial kind={device.kind} />}
       <footer className="inspector-footer">
         <span
           className="apply-status"

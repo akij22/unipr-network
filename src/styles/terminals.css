@@ -1,0 +1,266 @@
+/* Dock the terminal below the topology, using the inspector's left edge
+ * on wide screens and the full workspace width on compact screens. */
+.canvas-app {
+  --terminal-sidebar: 0px;
+  --terminal-status-height: calc(26px + env(safe-area-inset-bottom));
+  --terminal-panel-height: 0px;
+  --terminal-height: calc(var(--terminal-status-height) + var(--terminal-panel-height));
+  --dock-clearance: calc(var(--dock-height) + var(--overlay-gap) * 2 + var(--terminal-height));
+}
+
+.canvas-app[data-terminal-expanded="true"] {
+  --terminal-panel-height: min(clamp(140px, 27dvh, 320px), 38dvh);
+}
+
+.canvas-app[data-terminal-expanded="true"] .network-focus {
+  height: calc(100% - var(--terminal-height));
+}
+
+.canvas-app .device-dock {
+  bottom: calc(var(--terminal-height) + var(--overlay-gap));
+}
+
+.canvas-app[data-terminal-expanded="false"] .react-flow__attribution {
+  bottom: var(--terminal-height);
+}
+
+.host-terminals {
+  position: absolute;
+  z-index: 6;
+  inset: auto var(--terminal-sidebar) var(--terminal-status-height) 0;
+  height: var(--terminal-panel-height);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #171717;
+  border: 1px solid #262626;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  box-shadow: 0 -8px 32px rgb(0 0 0 / 20%);
+}
+
+.host-terminals[hidden] {
+  display: none;
+}
+
+.terminal-status {
+  position: absolute;
+  z-index: 13;
+  inset: auto 0 0;
+  height: var(--terminal-status-height);
+  display: flex;
+  justify-content: end;
+  padding: 0 var(--overlay-gap) env(safe-area-inset-bottom);
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-panel);
+}
+
+.terminal-bar {
+  display: flex;
+  flex: none;
+  background: var(--color-field);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.terminal-tab {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding-inline: 16px;
+  background: #262626;
+}
+
+.terminal-tab-name {
+  grid-column: 2;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  color: #a3a3a3;
+  font: 12px var(--font-mono);
+}
+
+
+.terminal-status button,
+.terminal-tab button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-height: 0;
+  width: 36px;
+  padding: 0;
+  background: var(--color-transparent);
+  border: 0;
+  color: var(--color-body);
+}
+
+.terminal-tab button {
+  justify-self: end;
+  height: 36px;
+}
+
+.terminal-status button:hover,
+.terminal-tab button:hover {
+  background: var(--color-raised);
+}
+
+.terminal-status button[aria-expanded="true"] {
+  color: var(--color-primary);
+}
+
+.terminal-status button:focus-visible,
+.terminal-tab button:focus-visible {
+  outline-offset: -2px;
+}
+
+.terminal-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.terminal-empty {
+  display: grid;
+  place-items: center;
+  flex: 1;
+  padding: 4px var(--overlay-gap);
+  margin: 0;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.terminal-log {
+  flex: 1;
+  min-height: 0;
+  padding: 16px;
+  color: #a3a3a3;
+  overflow: auto;
+  overscroll-behavior: contain;
+  font: var(--text-sm)/1.5 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.terminal-log:focus-visible {
+  outline-offset: -2px;
+}
+
+.terminal-log p,
+.terminal-entry {
+  margin: 0 0 8px;
+}
+
+.terminal-entry {
+  white-space: pre-wrap;
+}
+
+.terminal-prompt { color: #a3a3a3; }
+.terminal-prompt > :first-child { color: #38bdf8; }
+.terminal-prompt > :nth-child(2) { color: #34d399; }
+.terminal-prompt > :nth-child(3) { color: #7dd3fc; }
+.terminal-command { color: #d4d4d4; }
+.terminal-verb { color: #34d399; }
+
+.terminal-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px var(--overlay-gap);
+  font: var(--text-sm)/1.5 var(--font-mono);
+}
+
+.terminal-form label {
+  display: block;
+  max-width: 34%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.terminal-form input:focus {
+  outline: none;
+}
+
+.terminal-form input {
+  padding-inline: 0;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: #34d399;
+  caret-color: #d4d4d4;
+}
+
+@media (min-width: 60rem) and (min-height: 501px) {
+  .canvas-app:has(.inspection-overlay > *) {
+    --terminal-sidebar: calc(380px + var(--overlay-gap));
+  }
+
+  .canvas-app .inspection-overlay:has(.inspector-stack) {
+    bottom: var(--terminal-status-height);
+    max-height: none;
+  }
+
+  .canvas-app .inspection-overlay .inspector-stack {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .inspector-stack .inspector-tabs {
+    flex: none;
+  }
+
+  .inspector-stack > div:not([hidden]) {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .canvas-app .inspector-stack > div > .inspector {
+    height: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .canvas-app .inspector-stack .inspector:has(> .inspector-footer) {
+    padding-bottom: 0;
+  }
+
+  .canvas-app .inspector-stack .inspector-footer {
+    margin-bottom: 0;
+  }
+
+  .canvas-app[data-terminal-expanded="true"] .device-dock {
+    left: calc((100% - var(--terminal-sidebar)) / 2);
+  }
+
+  .canvas-app .react-flow__attribution {
+    right: var(--terminal-sidebar);
+  }
+}
+
+@media (pointer: coarse) {
+  .canvas-app {
+    --terminal-status-height: calc(44px + env(safe-area-inset-bottom));
+  }
+
+  .terminal-status button,
+  .terminal-tab button {
+    width: 44px;
+  }
+
+  .terminal-tab button {
+    height: 44px;
+  }
+}
+
+@media (max-width: 36rem) {
+  .terminal-form input {
+    font-size: 16px;
+  }
+}
