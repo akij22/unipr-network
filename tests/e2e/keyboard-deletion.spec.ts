@@ -8,6 +8,7 @@ async function linkedDevices(page: Page) {
   await connect(page, "Host 1", "eth0", "Switch 1", "p1");
   await expect(page.locator(".react-flow__edge")).toHaveCount(1);
   await page.getByRole("button", { name: "Close inspector", exact: true }).click();
+  await expect(page.getByRole("group", { name: "Switch 1", exact: true })).toBeFocused();
 }
 
 for (const key of ["Backspace", "Delete"]) {

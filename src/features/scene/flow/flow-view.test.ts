@@ -124,3 +124,106 @@ it("places a packet on the link and flips it when the event is reversed", () => 
   );
   expect(reversed).toEqual({ x: 75, y: 0 });
 });
+
+it("builds compact canvas details for hosts, DHCP states, routers, and L2 devices", () => {
+  const document = emptyDocument();
+  document.network = {
+    devices: [
+      {
+        id: "h-manual",
+        kind: "host",
+        ports: [{ id: "eth0", mac: "02:00:00:00:00:01", address: { ip: "192.168.1.10", prefix: 24 } }],
+        addressing: { mode: "manual", gateway: null },
+      },
+      {
+        id: "h-empty",
+        kind: "host",
+        ports: [{ id: "eth0", mac: "02:00:00:00:00:02", address: null }],
+        addressing: { mode: "manual", gateway: null },
+      },
+      {
+        id: "h-dhcp-pending",
+        kind: "host",
+        ports: [{ id: "eth0", mac: "02:00:00:00:00:03", address: null }],
+        addressing: { mode: "dhcp" },
+      },
+      {
+        id: "h-dhcp-leased",
+        kind: "host",
+        ports: [{ id: "eth0", mac: "02:00:00:00:00:04", address: null }],
+        addressing: { mode: "dhcp" },
+      },
+      {
+        id: "r-empty",
+        kind: "router",
+        ports: [
+          { id: "eth0", mac: "02:00:00:00:00:05", address: null },
+          { id: "eth1", mac: "02:00:00:00:00:06", address: null },
+        ],
+        routes: [],
+        dhcpScopes: [],
+        nat: null,
+      },
+      {
+        id: "r-configured",
+        kind: "router",
+        ports: [
+          { id: "eth0", mac: "02:00:00:00:00:07", address: { ip: "192.168.1.1", prefix: 24 } },
+          { id: "eth1", mac: "02:00:00:00:00:08", address: { ip: "192.168.2.1", prefix: 24 } },
+        ],
+        routes: [],
+        dhcpScopes: [],
+        nat: null,
+      },
+      {
+        id: "r-many",
+        kind: "router",
+        ports: [
+          { id: "eth0", mac: "02:00:00:00:00:09", address: { ip: "10.0.0.1", prefix: 24 } },
+          { id: "eth1", mac: "02:00:00:00:00:0a", address: { ip: "10.0.1.1", prefix: 24 } },
+          { id: "eth2", mac: "02:00:00:00:00:0b", address: { ip: "10.0.2.1", prefix: 24 } },
+        ],
+        routes: [],
+        dhcpScopes: [],
+        nat: null,
+      },
+      {
+        id: "sw-1",
+        kind: "switch",
+        ports: [
+          { id: "p1", mac: null, address: null },
+          { id: "p2", mac: null, address: null },
+          { id: "p3", mac: null, address: null },
+          { id: "p4", mac: null, address: null },
+        ],
+      },
+    ],
+    links: [],
+  };
+  document.layout = Object.fromEntries(
+    document.network.devices.map((d, i) => [d.id, { name: d.id, x: i * 4, z: 0 }]),
+  );
+  const projection = idleProjection(document.network);
+  projection.state.dhcpClients["h-dhcp-leased"] = {
+    clientMac: "02:00:00:00:00:04",
+    ip: "192.168.1.100",
+    prefix: 24,
+    gateway: "192.168.1.1",
+    scopeId: "dhcp-eth0",
+    leaseSeconds: 4294967295,
+  };
+  const view = buildFlowView(document, projection, null);
+  const detailsOf = (id: string) => view.devices.find((d) => d.id === id)?.details;
+
+  expect(detailsOf("h-manual")).toEqual(["192.168.1.10/24"]);
+  expect(detailsOf("h-empty")).toEqual(["No IPv4"]);
+  expect(detailsOf("h-dhcp-pending")).toEqual(["DHCP pending"]);
+  expect(detailsOf("h-dhcp-leased")).toEqual(["192.168.1.100/24 · DHCP"]);
+  expect(detailsOf("r-empty")).toEqual(["2 ports"]);
+  expect(detailsOf("r-configured")).toEqual([
+    "eth0 192.168.1.1/24",
+    "eth1 192.168.2.1/24",
+  ]);
+  expect(detailsOf("r-many")).toEqual(["eth0 10.0.0.1/24", "+2 more · 3 ports"]);
+  expect(detailsOf("sw-1")).toEqual(["4 ports"]);
+});

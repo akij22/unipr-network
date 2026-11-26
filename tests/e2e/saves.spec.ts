@@ -7,9 +7,7 @@ test("saves a named configuration and reopens it with clean state", async ({
   await addDevice(page, "host");
   await selectDevice(page, "Host 1");
   await page.getByLabel("IPv4 address", { exact: true }).fill("192.168.1.10");
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await menuAction(page, "Save network");
   await page.getByLabel("Network name", { exact: true }).fill("My first lab");
   await page

@@ -28,7 +28,7 @@ test("runs the top-menu actions and reaches the retained actions", async ({ page
   await expect(page.getByRole("button", { name: "Close inspector", exact: true })).toBeHidden();
   await openTopMenu(page, "Topology");
   await page.getByRole("button", { name: "Connect ports", exact: true }).click();
-  await expect(page.getByText("Choose the first port", { exact: true })).toBeVisible();
+  await expect(page.getByText("Choose a port to connect", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Cancel connection", exact: true }).click();
   for (let i = 0; i < 2; i++) {
     await openTopMenu(page, "Simulation");
@@ -42,7 +42,7 @@ test("runs the top-menu actions and reaches the retained actions", async ({ page
   await expect(page.getByRole("navigation", { name: "Simulation controls", exact: true })).toHaveCount(0);
   await selectDevice(page, "Host 1");
   await page.getByLabel("IPv4 address", { exact: true }).fill("10.0.0.1");
-  await page.getByRole("button", { name: "Apply settings", exact: true }).click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await openTopMenu(page, "Simulation");
   await page.getByRole("button", { name: "Send a packet", exact: true }).click();
   await page.getByLabel("Destination IPv4", { exact: true }).fill("10.0.0.2");

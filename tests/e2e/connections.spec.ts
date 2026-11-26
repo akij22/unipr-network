@@ -76,7 +76,7 @@ async function showDots(page: Page, dots: Locator[]) {
 
 const firstCard = (page: Page, deviceHeading: string) =>
   page
-    .locator(".inspector")
+    .locator(".inspector-stack")
     .filter({ has: page.getByRole("heading", { name: deviceHeading }) })
     .locator(".interface.port-card")
     .first();
@@ -127,7 +127,7 @@ test("a second host lands on the next free switch port", async ({ page, isMobile
   await expect(page.locator(".react-flow__edge")).toHaveCount(2);
   await selectDevice(page, "Switch 1");
   const connected = page
-    .locator(".inspector")
+    .locator(".inspector-stack")
     .filter({ has: page.getByRole("heading", { name: "Switch 1" }) })
     .locator(".port-card:has(.port-status[data-connected='true']) .port-label");
   const labels = await connected.allTextContents();

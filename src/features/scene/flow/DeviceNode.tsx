@@ -10,21 +10,14 @@ const KIND_LABEL: Record<FlowDevice["kind"], string> = {
   hub: "Hub",
 };
 
-/** One device on the topology canvas: the generated icon is the whole node.
- * The node is the drag handle, so a learner drags the device itself; the
- * surrounding canvas pans instead. The device identity (name, kind, address,
- * ports) stays in the accessibility tree as node text, so a screen reader
- * still announces exactly what the old card showed. One visible cable dot per
- * device: press on it and drag to another device's dot to connect. */
+/** Drag the device to move it, or drag from its connector to cable it. */
 function DeviceNodeImpl({ data }: NodeProps) {
   const device = data as FlowDevice;
   const identity = [
     `${device.name} (${KIND_LABEL[device.kind]})`,
-    device.ip || null,
-    `${device.ports} ${device.ports === 1 ? "port" : "ports"}`,
+    ...device.details,
     "Drag from its connector dot to another device to cable them together.",
   ]
-    .filter(Boolean)
     .join(", ");
 
   /** Enter/Space press the dot as a button, using React Flow's two-click
@@ -61,6 +54,14 @@ function DeviceNodeImpl({ data }: NodeProps) {
         aria-hidden="true"
         draggable={false}
       />
+      <div className="flow-device-details" aria-hidden="true">
+        <span className="flow-device-name">{device.name}</span>
+        {device.details.map((line, index) => (
+          <span className="flow-device-meta" key={index}>
+            {line}
+          </span>
+        ))}
+      </div>
       <Handle
         type="source"
         position={Position.Bottom}
