@@ -352,7 +352,7 @@ input[aria-invalid="true"] {
   font-size: 12px;
   color: var(--color-muted);
 }
-.apply-status[data-state="dirty"] {
+.apply-status[data-state="saving"] {
   color: var(--color-amber);
 }
 .apply-status[data-state="invalid"] {

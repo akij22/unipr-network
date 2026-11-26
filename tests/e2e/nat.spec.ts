@@ -18,9 +18,7 @@ test("shows PAT transformations and a reversible translation table", async ({
   await page
     .getByLabel("IPv4 address eth1", { exact: true })
     .fill("203.0.113.1");
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await page.getByRole("button", { name: "Enable NAT", exact: true }).click();
   await page.getByLabel("NAT internal interface eth0", { exact: true }).check();
   await page
@@ -42,13 +40,12 @@ test("shows PAT transformations and a reversible translation table", async ({
     .getByRole("button", { name: "Apply DHCP settings", exact: true })
     .click();
   await selectDevice(page, "Host 1");
-  await page.locator(".port-card > summary").first().click();
-  await page
-    .getByRole("button", { name: "Automatic (DHCP)", exact: true })
-    .click();
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  const dhcpMode = page.getByRole("button", { name: "Automatic (DHCP)", exact: true });
+  if (!(await dhcpMode.isVisible())) {
+    await page.locator(".port-card > summary").first().click();
+  }
+  await dhcpMode.click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await page
     .getByRole("button", { name: "Request network configuration", exact: true })
     .click();
@@ -64,9 +61,7 @@ test("shows PAT transformations and a reversible translation table", async ({
     .inputValue();
   await selectDevice(page, "Host 1");
   await page.getByLabel("Device name", { exact: true }).fill("Renamed client");
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await expect(page.getByRole("slider", { name: "Known events" })).toHaveValue(
     frontier,
   );

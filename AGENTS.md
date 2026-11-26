@@ -56,10 +56,7 @@ Use the Bun version pinned by `packageManager` in `package.json` for dependencie
 Sol (`gpt-6.1-sol`) through the Codex provider and Codex subscription is the main coordinator: split tasks, delegate, integrate results, and verify the final changes.
 
 - Backend tasks: delegate to Codex Sol (`gpt-6.1-sol`) with `target.options.reasoningEffort: "medium"`; use the Codex subscription, rather than OpenCode, for these tasks.
-- Simple, quick frontend/UI tasks: delegate through OpenCode to the Go model `opencode-go/glm-5.3-flash` with `target.options.reasoningEffort: "low"`.
-- UI redesigns and new mobile pages: delegate through OpenCode to the Go model `opencode-go/claude-haiku-5-5` with `target.options.reasoningEffort: "medium"`.
-
-For every OpenCode delegation, select models from the **Go** section (model IDs prefixed with `opencode-go/`). Resolve and verify the exact Go model ID with `orchestrator_capabilities`; if it is unavailable, report the blocker. Keep backend delegations on the Codex subscription as specified above.
+- Always delegate frontend tasks, including UI fixes, redesigns, and new pages and/or elements, to Antigravity 4 Neon with thinking effort set to Medium. Use the provider, model ID, and option returned by `orchestrator_capabilities`.
 
 Use T3 Code's native `delegate_task`. Before the first delegation, call `orchestrator_capabilities` to resolve the requested models to exact provider/model IDs and supported options. If unavailable, report the blocker instead of substituting a model. Give each child a self-contained brief, owned files, acceptance criteria, and required checks. Parallelize independent tasks using separate worktrees for concurrent edits; sequence dependent work. Children perform their assigned work without further delegation. Sol reviews the results and runs checks appropriate to the changed code before reporting completion.
 

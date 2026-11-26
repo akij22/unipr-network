@@ -34,8 +34,7 @@ export async function addDevice(page: Page, kind: string) {
 /** Use the canvas keyboard alternative so floating inspectors and offscreen
  * nodes do not require pointer gestures in network-configuration fixtures. */
 export async function selectDevice(page: Page, name: string) {
-  // The worker's configuration projection remounts the form when it arrives.
-  // Wait for it before selecting a device and editing its draft.
+  // Wait for the current configuration to reach the worker before editing.
   await expect(page.getByRole("button", { name: "Toggle device dock", exact: true })).toBeEnabled();
   const node = page.getByRole("group", { name, exact: true });
   await node.focus();
@@ -55,9 +54,7 @@ export async function configureHost(
   if (!(await address.isVisible())) await page.locator(".port-card > summary").first().click();
   await address.fill(ip);
   await page.getByLabel("Default gateway", { exact: true }).fill(gateway);
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
 }
 export async function connect(
   page: Page,
@@ -90,9 +87,7 @@ export async function buildRouted(page: Page) {
   await page
     .getByLabel("IPv4 address eth1", { exact: true })
     .fill("192.168.2.1");
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await connect(page, "Host 1", "eth0", "Switch 1", "p1");
   await connect(page, "Switch 1", "p2", "Router 1", "eth0");
   await connect(page, "Router 1", "eth1", "Host 2", "eth0");

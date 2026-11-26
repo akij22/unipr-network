@@ -1,7 +1,7 @@
 import type { NetworkDocument, AppState } from "../../../app/types";
 import type { Projection } from "../../../runtime/messages";
 import { addressOf } from "../../../simulation/ipv4";
-import type { DeviceKind } from "../../../domain/types";
+import type { Device, DeviceKind } from "../../../domain/types";
 
 /** Canvas units per layout unit. The stored layout uses small integers
  * (x/z) that were grid steps in the 3D lab; the canvas uses 48 pixels per
@@ -19,8 +19,8 @@ export type FlowDevice = {
   layoutX: number;
   layoutY: number;
   selected: boolean;
-  ip: string;
-  ports: number;
+  /** Compact visible summary lines shown below the device icon on the canvas. */
+  details: string[];
 };
 
 export type FlowLink = {
@@ -64,6 +64,44 @@ export function canvasToLayout(x: number, y: number) {
   };
 }
 
+function portCountLabel(count: number): string {
+  return `${count} ${count === 1 ? "port" : "ports"}`;
+}
+
+export function deviceDetails(
+  device: Device,
+  projection: Projection | null,
+): string[] {
+  if (device.kind === "host") {
+    const port = device.ports[0];
+    const addr = port ? addressOf(device, port, projection?.state) : null;
+    if (device.addressing.mode === "dhcp") {
+      return [addr ? `${addr.ip}/${addr.prefix} · DHCP` : "DHCP pending"];
+    }
+    return [addr ? `${addr.ip}/${addr.prefix}` : "No IPv4"];
+  }
+  if (device.kind === "router") {
+    const configured = device.ports
+      .map((p) => ({ portId: p.id, addr: addressOf(device, p, projection?.state) }))
+      .filter(
+        (entry): entry is { portId: string; addr: NonNullable<typeof entry.addr> } =>
+          entry.addr !== null,
+      );
+    if (configured.length === 0) return [portCountLabel(device.ports.length)];
+    if (configured.length <= 2) {
+      return configured.map(
+        ({ portId, addr }) => `${portId} ${addr.ip}/${addr.prefix}`,
+      );
+    }
+    const first = configured[0];
+    return [
+      `${first.portId} ${first.addr.ip}/${first.addr.prefix}`,
+      `+${configured.length - 1} more · ${portCountLabel(device.ports.length)}`,
+    ];
+  }
+  return [portCountLabel(device.ports.length)];
+}
+
 export function buildFlowView(
   document: NetworkDocument,
   projection: Projection | null,
@@ -84,11 +122,7 @@ export function buildFlowView(
       layoutX,
       layoutY,
       selected: selection?.kind === "device" && selection.id === d.id,
-      ip: d.ports
-        .map((p) => addressOf(d, p, projection?.state)?.ip)
-        .filter(Boolean)
-        .join(" · "),
-      ports: d.ports.length,
+      details: deviceDetails(d, projection),
     };
   });
   const byId = new Map(devices.map((d) => [d.id, d]));

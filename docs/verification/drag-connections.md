@@ -44,3 +44,11 @@ Firefox and physical iOS/Android phones were not checked. Browser emulation does
 The Connections list and Ethernet connection inspector have been removed. A selected cable stays highlighted on the canvas without opening a panel. Plain Backspace or Delete removes the current device or cable through the existing controller actions; removing a device also removes its attached cables. Editing fields, editable text, dialogs, modified shortcuts, composition and key repeats do not trigger deletion. With no selection, deletion keys leave the topology unchanged and Backspace does not navigate away in WebKit.
 
 Verification on 2026-11-09: `bun run test` (104 passed), `bun run typecheck` and `bun run build` passed. `tests/e2e/keyboard-deletion.spec.ts` passed all 18 cases across Chromium, WebKit and mobile Chromium emulation. Tests exercise pointer-selected cables, both keys, device/cable cleanup, reconnecting freed ports, normal field editing, dialogs, modifiers, and an empty selection. The connection suite also passed its 27 cases in the combined integration run; initial test setup issues with macOS Home key behavior and WebKit Backspace navigation were diagnosed and resolved. Hardware and Firefox coverage remain unchanged.
+
+## Device captions and automatic settings
+
+The caption below each device shows its name and a type-specific summary. Host DHCP addresses come from the observed simulation step. Router captions summarize configured interfaces, and switch, bridge and hub captions show the port count. The cable dot sits below the caption and keeps its enlarged hit area.
+
+The device inspector applies valid identity, addressing and static route edits to the open network as they are entered. Incomplete fields keep their input and show an error while the previous valid configuration stays active. Configuration changes retain their existing simulation reset behavior. Named configurations are stored through **File → Save network**.
+
+Verification on 2026-11-26: typecheck, production build and all 110 unit tests passed. The 75 focused Playwright cases passed across Chromium, WebKit and Pixel 7 Chromium emulation. Those cases exercise automatic settings, DHCP and NAT, cable connections, keyboard deletion and canvas motion. Physical phones and Firefox were outside this run.

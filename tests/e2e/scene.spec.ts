@@ -60,13 +60,18 @@ test("drags a device to a new position and keeps simulation history", async ({
   await expect(page.locator('[data-scene-ready="true"]')).toBeVisible();
   await selectDevice(page, "Host 1");
   await page.getByLabel("IPv4 address", { exact: true }).fill("10.0.0.1");
-  await page.getByRole("button", { name: "Apply settings", exact: true }).click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await openComposer(page);
   await page.getByLabel("Destination IPv4", { exact: true }).fill("10.0.0.2");
   await page.getByRole("button", { name: "Start ping", exact: true }).click();
   await page.getByRole("button", { name: "Next step", exact: true }).click();
   await page.getByRole("button", { name: "Close inspector", exact: true }).click();
   const node = page.locator("[data-device-node]");
+  if (isMobile) {
+    // Keep the device reachable below the packet inspector on a phone.
+    const point = await freeCanvasPoint(page, { x: 0.15, y: 0.69 });
+    await dragCanvas(page, true, point, { x: point.x, y: point.y + 145 });
+  }
   const before = await node.boundingBox();
   // Drag the device itself across the canvas. The device snaps to the layout
   // grid, so the gesture has to cross a grid cell for the move to register.

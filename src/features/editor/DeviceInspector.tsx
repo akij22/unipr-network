@@ -1,9 +1,7 @@
-import { useId, useState } from "react";
+import { useEffect, useId, useState, useSyncExternalStore } from "react";
 import type { AppController } from "../../app/types";
-import type { Device, NetworkConfig } from "../../domain/types";
-import { parseIPv4 } from "../../domain/ipv4";
+import type { Device } from "../../domain/types";
 import { useApp } from "../../app/use-app";
-import { copy } from "../../simulation/state";
 import { Tutorial } from "./Tutorial";
 import { DeviceTables } from "../simulation/DeviceTables";
 import { PrefixExplorer } from "../learning/PrefixExplorer";
@@ -11,6 +9,19 @@ import { presentEvent } from "../../content/present";
 import { DhcpSettings } from "../services/DhcpSettings";
 import { DhcpClient } from "../services/DhcpClient";
 import { NatSettings } from "../services/NatSettings";
+import {
+  enqueueDeviceEdit,
+  getInitialDraft,
+  hasInvalidInput,
+  hasPendingNetworkDiff,
+  ipv4Error,
+  isDeviceApplying,
+  nameError,
+  prefixError,
+  requiredIpv4Error,
+  subscribeDeviceQueue,
+  syncDraftWithExternalDevice,
+} from "./device-autosave";
 export function DeviceInspector({ controller }: { controller: AppController }) {
   const state = useApp(controller),
     selected = state.selection,
@@ -78,7 +89,7 @@ export function DeviceInspector({ controller }: { controller: AppController }) {
       </nav>
       <div hidden={tab !== "configure"}>
         <DeviceForm
-          key={`${device.id}:${state.projection.revision}`}
+          key={`${state.viewEpoch}:${device.id}`}
           controller={controller}
           device={device}
         />
@@ -109,37 +120,88 @@ function DeviceForm({
 }) {
   const state = useApp(controller),
     meta = state.document.layout[device.id],
-    [draft, setDraft] = useState(copy(device)),
+    [draft, setDraft] = useState(() =>
+      getInitialDraft(controller, device, state.viewEpoch),
+    ),
     [name, setName] = useState(meta.name),
     [openPorts, setOpenPorts] = useState<Record<string, boolean>>(() =>
       Object.fromEntries(device.ports.map((p) => [p.id, device.kind === "host" || !p.address?.ip])),
     );
-  const update = (next: Device) => setDraft(next);
+  const applying = useSyncExternalStore(
+    (listener) => subscribeDeviceQueue(controller, listener),
+    () => isDeviceApplying(controller, device.id),
+  );
+  const portSignature = device.ports.map((p) => p.id).join(",");
+  useEffect(() => {
+    setDraft((current) => {
+      const synced = syncDraftWithExternalDevice(current, device);
+      return JSON.stringify(synced) === JSON.stringify(current)
+        ? current
+        : synced;
+    });
+    setOpenPorts((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const port of device.ports) {
+        if (!(port.id in next)) {
+          next[port.id] = device.kind === "host" || !port.address?.ip;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [device.id, portSignature]);
+  const update = (next: Device) => {
+    setDraft(next);
+    enqueueDeviceEdit(controller, next, state.viewEpoch);
+  };
+  const updateName = (nextName: string) => {
+    setName(nextName);
+    const normalizedName = nextName.trim();
+    if (normalizedName && normalizedName !== meta.name) {
+      void controller.dispatch({
+        type: "device.rename",
+        id: device.id,
+        name: normalizedName,
+      });
+    }
+  };
   const uid = useId(),
-    dirty = name !== meta.name || JSON.stringify(draft) !== JSON.stringify(device),
-    invalid = hasInvalidInput(draft),
+    nameMessage = nameError(name),
+    fieldInvalid = Boolean(nameMessage) || hasInvalidInput(draft),
+    networkDirty = hasPendingNetworkDiff(draft, device),
+    rejected = !fieldInvalid && !applying && networkDirty,
+    statusState =
+      fieldInvalid || rejected
+        ? "invalid"
+        : applying
+          ? "saving"
+          : "clean",
+    statusText = fieldInvalid
+      ? "Fix highlighted fields — previous settings remain active"
+      : rejected
+        ? "Configuration needs attention — previous settings remain active"
+        : statusState === "saving"
+          ? "Applying changes…"
+          : "All changes applied",
     gatewayMessage =
       draft.kind === "host" && draft.addressing.mode === "manual"
         ? ipv4Error(draft.addressing.gateway ?? "")
         : undefined;
-  const apply = async () => {
-    await controller.dispatch({ type: "device.rename", id: device.id, name });
-    const network: NetworkConfig = {
-      ...state.document.network,
-      devices: state.document.network.devices.map((d) =>
-        d.id === device.id ? draft : d,
-      ),
-    };
-    await controller.dispatch({ type: "config.apply", network });
-  };
   return (
     <aside className="inspector" aria-label="Device inspector">
       <section className="inspector-group" aria-label="Identity">
 
         <label>
           Device name
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            value={name}
+            aria-invalid={nameMessage ? true : undefined}
+            aria-describedby={nameMessage ? `${uid}-name-error` : undefined}
+            onChange={(e) => updateName(e.target.value)}
+          />
         </label>
+        <FieldError id={`${uid}-name-error`} message={nameMessage} />
       </section>
       <section className="inspector-group" aria-label="Ports">
         <div className="group-head">
@@ -267,7 +329,7 @@ function DeviceForm({
                     type="number"
                     min="0"
                     max="32"
-                    value={port.address?.prefix ?? 24}
+                    value={Number.isNaN(port.address?.prefix) ? "" : port.address?.prefix ?? 24}
                     aria-invalid={prefixMessage ? true : undefined}
                     aria-describedby={
                       prefixMessage ? `${uid}-${i}-prefix-error` : undefined
@@ -281,7 +343,7 @@ function DeviceForm({
                                 ...p,
                                 address: {
                                   ip: p.address?.ip ?? "",
-                                  prefix: Number(e.target.value),
+                                  prefix: e.target.valueAsNumber,
                                 },
                               }
                             : p,
@@ -398,9 +460,9 @@ function DeviceForm({
                   value={route.destination.ip}
                   inputMode="decimal"
                   spellCheck={false}
-                  aria-invalid={ipv4Error(route.destination.ip) ? true : undefined}
+                  aria-invalid={requiredIpv4Error(route.destination.ip) ? true : undefined}
                   aria-describedby={
-                    ipv4Error(route.destination.ip)
+                    requiredIpv4Error(route.destination.ip)
                       ? `${uid}-route-${i}-destination-error`
                       : undefined
                   }
@@ -424,7 +486,7 @@ function DeviceForm({
               </label>
               <FieldError
                 id={`${uid}-route-${i}-destination-error`}
-                message={ipv4Error(route.destination.ip)}
+                message={requiredIpv4Error(route.destination.ip)}
               />
               <label>
                 Route {i + 1} prefix
@@ -432,7 +494,7 @@ function DeviceForm({
                   type="number"
                   min="0"
                   max="32"
-                  value={route.destination.prefix}
+                  value={Number.isNaN(route.destination.prefix) ? "" : route.destination.prefix}
                   aria-invalid={prefixError(route.destination.prefix) ? true : undefined}
                   aria-describedby={
                     prefixError(route.destination.prefix)
@@ -448,7 +510,7 @@ function DeviceForm({
                               ...r,
                               destination: {
                                 ...r.destination,
-                                prefix: Number(e.target.value),
+                                prefix: e.target.valueAsNumber,
                               },
                             }
                           : r,
@@ -536,8 +598,16 @@ function DeviceForm({
           )}
           {device.kind === "router" && (
             <>
-              <DhcpSettings controller={controller} deviceId={device.id} />
-              <NatSettings controller={controller} deviceId={device.id} />
+              <DhcpSettings
+                key={JSON.stringify([device.ports, device.dhcpScopes])}
+                controller={controller}
+                deviceId={device.id}
+              />
+              <NatSettings
+                key={JSON.stringify([portSignature, device.nat])}
+                controller={controller}
+                deviceId={device.id}
+              />
             </>
           )}
         </section>
@@ -546,55 +616,13 @@ function DeviceForm({
       <footer className="inspector-footer">
         <span
           className="apply-status"
-          data-state={invalid ? "invalid" : dirty ? "dirty" : "clean"}
+          data-state={statusState}
           role="status"
         >
-          {invalid
-            ? "Fix the highlighted fields to apply"
-            : dirty
-              ? "Unsaved changes"
-              : "All changes applied"}
+          {statusText}
         </span>
-        <button
-          className="primary"
-          disabled={state.busy || !dirty || invalid}
-          onClick={() => void apply()}
-        >
-          Apply settings
-        </button>
       </footer>
     </aside>
-  );
-}
-function ipv4Error(value: string): string | undefined {
-  return value.trim() !== "" && !parseIPv4(value).ok
-    ? "Enter an IPv4 address such as 192.168.1.10."
-    : undefined;
-}
-function prefixError(prefix: number): string | undefined {
-  return Number.isInteger(prefix) && prefix >= 0 && prefix <= 32
-    ? undefined
-    : "Enter a prefix length from 0 to 32.";
-}
-function hasInvalidInput(device: Device): boolean {
-  const gateway =
-    device.kind === "host" && device.addressing.mode === "manual"
-      ? device.addressing.gateway
-      : null;
-  return Boolean(
-    (gateway && ipv4Error(gateway)) ||
-      device.ports.some(
-        (port) =>
-          port.address !== null &&
-          (ipv4Error(port.address.ip) || prefixError(port.address.prefix)),
-      ) ||
-      (device.kind === "router" &&
-        device.routes.some(
-          (route) =>
-            ipv4Error(route.destination.ip) ||
-            prefixError(route.destination.prefix) ||
-            (route.nextHop && ipv4Error(route.nextHop)),
-        )),
   );
 }
 function FieldError({ id, message }: { id: string; message?: string }) {

@@ -15,9 +15,7 @@ test("keeps DHCP acquisition explicit and displays the assigned address", async 
   await page
     .getByLabel("IPv4 address eth0", { exact: true })
     .fill("192.168.1.1");
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await page
     .getByRole("button", { name: "Enable DHCP on eth0", exact: true })
     .click();
@@ -35,9 +33,10 @@ test("keeps DHCP acquisition explicit and displays the assigned address", async 
   await page
     .getByRole("button", { name: "Automatic (DHCP)", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
+  await expect(
+    page.locator('[data-device-node="host-1"] .flow-device-details'),
+  ).toContainText("DHCP pending");
   await expect(
     page.getByText("No address assigned", { exact: true }),
   ).toBeVisible();
@@ -48,4 +47,7 @@ test("keeps DHCP acquisition explicit and displays the assigned address", async 
   await expect(
     page.getByText("Assigned IPv4: 192.168.1.100", { exact: true }),
   ).toBeVisible();
+  await expect(
+    page.locator('[data-device-node="host-1"] .flow-device-details'),
+  ).toContainText("192.168.1.100/24 · DHCP");
 });

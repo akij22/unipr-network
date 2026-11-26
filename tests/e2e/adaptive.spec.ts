@@ -106,9 +106,7 @@ test("keeps input actions reachable after a keyboard-sized viewport and rotation
   await page.getByLabel("IPv4 address", { exact: true }).focus();
   await page.setViewportSize({ width: 390, height: 340 });
   await page.getByLabel("IPv4 address", { exact: true }).fill("10.0.0.1");
-  await page
-    .getByRole("button", { name: "Apply settings", exact: true })
-    .click();
+  await expect(page.locator('.apply-status[data-state="clean"]')).toBeVisible();
   await page.setViewportSize({ width: 844, height: 390 });
   await openComposer(page);
   await page.getByLabel("Destination IPv4", { exact: true }).fill("10.0.0.2");
